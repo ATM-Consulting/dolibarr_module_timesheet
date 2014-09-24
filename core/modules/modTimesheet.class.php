@@ -51,7 +51,7 @@ class modTimesheet extends DolibarrModules
 
         // Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
         // It is used to group modules in module setup page
-        $this->family = "other";
+        $this->family = "ATM";
         // Module label (no space allowed)
         // used if translation string 'ModuleXXXName' not found
         // (where XXX is value of numeric property 'numero' of module)
@@ -115,7 +115,7 @@ class modTimesheet extends DolibarrModules
         // Minimum version of PHP required by module
         $this->phpmin = array(5, 3);
         // Minimum version of Dolibarr required by module
-        $this->need_dolibarr_version = array(5, 0);
+        $this->need_dolibarr_version = array(3, 5);
         $this->langfiles = array("timesheet@timesheet"); // langfiles@mymodule
         // Constants
         // List of particular constants to add when module is enabled
@@ -229,22 +229,62 @@ class modTimesheet extends DolibarrModules
         $this->rights = array(); // Permission array used by this module
         $r = 0;
 
-        // Add here list of permission defined by
-        // an id, a label, a boolean and two constant strings.
-        // Example:
-        //// Permission id (must not be already used)
-        //$this->rights[$r][0] = 2000;
-        //// Permission label
-        //$this->rights[$r][1] = 'Permision label';
-        //// Permission by default for new user (0/1)
-        //$this->rights[$r][3] = 1;
-        //// In php code, permission will be checked by test
-        //// if ($user->rights->permkey->level1->level2)
-        //$this->rights[$r][4] = 'level1';
-        //// In php code, permission will be checked by test
-        //// if ($user->rights->permkey->level1->level2)
-        //$this->rights[$r][5] = 'level2';
-        //$r++;
+		$r++;
+		$this->rights[$r][0] = 104241;
+		$this->rights[$r][1] = $langs->trans('ReadTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'read';
+		
+		$r++;
+		$this->rights[$r][0] = 104242;
+		$this->rights[$r][1] = $langs->trans('ReadAllTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'all';
+		$this->rights[$r][5] = 'read';
+		
+		$r++;
+		$this->rights[$r][0] = 104243;
+		$this->rights[$r][1] = $langs->trans('EditTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'edit';
+		
+		$r++;
+		$this->rights[$r][0] = 104244;
+		$this->rights[$r][1] = $langs->trans('AddTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'add';
+		
+		$r++;
+		$this->rights[$r][0] = 104245;
+		$this->rights[$r][1] = $langs->trans('DelTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'delete';
+		
+		$r++;
+		$this->rights[$r][0] = 104241;
+		$this->rights[$r][1] = $langs->trans('ReadTimesheetNDF');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'ndf';
+		$this->rights[$r][5] = 'read';
+		
+		$r++;
+		$this->rights[$r][0] = 104241;
+		$this->rights[$r][1] = $langs->trans('ReadAllTimesheetNDF');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'allndf';
+		$this->rights[$r][5] = 'read';
+		
+		$r++;
+		$this->rights[$r][0] = 104241;
+		$this->rights[$r][1] = $langs->trans('EditTimesheetNDF');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'ndf';
+		$this->rights[$r][5] = 'edit';
+       
         // Main menu entries
         $this->menus = array(); // List of menus to add
         $r = 0;
@@ -252,29 +292,29 @@ class modTimesheet extends DolibarrModules
         // Add here entries to declare new menus
         //
         // Example to declare a new Top Menu entry and its Left menu entry:
-        //$this->menu[$r]=array(
+        $this->menu[$r]=array(
         //	// Put 0 if this is a top menu
-        //	'fk_menu'=>0,
+        	'fk_menu'=>0,
         //	// This is a Top menu entry
-        //	'type'=>'top',
-        //	'titre'=>'MyModule top menu',
-        //	'mainmenu'=>'mymodule',
-        //	'leftmenu'=>'mymodule',
-        //	'url'=>'/mymodule/pagetop.php',
+        	'type'=>'top',
+        	'titre'=>'Time Sheet',
+        	'mainmenu'=>'timesheet',
+        	'leftmenu'=>'timesheet',
+        	'url'=>'/timesheet/liste.php',
         //	// Lang file to use (without .lang) by module.
         //	// File must be in langs/code_CODE/ directory.
-        //	'langs'=>'mylangfile',
-        //	'position'=>100,
+        	'langs'=>'timesheet',
+        	'position'=>100,
         //	// Define condition to show or hide menu entry.
         //	// Use '$conf->mymodule->enabled' if entry must be visible if module is enabled.
-        //	'enabled'=>'$conf->mymodule->enabled',
+        	'enabled'=>'$conf->timesheet->enabled',
         //	// Use 'perms'=>'$user->rights->mymodule->level1->level2'
         //	// if you want your menu with a permission rules
-        //	'perms'=>'1',
-        //	'target'=>'',
+        	'perms'=>'1',
+        	'target'=>'',
         //	// 0=Menu for internal users, 1=external users, 2=both
-        //	'user'=>2
-        //);
+        	'user'=>0
+        );
         //$r++;
         //$this->menu[$r]=array(
         //	// Use r=value where r is index key used for the parent menu entry

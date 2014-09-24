@@ -1,2 +1,16 @@
 Module104240Name = Timesheet
 Module104240Desc = Managing timesheets
+
+ListTimesheet=Time sheets list
+AnyTimesheet=No timesheets to display
+CreateTimesheet=Create new timesheet
+
+//Droits
+ReadTimesheet=Read timesheets
+ReadAllTimesheet=Read all timesheets
+EditTimesheet=Add/Update timesheets
+AddTimesheet=Add/Update task times
+DelTimesheet=Delete timesheets
+ReadTimesheetNDF=Read spendings from timesheets
+ReadAllTimesheetNDF=Read all spendings from timesheets
+EditTimesheetNDF=Add/Update spendings from timesheets

@@ -1,2 +1,16 @@
 Module104240Name = TimeSheet
 Module104240Desc = Gestion des feuilles de temps
+
+ListTimesheet=Liste des feuilles de temps
+AnyTimesheet=Il n'y a aucune feuille de temps à afficher
+CreateTimesheet=Créer une feuille de temps
+
+//Droits
+ReadTimesheet=Lire les feuilles de temps
+ReadAllTimesheet=Lire tous les temps saisies
+EditTimesheet=Ajouter/Modifier les feuilles de temps
+AddTimesheet=Ajouter/Modifier les temps
+DelTimesheet=Supprimer les feuilles de temps
+ReadTimesheetNDF=Lire les frais associés aux feuilles de temps
+ReadAllTimesheetNDF=Lire tous les frais associés aux feuilles de temps
+EditTimesheetNDF=Ajouter/Modifier les frais associés aux feuilles de temps
