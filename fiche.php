@@ -44,7 +44,7 @@ function _action() {
 
 			case 'edit'	:
 				$timesheet->load($PDOdb, $_REQUEST['id']);
-				_fiche($asset,'edit');
+				_fiche($timesheet,'edit');
 				break;
 
 			case 'save':
@@ -101,7 +101,7 @@ function _fiche(&$timesheet, $mode='edit') {
 	
 	echo $form->hidden('id', $timesheet->rowid);
 	
-	if ($mode=='new'){
+	if ($mode=='new' || $mode=='edit'){
 		echo $form->hidden('action', 'save');
 	}
 	else {
@@ -116,6 +116,10 @@ function _fiche(&$timesheet, $mode='edit') {
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
 
+
+	/*
+	 * Affichage informations générales
+	 */
 	print $TBS->render('tpl/fiche.tpl.php'
 		,array()
 		,array(
@@ -132,20 +136,72 @@ function _fiche(&$timesheet, $mode='edit') {
 		)
 	);
 
-	echo $form->end_form();
-	// End of page
+	//Construction du nombre de colonne correspondant aux jours
+	$TJours = array();
+	$TFormJours = array();
+
+	$date_deb = new DateTime($timesheet->get_date('date_deb','Y-m-d'));
+	$date_fin = new DateTime($timesheet->get_date('date_fin','Y-m-d'));
+	$diff = $date_deb->diff($date_fin);
+	$diff = $diff->format('%d') +1;
+
+	$date_deb->sub(new DateInterval('P1D'));
+
+	for($i=1;$i<=$diff;$i++){
+		$date_temp = $date_deb->add(new DateInterval('P1D'));
+		$TJours[$date_deb->format('d/m')] = $date_deb->format('D');
+		
+		//Chargement du formulaire se saisie des temps
+		$TFormJours[$date_deb->format('d/m')] = $form->timepicker('', 'temps['.$date_deb->format('d/m').']', '',5);
+	}
 	
+	$doliform = new Form($db);
+	
+	//Charger les lignes existante dans le timeSheet
+	$TligneTimesheet=array();
+
+	$TBS=new TTemplateTBS();
+	
+	/*
+	 * Affichage tableau de saisie des temps
+	 */
+	print $TBS->render('tpl/fiche_saisie.tpl.php'
+		,array(
+			'ligneTimesheet'=>$TligneTimesheet,
+			'jours'=>$TJours,
+			'formjour'=>$TFormJours
+		)
+		,array(
+			'timesheet'=>array(
+				'rowid'=>0
+				,'id'=>$timesheet->rowid
+				,'services'=>$doliform->select_produits_list('','serviceid[]','1')
+				,'consultants'=>$doliform->select_dolusers('','userid[]')
+			)
+			,'view'=>array(
+				'mode'=>$mode
+				,'nbChamps'=>count($asset->TField)
+				,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
+				,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
+			)
+			
+		)	
+		
+	);
+	 
+	echo $form->end_form();
+
 	llxFooter('$Date: 2011/07/31 22:21:57 $ - $Revision: 1.19 $');
 }
 
-function _fiche_visu_project(&$timesheet, $mode) {
+function _fiche_visu_project(&$timesheet, $mode){
 	global $db;
 
 	if($mode=='edit' || $mode=='new') {
 		ob_start();
 
 		$html=new FormProjets($db);
-		echo $html->select_projects($timesheet->fk_societe, $timesheet->fk_project, 'fk_project');
+		$html->select_projects($timesheet->fk_societe, $timesheet->fk_project, 'fk_project');
 
 		return ob_get_clean();
 
