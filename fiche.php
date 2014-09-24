@@ -152,7 +152,7 @@ function _fiche(&$timesheet, $mode='edit') {
 		$TJours[$date_deb->format('d/m')] = $date_deb->format('D');
 		
 		//Chargement du formulaire se saisie des temps
-		$TFormJours[$date_deb->format('d/m')] = $form->timepicker('', 'temps['.$date_deb->format('d/m').']', '',5);
+		$TFormJours[$date_deb->format('d/m')] = $form->timepicker('', 'temps'.$i, '',5);
 	}
 	
 	$doliform = new Form($db);
