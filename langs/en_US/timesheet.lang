@@ -4,6 +4,7 @@ Module104240Desc = Managing timesheets
 ListTimesheet=Time sheets list
 AnyTimesheet=No timesheets to display
 CreateTimesheet=Create new timesheet
+FicheTimesheet=Record timesheet
 
 //Droits
 ReadTimesheet=Read timesheets

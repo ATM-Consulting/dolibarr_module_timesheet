@@ -4,6 +4,7 @@ Module104240Desc = Gestion des feuilles de temps
 ListTimesheet=Liste des feuilles de temps
 AnyTimesheet=Il n'y a aucune feuille de temps à afficher
 CreateTimesheet=Créer une feuille de temps
+FicheTimesheet=Fiche feuille de temps
 
 //Droits
 ReadTimesheet=Lire les feuilles de temps

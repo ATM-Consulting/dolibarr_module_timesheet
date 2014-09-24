@@ -13,6 +13,8 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function load(&$PDOdb,$id){
+		global $db;
+		
 		parent::load($PDOdb,$id);
 
 		$this->project = new Project($db);

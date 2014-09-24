@@ -53,3 +53,15 @@ function timesheetAdminPrepareHead()
 
     return $head;
 }
+
+function timesheetPrepareHead(&$timesheet,$type='timesheet') {
+	global $user;
+
+	switch ($type) {
+		case 'timesheet':
+			return array(
+				array(dol_buildpath('/timesheet/fiche.php?id='.$timesheet->rowid,2), 'Fiche','fiche')
+			);
+			break;
+	}
+}

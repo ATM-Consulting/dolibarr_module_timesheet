@@ -9,7 +9,7 @@
 function _liste() {
 	global $langs,$db,$user,$conf;
 
-	$langs->load('timesheet@timesheet');
+	$langs->Load('timesheet@timesheet');
 
 	$TPDOdb=new TPDOdb;
 	$TTimesheet = new TTimesheet;
@@ -64,7 +64,7 @@ function _liste() {
 
 	if($user->rights->timesheet->user->add){
 		echo '<div class="tabsAction">';
-		echo '<a class="butAction" href="fiche.php?action=edit">'.$langs->trans('CreateTimesheet').'</a>';
+		echo '<a class="butAction" href="fiche.php?action=new">'.$langs->trans('CreateTimesheet').'</a>';
 		echo '</div>';
 	}
 	
