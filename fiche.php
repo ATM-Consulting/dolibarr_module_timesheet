@@ -44,8 +44,9 @@ function _action() {
 				break;
 
 			case 'edit'	:
+			case 'edittime'	:
 				$timesheet->load($PDOdb, $_REQUEST['id']);
-				_fiche($timesheet,'edit');
+				_fiche($timesheet,$_REQUEST['action']);
 				break;
 
 			case 'save':
@@ -98,14 +99,20 @@ function _fiche(&$timesheet, $mode='edit') {
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
 
 	$form=new TFormCore($_SERVER['PHP_SELF'],'form','POST');
-	$form->Set_typeaff($mode);
+	
+	if($mode != "edittime"){
+		$form->Set_typeaff($mode);
+	}
+	else{
+		$form->Set_typeaff("view");
+	}
 	
 	echo $form->hidden('id', $timesheet->rowid);
-	
+
 	if ($mode=='new' || $mode=='edit'){
 		echo $form->hidden('action', 'save');
 	}
-	else {
+	else{
 		echo $form->hidden('action', 'edit');
 	}
 	
@@ -136,7 +143,9 @@ function _fiche(&$timesheet, $mode='edit') {
 			)
 		)
 	);
-
+	
+	echo $form->end_form();
+	
 	//Construction du nombre de colonne correspondant aux jours
 	$TJours = array();
 	$TFormJours = array();
@@ -151,9 +160,6 @@ function _fiche(&$timesheet, $mode='edit') {
 	for($i=1;$i<=$diff;$i++){
 		$date_temp = $date_deb->add(new DateInterval('P1D'));
 		$TJours[$date_deb->format('d/m')] = $date_deb->format('D');
-		
-		//Chargement du formulaire se saisie des temps
-		$TFormJours[$date_deb->format('d/m')] = $form->timepicker('', 'temps'.$i, '',5);
 	}
 	
 	$doliform = new Form($db);
@@ -161,10 +167,6 @@ function _fiche(&$timesheet, $mode='edit') {
 	//Charger les lignes existante dans le timeSheet
 	$TligneTimesheet=array();
 	$TligneJours = array();
-	
-	for($i=1;$i<=$diff;$i++){
-		$TligneJours[] = '';
-	}
 	
 	foreach($timesheet->TTask as $task){
 
@@ -193,6 +195,38 @@ function _fiche(&$timesheet, $mode='edit') {
 	}
 
 	$TBS=new TTemplateTBS();
+	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
+	
+	if($mode=='edittime'){
+		$form2->Set_typeaff('edit');
+	}
+	else{
+		$form->Set_typeaff("view");
+	}
+	
+	echo $form2->hidden('id', $timesheet->rowid);
+	
+	if ($mode=='edittime'){
+		echo $form2->hidden('action', 'save');
+	}
+	
+	echo $form2->hidden('entity', $conf->entity);
+	
+	$date_deb = new DateTime($timesheet->get_date('date_deb','Y-m-d'));
+	$date_fin = new DateTime($timesheet->get_date('date_fin','Y-m-d'));
+	$diff = $date_deb->diff($date_fin);
+	$diff = $diff->format('%d') +1;
+
+	$date_deb->sub(new DateInterval('P1D'));
+
+	for($i=1;$i<=$diff;$i++){
+		$TligneJours[] = '';
+	}
+
+	for($i=1;$i<=$diff;$i++){
+		//Chargement du formulaire se saisie des temps		
+		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps'.$i, '',5);
+	}
 	
 	/*
 	 * Affichage tableau de saisie des temps
@@ -222,7 +256,7 @@ function _fiche(&$timesheet, $mode='edit') {
 		
 	);
 	 
-	echo $form->end_form();
+	echo $form2->end_form();
 
 	llxFooter('$Date: 2011/07/31 22:21:57 $ - $Revision: 1.19 $');
 }

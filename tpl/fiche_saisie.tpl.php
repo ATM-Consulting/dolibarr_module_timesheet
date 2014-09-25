@@ -22,7 +22,7 @@
 		<td><a href="#"><img src="img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.rowid]&action=deleteligne'"></a></td>
 	</tr>
 	
-	[onshow;block=begin;when [view.mode]=='edit']
+	[onshow;block=begin;when [view.mode]=='edittime']
 		<!-- Nouvelle ligne de timesheet-->
 		<tr id="[timesheet.rowid;strconv=no]">
 			<td>[timesheet.services;strconv=no]</td>
@@ -36,12 +36,12 @@
 	</tbody>
 </table>
 
-[onshow;block=begin;when [view.mode]!='edit']
+[onshow;block=begin;when [view.mode]!='edittime']
 <div class="tabsAction" style="text-align: center;">
-	<a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier les temps</a>
+	<a href="?id=[timesheet.id]&action=edittime" class="butAction">Modifier les temps</a>
 </div>
 [onshow;block=end]	
-[onshow;block=begin;when [view.mode]=='edit']
+[onshow;block=begin;when [view.mode]=='edittime']
 	<div class="tabsAction" style="text-align:center;">
 	<input type="submit" value="Enregistrer" name="save" class="button"> 
 	&nbsp; &nbsp; <input type="button" value="Annuler" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
