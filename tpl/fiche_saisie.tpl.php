@@ -26,7 +26,7 @@
 			<td><!-- total jours vide en mode création --></td>
 			<td><!-- total heures vide en mode création --></td>
 			<td>[formjour.val;block=td;strconv=no]</td>
-			<td><input type="submit" value="Ajouter" name="add" class="button"></td>
+			<td></td>
 		</tr>
 	[onshow;block=end]
 	</tbody>

@@ -66,30 +66,43 @@ class TTimesheet extends TObjetStd {
 		}
 	}
 	
-	function set_timevalues($Tab){
+	function savetimevalues(&$PDOdb,$Tab){
+		global $db,$user;
 		
 		//Parcours des tâches existantes pour MAJ temps
 		foreach($Tab as $cle => $value){
-			if($cle == 'service_0' && $value === '0'){
-				return 1;
-			}
-			else{
-				if(strpos($cle,'_0')){
-					//Chargement temporaire d'une tache si nouvelle ligne à ajouter
-				}
-				elseif(strpos($cle, '_')){
-					//Ligne déjà existante => MAJ des temps
-					$Tcle = explode('_', $cle);
-					
-					
+			if($cle == "temps"){
+				foreach($value as $idTask => $TTemps){
+					$task = new Task($db);
+					$task->fetch($idTask);
+
+					foreach($TTemps as $date=>$temps){
+						$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time WHERE fk_task = ".$idTask." AND fk_user = ".$Tab['userid_'.$idTask]." AND task_date = '".$date."' LIMIT 1";
+						$PDOdb->Execute($sql);
+						
+						$timespent_duration_temp = explode(':',$temps);
+						$timespent_duration_temp = (int)(($temps[0]*60*60)+($temps[0]*60));
+						
+						//Un temps a déjà été saisi pour ce projet, cette tache et cet utilisateur
+						if($PDOdb->Get_line()){
+							$task->fetchTimeSpent($PDOdb->Get_field('rowid'));
+							$task->timespent_duration = $timespent_duration_temp;
+							
+							$task->updateTimeSpent($user);
+						}
+						//Un temps pour ce projet, cette tache et cet utilisateur n'existe pas encore, il faut l'ajouter
+						else{
+							
+							$this->timespent_date = $date;
+							$this->timespent_duration = $timespent_duration_temp;
+							$this->timespent_fk_user = $Tab['userid_'.$idTask];
+							$task->addTimeSpent($user);
+						}
+					}
 				}
 			}
 		}
 		
-		
-	}
-	
-	function savetime(&$PDOdb){
 		
 	}
 }
