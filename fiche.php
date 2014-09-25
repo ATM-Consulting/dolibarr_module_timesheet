@@ -15,6 +15,7 @@ if(!$user->rights->timesheet->user->read) accessforbidden();
 // Load traductions files requiredby by page
 $langs->Load("timesheet@timesheet");
 
+//pre($_REQUEST);exit;
 // Get parameters
 _action();
 
@@ -102,6 +103,7 @@ function _fiche(&$timesheet, $mode='edit') {
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
 
 	$form=new TFormCore($_SERVER['PHP_SELF'],'form','POST');
+	$doliform = new Form($db);
 	
 	if($mode != "edittime"){
 		$form->Set_typeaff($mode);
@@ -126,7 +128,6 @@ function _fiche(&$timesheet, $mode='edit') {
 
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
-
 
 	/*
 	 * Affichage informations générales
@@ -161,10 +162,12 @@ function _fiche(&$timesheet, $mode='edit') {
 
 	$date_deb->sub(new DateInterval('P1D'));
 
+	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
+	
 	for($i=1;$i<=$diff;$i++){
 		$date_temp = $date_deb->add(new DateInterval('P1D'));
 		$TJours[$date_deb->format('d/m')] = $date_deb->format('D');
-		$TligneJours[$date_deb->format('d/m')] = '';
+		$TligneJours[$date_deb->format('d/m')] = ($mode == 'edittime') ? $form2->timepicker('', 'temps'.$date_deb->format('dm'), '',5) : '';
 	}
 	
 	//Charger les lignes existante dans le timeSheet
@@ -186,14 +189,14 @@ function _fiche(&$timesheet, $mode='edit') {
 			$productstatic->fetch($PDOdb->Get_field('rowid'));
 			$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
 			
-			$TligneTimesheet[$task->id]['rowid'] = $idtime;
-			$TligneTimesheet[$task->id]['service'] = $productstatic->getNomUrl(1,'',48);
-			$TligneTimesheet[$task->id]['consultant'] = $userstatic->getNomUrl(1);
+			$TligneTimesheet[$task->id]['rowid'] = $task->id;
+			$TligneTimesheet[$task->id]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id,'1') : $productstatic->getNomUrl(1,'',48);
+			$TligneTimesheet[$task->id]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id) : $userstatic->getNomUrl(1);
 			$TligneTimesheet[$task->id]['total_jours'] += $time->task_duration;
 			$TligneTimesheet[$task->id]['total_heures'] += $time->task_duration;
-
+			
 			$Tdatetime = explode('-',$time->task_date);
-			$TligneJours[$Tdatetime[2]."/".$Tdatetime[1]] = convertSecondToTime($time->task_duration,'allhourmin');
+			$TligneJours[$Tdatetime[2]."/".$Tdatetime[1]] = ($mode == 'edittime') ? $form2->timepicker('', 'temps'.$Tdatetime[2].$Tdatetime[1], $time->task_duration,5) : convertSecondToTime($time->task_duration,'allhourmin');
 		}
 	}
 	
@@ -203,7 +206,6 @@ function _fiche(&$timesheet, $mode='edit') {
 	}
 
 	$TBS=new TTemplateTBS();
-	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 	
 	if($mode=='edittime'){
 		$form2->Set_typeaff('edit');
@@ -228,12 +230,23 @@ function _fiche(&$timesheet, $mode='edit') {
 	$date_deb->sub(new DateInterval('P1D'));
 
 	for($i=1;$i<=$diff;$i++){
+		$date_temp = $date_deb->add(new DateInterval('P1D'));
 		//Chargement du formulaire se saisie des temps		
-		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps'.$i, '',5);
+		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps'.$date_deb->format('dm'), '',5);
 	}
 	
-	$doliform = new Form($db);
+	?>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('input[name^=temps]').each(function(element){
+				$(this).attr('id',$(this).attr('id')+'_'+$(this).parent().parent().attr('id'));
+				$(this).attr('name',$(this).attr('id'));
+			})
+		});
+	</script>
+	<?php
 	
+	//pre($TligneJours);
 	/*
 	 * Affichage tableau de saisie des temps
 	 */
@@ -248,8 +261,8 @@ function _fiche(&$timesheet, $mode='edit') {
 			'timesheet'=>array(
 				'rowid'=>0
 				,'id'=>$timesheet->rowid
-				,'services'=>$doliform->select_produits_list('','serviceid[]','1')
-				,'consultants'=>$doliform->select_dolusers('','userid[]')
+				,'services'=>$doliform->select_produits_list('','serviceid_0','1')
+				,'consultants'=>$doliform->select_dolusers('','userid_0')
 			)
 			,'view'=>array(
 				'mode'=>$mode

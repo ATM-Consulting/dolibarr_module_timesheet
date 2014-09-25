@@ -18,7 +18,7 @@
 		<td>[ligneTimesheet.consultant;strconv=no]</td>
 		<td>[ligneTimesheet.total_jours;strconv=no]</td>
 		<td>[ligneTimesheet.total_heures;strconv=no]</td>
-		<td>[lignejours.val;block=td]</td>
+		<td>[lignejours.val;block=td;strconv=no]</td>
 		<td><a href="#"><img src="img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.rowid]&action=deleteligne'"></a></td>
 	</tr>
 	
