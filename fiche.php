@@ -7,6 +7,7 @@ dol_include_once('/projet/class/task.class.php');
 dol_include_once('/societe/class/societe.class.php');
 dol_include_once('/timesheet/lib/timesheet.lib.php');
 dol_include_once('/core/class/html.formprojet.class.php');
+dol_include_once('/core/lib/date.lib.php');
 
 if(!$user->rights->timesheet->user->read) accessforbidden();
 
@@ -159,6 +160,37 @@ function _fiche(&$timesheet, $mode='edit') {
 	
 	//Charger les lignes existante dans le timeSheet
 	$TligneTimesheet=array();
+	$TligneJours = array();
+	
+	for($i=1;$i<=$diff;$i++){
+		$TligneJours[] = '';
+	}
+	
+	foreach($timesheet->TTask as $task){
+
+		foreach($task->TTime as $idtime => $time){
+			
+			$userstatic = new User($db);
+			$userstatic->id         = $time->fk_user;
+			$userstatic->lastname	= $time->lastname;
+			$userstatic->firstname 	= $time->firstname;
+			
+			$taskstatic = new Task($db);
+			$taskstatic->id=$task->id;
+			$taskstatic->ref=$task->ref;
+			$taskstatic->label=$task->label;
+			
+			$TligneTimesheet[$task->id]['rowid'] = $idtime;
+			$TligneTimesheet[$task->id]['service'] = $taskstatic->getNomUrl(1,($showproject?'':'withproject'));
+			$TligneTimesheet[$task->id]['consultant'] = $userstatic->getNomUrl(1);
+			$TligneTimesheet[$task->id]['total_jours'] += $time->task_duration;
+			$TligneTimesheet[$task->id]['total_heures'] += convertSecondToTime($time->task_duration,'allhourmin');
+		}
+	}
+	
+	foreach($TligneTimesheet as $cle => $val){
+		$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',28800)/24);
+	}
 
 	$TBS=new TTemplateTBS();
 	
@@ -168,6 +200,7 @@ function _fiche(&$timesheet, $mode='edit') {
 	print $TBS->render('tpl/fiche_saisie.tpl.php'
 		,array(
 			'ligneTimesheet'=>$TligneTimesheet,
+			'lignejours'=>$TligneJours,
 			'jours'=>$TJours,
 			'formjour'=>$TFormJours
 		)

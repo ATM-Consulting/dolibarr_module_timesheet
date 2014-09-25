@@ -37,8 +37,8 @@ function _liste() {
 		)
 		,'subQuery'=>array()
 		,'link'=>array(
-			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@').'">'.img_picto('','object_company.png','',0).' @nom@</a>'
-			,'fk_project'=>'<a href="'.dol_buildpath('/project/fiche.php?id=@fk_project@').'">'.img_picto('','object_project.png','',0).' @ref@</a>'
+			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@',2).'">'.img_picto('','object_company.png','',0).' @nom@</a>'
+			,'fk_project'=>'<a href="'.dol_buildpath('/projet/fiche.php?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
 			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/fiche.php?id=@rowid@',2).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
 		)
 		,'translate'=>array()

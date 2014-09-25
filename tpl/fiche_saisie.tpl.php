@@ -1,6 +1,6 @@
 <table class="border" style="width:100%;">
 	<!-- entête du tableau -->
-	<thead>
+	<thead style="background-color:#CCCCCC;">
 		<tr>
 			<td>Service</td>
 			<td>Consultant</td>
@@ -19,7 +19,7 @@
 		<td>[ligneTimesheet.total_jours;strconv=no]</td>
 		<td>[ligneTimesheet.total_heures;strconv=no]</td>
 		<td>[lignejours.val;block=td]</td>
-		<td><img src="../img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.rowid]&action=deleteligne'"></td>
+		<td><a href="#"><img src="img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.rowid]&action=deleteligne'"></a></td>
 	</tr>
 	
 	[onshow;block=begin;when [view.mode]=='edit']
@@ -37,7 +37,7 @@
 </table>
 
 [onshow;block=begin;when [view.mode]!='edit']
-<div class="tabsAction">
+<div class="tabsAction" style="text-align: center;">
 	<a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier les temps</a>
 </div>
 [onshow;block=end]	
