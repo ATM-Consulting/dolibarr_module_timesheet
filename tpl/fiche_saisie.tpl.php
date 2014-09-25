@@ -13,13 +13,9 @@
 	
 	<tbody>
 	<!-- Contenu déjà existant -->
-	<tr id="[ligneTimesheet.rowid;block=tr;stdconv=no]" >
-		<td>[ligneTimesheet.service;strconv=no]</td>
-		<td>[ligneTimesheet.consultant;strconv=no]</td>
-		<td>[ligneTimesheet.total_jours;strconv=no]</td>
-		<td>[ligneTimesheet.total_heures;strconv=no]</td>
-		<td>[lignejours.val;block=td;strconv=no]</td>
-		<td><a href="#"><img src="img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.rowid]&action=deleteligne'"></a></td>
+	<tr id="[ligneTimesheet.$;strconv=no;block=tr;sub1]" >
+		<td>[ligneTimesheet_sub1.val;block=td;strconv=no]</td>
+		<td><a href="#"><img src="img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.$]&action=deleteligne'"></a></td>
 	</tr>
 	
 	[onshow;block=begin;when [view.mode]=='edittime']

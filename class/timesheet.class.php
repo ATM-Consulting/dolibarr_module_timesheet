@@ -34,19 +34,19 @@ class TTimesheet extends TObjetStd {
 				WHERE fk_projet = ".$this->project->id.'
 					AND dateo > "'.$this->get_date('date_deb','Y-m-d 00:00:00').'" AND dateo < "'.$this->get_date('date_fin','Y-m-d 23:59:59').'"
 				ORDER BY dateo ASC';
+	
+		//echo $sql;exit;
+		$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 
-		$PDOdb->Execute($sql);
+		foreach($Tid as $id){
 
-		while($PDOdb->Get_line()){
-			
 			$task = new Task($db);
-			$task->fetch($PDOdb->Get_field('rowid'));
+			$task->fetch($id);
 
 			$this->TTask[$task->id] = $task;
 			
 			$this->loadTimeSpentByTask($PDOdb,$task->id);
 		}
-		
 	}
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid){
@@ -64,5 +64,32 @@ class TTimesheet extends TObjetStd {
 		while ($row = $PDOdb->Get_line()) {
 			$this->TTask[$taskid]->TTime[$row->rowid] = $row;
 		}
+	}
+	
+	function set_timevalues($Tab){
+		
+		//Parcours des tâches existantes pour MAJ temps
+		foreach($Tab as $cle => $value){
+			if($cle == 'service_0' && $value === '0'){
+				return 1;
+			}
+			else{
+				if(strpos($cle,'_0')){
+					//Chargement temporaire d'une tache si nouvelle ligne à ajouter
+				}
+				elseif(strpos($cle, '_')){
+					//Ligne déjà existante => MAJ des temps
+					$Tcle = explode('_', $cle);
+					
+					
+				}
+			}
+		}
+		
+		
+	}
+	
+	function savetime(&$PDOdb){
+		
 	}
 }

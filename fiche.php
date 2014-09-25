@@ -61,6 +61,18 @@ function _action() {
 				</script>
 				<?
 				break;
+			
+			case 'savetime':
+				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
+				pre($_REQUEST);exit;
+				$timesheet->set_timevalues($_REQUEST);
+				$timesheet->savetime($PDOdb);
+				?>
+				<script language="javascript">
+					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/fiche.php?id=<?php echo $timesheet->rowid; ?>";					
+				</script>
+				<?
+				break;
 
 			case 'delete':
 				$timesheet->load($PDOdb, $_REQUEST['id']);
@@ -151,9 +163,9 @@ function _fiche(&$timesheet, $mode='edit') {
 	echo $form->end_form();
 	
 	//Construction du nombre de colonne correspondant aux jours
-	$TJours = array();
-	$TFormJours = array();
-	$TligneJours = array();
+	$TJours = array(); //Tableau des en-tête pour les jours de la période
+	$TFormJours = array(); //Formulaire de saisis nouvelle ligne de temps
+	$TligneJours = array(); //Tableau des lignes de temps déjà existante
 	
 	$date_deb = new DateTime($timesheet->get_date('date_deb','Y-m-d'));
 	$date_fin = new DateTime($timesheet->get_date('date_fin','Y-m-d'));
@@ -165,38 +177,46 @@ function _fiche(&$timesheet, $mode='edit') {
 	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 	
 	for($i=1;$i<=$diff;$i++){
-		$date_temp = $date_deb->add(new DateInterval('P1D'));
+		$date_deb->add(new DateInterval('P1D'));
 		$TJours[$date_deb->format('d/m')] = $date_deb->format('D');
-		$TligneJours[$date_deb->format('d/m')] = ($mode == 'edittime') ? $form2->timepicker('', 'temps'.$date_deb->format('dm'), '',5) : '';
 	}
 	
 	//Charger les lignes existante dans le timeSheet
 	$TligneTimesheet=array();
 	
+	//pre($timesheet);
+	
 	foreach($timesheet->TTask as $task){
+		
+		$userstatic = new User($db);
+		$userstatic->id         = $time->fk_user;
+		$userstatic->lastname	= $time->lastname;
+		$userstatic->firstname 	= $time->firstname;
+		
+		$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
+		$PDOdb->Get_line();
+		
+		$productstatic = new Product($db);
+		$productstatic->fetch($PDOdb->Get_field('rowid'));
+		$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
 
-		foreach($task->TTime as $idtime => $time){
-			
-			$userstatic = new User($db);
-			$userstatic->id         = $time->fk_user;
-			$userstatic->lastname	= $time->lastname;
-			$userstatic->firstname 	= $time->firstname;
-			
-			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
-			$PDOdb->Get_line();
-			
-			$productstatic = new Product($db);
-			$productstatic->fetch($PDOdb->Get_field('rowid'));
-			$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
-			
-			$TligneTimesheet[$task->id]['rowid'] = $task->id;
-			$TligneTimesheet[$task->id]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id,'1') : $productstatic->getNomUrl(1,'',48);
-			$TligneTimesheet[$task->id]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id) : $userstatic->getNomUrl(1);
-			$TligneTimesheet[$task->id]['total_jours'] += $time->task_duration;
-			$TligneTimesheet[$task->id]['total_heures'] += $time->task_duration;
-			
-			$Tdatetime = explode('-',$time->task_date);
-			$TligneJours[$Tdatetime[2]."/".$Tdatetime[1]] = ($mode == 'edittime') ? $form2->timepicker('', 'temps'.$Tdatetime[2].$Tdatetime[1], $time->task_duration,5) : convertSecondToTime($time->task_duration,'allhourmin');
+		$TligneTimesheet[$task->id]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id,'1') : $productstatic->getNomUrl(1,'',48);
+		$TligneTimesheet[$task->id]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id) : $userstatic->getNomUrl(1);
+		
+		//Comptabilisation des temps + peuplage de $TligneJours
+		if(!empty($task->TTime)){
+			foreach($task->TTime as $idtime => $time){
+				$TligneTimesheet[$task->id]['total_jours'] += $time->task_duration;
+				$TligneTimesheet[$task->id]['total_heures'] += $time->task_duration;
+
+				$TDate = explode('-',$time->task_date);
+
+				$TTimeTemp[$task->id][$TDate[2].'/'.$TDate[1]]=$time->task_duration;
+			}
+		}
+
+		foreach($TJours as $cle=>$val){
+			$TligneTimesheet[$task->id][$cle]=$form2->timepicker('', 'temps['.$task->id.']['.strtr($cle, array('/'=>'')).']', $TTimeTemp[$task->id][$cle],5);
 		}
 	}
 	
@@ -204,7 +224,7 @@ function _fiche(&$timesheet, $mode='edit') {
 		$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',28800)/24);
 		$TligneTimesheet[$cle]['total_heures'] = convertSecondToTime($val['total_heures'],'allhourmin');
 	}
-
+	
 	$TBS=new TTemplateTBS();
 	
 	if($mode=='edittime'){
@@ -217,7 +237,7 @@ function _fiche(&$timesheet, $mode='edit') {
 	echo $form2->hidden('id', $timesheet->rowid);
 	
 	if ($mode=='edittime'){
-		echo $form2->hidden('action', 'save');
+		echo $form2->hidden('action', 'savetime');
 	}
 	
 	echo $form2->hidden('entity', $conf->entity);
@@ -232,21 +252,23 @@ function _fiche(&$timesheet, $mode='edit') {
 	for($i=1;$i<=$diff;$i++){
 		$date_temp = $date_deb->add(new DateInterval('P1D'));
 		//Chargement du formulaire se saisie des temps		
-		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps'.$date_deb->format('dm'), '',5);
+		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps[0]['.$date_deb->format('dm').']', '',5);
 	}
 	
 	?>
-	<script type="text/javascript">
-		$(document).ready(function(){
-			$('input[name^=temps]').each(function(element){
-				$(this).attr('id',$(this).attr('id')+'_'+$(this).parent().parent().attr('id'));
-				$(this).attr('name',$(this).attr('id'));
-			})
+	<!--<script type="text/javascript">
+		$(document).ready(function() {
+			$("input[id^=temps]").timepicker({
+				timeFormat: "H:i"
+				,setTime: 1411603200
+				,step: 15
+			});
 		});
-	</script>
+	</script>-->
+	 
 	<?php
+	pre($TligneTimesheet);
 	
-	//pre($TligneJours);
 	/*
 	 * Affichage tableau de saisie des temps
 	 */
