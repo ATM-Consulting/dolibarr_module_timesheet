@@ -216,7 +216,13 @@ function _fiche(&$timesheet, $mode='edit') {
 		}
 
 		foreach($TJours as $cle=>$val){
-			$TligneTimesheet[$task->id][$cle]=$form2->timepicker('', 'temps['.$task->id.']['.strtr($cle, array('/'=>'')).']', $TTimeTemp[$task->id][$cle],5);
+			if($mode == 'edittime'){
+				$chaine = $form2->timepicker('', 'temps['.$task->id.']['.strtr($cle, array('/'=>'')).']', $TTimeTemp[$task->id][$cle],5);
+			}
+			else{
+				$chaine = ($TTimeTemp[$task->id][$cle]) ? convertSecondToTime($TTimeTemp[$task->id][$cle],'allhourmin') : '';
+			}
+			$TligneTimesheet[$task->id][$cle]= $chaine ;
 		}
 	}
 	
@@ -254,20 +260,6 @@ function _fiche(&$timesheet, $mode='edit') {
 		//Chargement du formulaire se saisie des temps		
 		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps[0]['.$date_deb->format('dm').']', '',5);
 	}
-	
-	?>
-	<!--<script type="text/javascript">
-		$(document).ready(function() {
-			$("input[id^=temps]").timepicker({
-				timeFormat: "H:i"
-				,setTime: 1411603200
-				,step: 15
-			});
-		});
-	</script>-->
-	 
-	<?php
-	pre($TligneTimesheet);
 	
 	/*
 	 * Affichage tableau de saisie des temps
