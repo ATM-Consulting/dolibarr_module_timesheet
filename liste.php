@@ -22,6 +22,7 @@ function _liste() {
 				LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt ON (pt.fk_projet = p.rowid)
 				LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON (s.rowid = t.fk_societe)
 			WHERE t.entity = ".$conf->entity."
+			GROUP BY p.rowid
 			ORDER BY t.date_cre DESC";
 
 	$THide = array(

@@ -90,9 +90,11 @@ class TTimesheet extends TObjetStd {
 
 							//Un temps a déjà été saisi pour ce projet, cette tache et cet utilisateur
 							if($PDOdb->Get_line()){
-	
+
 								$task->fetchTimeSpent($PDOdb->Get_field('rowid'));
+
 								$task->timespent_duration = $timespent_duration_temp;
+								$task->timespent_fk_user = $Tab['userid_'.$idTask];
 
 								$task->updateTimeSpent($user);
 							}
