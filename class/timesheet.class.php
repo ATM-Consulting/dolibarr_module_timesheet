@@ -32,9 +32,9 @@ class TTimesheet extends TObjetStd {
 		$sql = "SELECT rowid 
 				FROM ".MAIN_DB_PREFIX."projet_task 
 				WHERE fk_projet = ".$this->project->id.'
-					AND dateo > "'.$this->get_date('date_deb','Y-m-d 00:00:00').'" AND dateo < "'.$this->get_date('date_fin','Y-m-d 23:59:59').'"
+					AND dateo >= "'.$this->get_date('date_deb','Y-m-d 00:00:00').'" AND dateo <= "'.$this->get_date('date_fin','Y-m-d 23:59:59').'"
 				ORDER BY dateo ASC';
-	
+
 		//echo $sql;exit;
 		$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 
@@ -68,7 +68,7 @@ class TTimesheet extends TObjetStd {
 	
 	function savetimevalues(&$PDOdb,$Tab){
 		global $db,$user;
-		
+
 		//Parcours des tâches existantes pour MAJ temps
 		foreach($Tab as $cle => $value){
 
@@ -85,18 +85,40 @@ class TTimesheet extends TObjetStd {
 
 					}
 					else{
-
-						$this->_addTask($PDOdb,$Tab,$TTemps,$idTask);
+						$product = new Product($db);
+						$product->fetch($Tab['serviceid_0']);
+						//La tâche n'existe peux être pas encore mais une tache associé au service pour ce projet existe déjà peux être
+						$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task WHERE fk_projet = ".$this->project->id." AND label = '".$product->label."'";
+						$PDOdb->Execute($sql);
+						
+						if($PDOdb->Get_line()){
+							//Une tache associé à ce service existe dans le projet, on ajoute alors le temps de l'utilisateur concerné
+							$rowid = $PDOdb->Get_field('rowid');
+							$TTemps[$rowid] = $TTemps[0];
+							$Tab['serviceid_'.$rowid] = $Tab['serviceid_0'];
+							$Tab['userid_'.$rowid] = $Tab['userid_0'];
+							
+							//On vide le contenu du tableau correspondant à l'ajout de ligne sinon ça va bugger
+							unset($TTemps[0]);
+							unset($Tab['serviceid_0']);
+							unset($Tab['userid_0']);
+							
+							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask);
+						}
+						else{
+							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask);
+						}
 					}
 				}
 			}
 		}
-		exit;
-		
+
 	}
 	
 	function _updatetimespent(&$PDOdb,&$Tab,&$TTemps,&$task,$idTask){
 		global $db, $user;
+		
+		if(!in_array($Tab['userid_'.$idTask], $Tab)) $Tab['userid_'.$idTask] = $Tab['userid_0'];
 		
 		foreach($TTemps as $date=>$temps){
 							
@@ -109,7 +131,6 @@ class TTimesheet extends TObjetStd {
 
 				//Un temps a déjà été saisi pour ce projet, cette tache et cet utilisateur
 				if($PDOdb->Get_line()){
-
 					$task->fetchTimeSpent($PDOdb->Get_field('rowid'));
 
 					$task->timespent_duration = $timespent_duration_temp;
@@ -128,6 +149,7 @@ class TTimesheet extends TObjetStd {
 				}
 			}
 		}
+
 	}
 	
 	function _addtask(&$PDOdb,&$Tab,&$TTemps,$idTask){
@@ -157,9 +179,11 @@ class TTimesheet extends TObjetStd {
 			$task->fk_task_parent = 0;
 
 			$idTask = $task->create($user);
-			//echo $idTask;exit;
-
-			_updatetimespent($PDOdb,$Tab,$TTemps,$idTask);
+			
+			$this->TTask[$task->id] = $task;
+			
+			//exit($idTask);
+			$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask);
 		}
 	}
 }

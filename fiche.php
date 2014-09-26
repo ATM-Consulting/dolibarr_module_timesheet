@@ -263,8 +263,7 @@ function _fiche(&$timesheet, $mode='edit') {
 		//Chargement du formulaire se saisie des temps		
 		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps[0]['.$date_deb->format('Y-m-d').']', '',5);
 	}
-	
-	
+
 	/*
 	 * Affichage tableau de saisie des temps
 	 */
