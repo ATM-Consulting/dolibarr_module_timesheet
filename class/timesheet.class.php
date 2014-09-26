@@ -76,16 +76,17 @@ class TTimesheet extends TObjetStd {
 				
 				foreach($value as $idTask => $TTemps){
 					
-					if($idTask = explode('_',$idTask)){
-						$idTask = $idTask[0];
+					if($Tid = explode('_',$idTask)){
+						$idTask = $Tid[0];
+						$idUser = $Tid[1];
 					}
-
+					//echo $idTask;exit;
 					$task = new Task($db);
 					$task->fetch($idTask);
 
 					if($idTask != 0){
 						
-						$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask);
+						$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask,$idUser);
 
 					}
 					else{
@@ -109,9 +110,10 @@ class TTimesheet extends TObjetStd {
 							
 							$task->fetch($rowid);
 							
-							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$rowid);
+							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$rowid,$Tab['userid_'.$rowid]);
 						}
 						else{
+							//pre($Tab);exit;
 							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask);
 						}
 					}
@@ -121,15 +123,15 @@ class TTimesheet extends TObjetStd {
 
 	}
 	
-	function _updatetimespent(&$PDOdb,&$Tab,&$TTemps,&$task,$idTask){
+	function _updatetimespent(&$PDOdb,&$Tab,&$TTemps,&$task,$idTask,$idUser){
 		global $db, $user;
 
-		if(!in_array($Tab['userid_'.$idTask], $Tab)) $Tab['userid_'.$idTask] = $Tab['userid_0'];
+		if(!in_array($Tab['userid_'.$idTask.'_'.$idUser], $Tab)) $Tab['userid_'.$idTask.'_'.$idUser] = $Tab['userid_0'];
 		
 		foreach($TTemps as $date=>$temps){
 							
 			if($temps != ''){
-				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time WHERE fk_task = ".$idTask." AND fk_user = ".$Tab['userid_'.$idTask]." AND task_date = '".$date."' LIMIT 1";
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time WHERE fk_task = ".$idTask." AND fk_user = ".$idUser." AND task_date = '".$date."' LIMIT 1";
 				$PDOdb->Execute($sql);
 
 				$timespent_duration_temp = explode(':',$temps);
@@ -140,7 +142,7 @@ class TTimesheet extends TObjetStd {
 					$task->fetchTimeSpent($PDOdb->Get_field('rowid'));
 
 					$task->timespent_duration = $timespent_duration_temp;
-					$task->timespent_fk_user = $Tab['userid_'.$idTask];
+					$task->timespent_fk_user = $idUser;
 
 					$task->updateTimeSpent($user);
 				}
@@ -149,7 +151,7 @@ class TTimesheet extends TObjetStd {
 					
 					$task->timespent_date = $date;
 					$task->timespent_duration = $timespent_duration_temp;
-					$task->timespent_fk_user = $Tab['userid_'.$idTask];
+					$task->timespent_fk_user = $idUser;
 
 					$task->addTimeSpent($user);
 				}
@@ -163,7 +165,7 @@ class TTimesheet extends TObjetStd {
 
 		$product = new Product($db);
 
-		if($product->fetch($Tab['serviceid_0'])){
+		if($Tab['serviceid_0'] != 0 && $product->fetch($Tab['serviceid_0'])){
 			
 			$task = new Task($db);
 			$task->label = $product->label;

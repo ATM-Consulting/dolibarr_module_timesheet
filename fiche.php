@@ -64,7 +64,7 @@ function _action() {
 			
 			case 'savetime':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				//pre($_REQUEST);exit;
+				//pre($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				?>
 				<script language="javascript">
