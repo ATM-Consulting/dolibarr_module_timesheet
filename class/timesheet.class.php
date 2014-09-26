@@ -32,10 +32,10 @@ class TTimesheet extends TObjetStd {
 		$this->loadProjectTask($PDOdb);
 	}
 	
-	function sate(&$PDOdb){
+	function save(&$PDOdb){
 		global $db,$user,$conf;
-
-		if(is_null($this->fk_project)){
+		
+		if($this->fk_project == 0){
 			
 			$this->societe = new Societe($db);
 			$this->societe->fetch($this->fk_societe);
@@ -57,8 +57,9 @@ class TTimesheet extends TObjetStd {
 	        $projet->socid = $this->fk_societe;
 	        $projet->date_start= $this->date_deb;
 	        $projet->date_end= $this->date_fin;
-			
+
 			$idProjet = $projet->create($user);
+
 			$this->fk_project = $idProjet;
 		}
 		
