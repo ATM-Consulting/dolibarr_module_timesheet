@@ -13,11 +13,13 @@
 		</div>
 		
 		[onshow;block=begin;when [fiche.mode]!='edit']
-		<div class="tabsAction">
-				<input type="button" id="action-delete" value="Supprimer" name="cancel" class="butActionDelete" onclick="if(confirm('Supprimer cette feuille de temps?')) document.location.href='?action=delete&id=[timesheet.id]'">
-				&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier</a>
-				&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='liste.php'" name="retour-liste" value="Retour">
-		</div>
+			[onshow;block=begin;when [fiche.mode]!='new']
+				<div class="tabsAction">
+						<input type="button" id="action-delete" value="Supprimer" name="cancel" class="butActionDelete" onclick="if(confirm('Supprimer cette feuille de temps?')) document.location.href='?action=delete&id=[timesheet.id]'">
+						&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier</a>
+						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='liste.php'" name="retour-liste" value="Retour">
+				</div>
+			[onshow;block=end]
 		[onshow;block=end]
 		[onshow;block=begin;when [fiche.mode]!='view']
 			[onshow;block=begin;when [fiche.mode]!='edittime']

@@ -26,6 +26,39 @@ class TTimesheet extends TObjetStd {
 		$this->loadProjectTask($PDOdb);
 	}
 	
+	function sate(&$PDOdb){
+		global $db,$user,$conf;
+
+		if(is_null($this->fk_project)){
+			
+			$this->societe = new Societe($db);
+			$this->societe->fetch($this->fk_societe);
+			
+			$projet = new Project($db);
+			
+			$defaultref='';
+		    $obj = empty($conf->global->PROJECT_ADDON)?'mod_project_simple':$conf->global->PROJECT_ADDON;
+		    if (! empty($conf->global->PROJECT_ADDON) && is_readable(DOL_DOCUMENT_ROOT ."/core/modules/project/".$conf->global->PROJECT_ADDON.".php"))
+		    {
+		        require_once DOL_DOCUMENT_ROOT ."/core/modules/project/".$conf->global->PROJECT_ADDON.'.php';
+		        $modProject = new $obj;
+		        $defaultref = $modProject->getNextValue($this->societe,$projet);
+		    }
+			
+			$projet->ref = $defaultref;
+	        $projet->title = $this->societe->name." - Feuille de saisie des temps";
+	        $projet->description = "";
+	        $projet->socid = $this->fk_societe;
+	        $projet->date_start= $this->date_deb;
+	        $projet->date_end= $this->date_fin;
+			
+			$idProjet = $projet->create($user);
+			$this->fk_project = $idProjet;
+		}
+		
+		parent::save($PDOdb);
+	}
+	
 	function loadProjectTask(&$PDOdb){
 		global $db;
 		
@@ -161,7 +194,7 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function _addtask(&$PDOdb,&$Tab,&$TTemps,$idTask){
-		global $db,$user;
+		global $db,$user,$conf;
 
 		$product = new Product($db);
 

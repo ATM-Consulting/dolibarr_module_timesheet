@@ -179,56 +179,53 @@ function _fiche(&$timesheet, $mode='edit') {
 		$date_deb->add(new DateInterval('P1D'));
 		$TJours[$date_deb->format('Y-m-d')] = $date_deb->format('D');
 	}
-	
+
 	//Charger les lignes existante dans le timeSheet
 	$TligneTimesheet=array();
 	
-	/*echo '<pre>';
-	print_r($timesheet);exit;
-	echo '</pre>';*/
+	if($mode!='new' && $mode!='edit'){
+		foreach($timesheet->TTask as $task){
 	
-	foreach($timesheet->TTask as $task){
-
-		$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
-		$PDOdb->Get_line();
-		
-		$productstatic = new Product($db);
-		$productstatic->fetch($PDOdb->Get_field('rowid'));
-		$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
-
-		//Comptabilisation des temps + peuplage de $TligneJours
-		if(!empty($task->TTime)){
-			foreach($task->TTime as $idtime => $time){
-				
-				$userstatic = new User($db);
-				$userstatic->id         = $time->fk_user;
-				$userstatic->lastname	= $time->lastname;
-				$userstatic->firstname 	= $time->firstname;
-
-				$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
-				$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
-				$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
-				$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
-
-				$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
-				
-				foreach($TJours as $cle=>$val){
-					if($mode == 'edittime'){
-						$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
+			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
+			$PDOdb->Get_line();
+			
+			$productstatic = new Product($db);
+			$productstatic->fetch($PDOdb->Get_field('rowid'));
+			$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
+	
+			//Comptabilisation des temps + peuplage de $TligneJours
+			if(!empty($task->TTime)){
+				foreach($task->TTime as $idtime => $time){
+					
+					$userstatic = new User($db);
+					$userstatic->id         = $time->fk_user;
+					$userstatic->lastname	= $time->lastname;
+					$userstatic->firstname 	= $time->firstname;
+	
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
+	
+					$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
+	
+					foreach($TJours as $cle=>$val){
+						if($mode == 'edittime'){
+							$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
+						}
+						else{
+							$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
+						}
+						$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
+	
+						$Tcle = explode('-',$cle);
+						$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
 					}
-					else{
-						$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
-					}
-					$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
-		
-					$Tcle = explode('-',$cle);
-					$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
 				}
 			}
 		}
 	}
-	
-	$TJours = array();
+
 	$TJours = $TJourstemp;
 
 	foreach($TligneTimesheet as $cle => $val){
@@ -266,35 +263,38 @@ function _fiche(&$timesheet, $mode='edit') {
 		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps[0]['.$date_deb->format('Y-m-d').']', '',5);
 	}
 	
-	//pre($TligneTimesheet);
-	
-	/*
-	 * Affichage tableau de saisie des temps
-	 */
-	print $TBS->render('tpl/fiche_saisie.tpl.php'
-		,array(
-			'ligneTimesheet'=>$TligneTimesheet,
-			'lignejours'=>$TligneJours,
-			'jours'=>$TJours,
-			'formjour'=>$TFormJours
-		)
-		,array(
-			'timesheet'=>array(
-				'rowid'=>0
-				,'id'=>$timesheet->rowid
-				,'services'=>$doliform->select_produits_list('','serviceid_0','1')
-				,'consultants'=>$doliform->select_dolusers('','userid_0')
+	/*echo '<pre>';
+	print_r($TligneTimesheet);exit;
+	echo '</pre>';*/
+	if($mode!='new' && $mode != "edit"){
+		/*
+		 * Affichage tableau de saisie des temps
+		 */
+		print $TBS->render('tpl/fiche_saisie.tpl.php'
+			,array(
+				'ligneTimesheet'=>$TligneTimesheet,
+				'lignejours'=>$TligneJours,
+				'jours'=>$TJours,
+				'formjour'=>$TFormJours
 			)
-			,'view'=>array(
-				'mode'=>$mode
-				,'nbChamps'=>count($asset->TField)
-				,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
-				,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
-			)
+			,array(
+				'timesheet'=>array(
+					'rowid'=>0
+					,'id'=>$timesheet->rowid
+					,'services'=>$doliform->select_produits_list('','serviceid_0','1')
+					,'consultants'=>$doliform->select_dolusers('','userid_0')
+				)
+				,'view'=>array(
+					'mode'=>$mode
+					,'nbChamps'=>count($asset->TField)
+					,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
+					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
+				)
+				
+			)	
 			
-		)	
-		
-	);
+		);
+	}
 	 
 	echo $form2->end_form();
 
