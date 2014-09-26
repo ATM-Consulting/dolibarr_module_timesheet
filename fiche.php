@@ -183,7 +183,9 @@ function _fiche(&$timesheet, $mode='edit') {
 	//Charger les lignes existante dans le timeSheet
 	$TligneTimesheet=array();
 	
-	//pre($timesheet);
+	/*echo '<pre>';
+	print_r($timesheet);exit;
+	echo '</pre>';*/
 	
 	foreach($timesheet->TTask as $task){
 
@@ -203,26 +205,26 @@ function _fiche(&$timesheet, $mode='edit') {
 				$userstatic->lastname	= $time->lastname;
 				$userstatic->firstname 	= $time->firstname;
 
-				$TligneTimesheet[$task->id]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'','1') : $productstatic->getNomUrl(1,'',48);
-				$TligneTimesheet[$task->id]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id) : $userstatic->getNomUrl(1);
-				$TligneTimesheet[$task->id]['total_jours'] += $time->task_duration;
-				$TligneTimesheet[$task->id]['total_heures'] += $time->task_duration;
+				$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
+				$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
+				$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
+				$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
 
-				$TTimeTemp[$task->id][$time->task_date] = $time->task_duration;
+				$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
+				
+				foreach($TJours as $cle=>$val){
+					if($mode == 'edittime'){
+						$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
+					}
+					else{
+						$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
+					}
+					$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
+		
+					$Tcle = explode('-',$cle);
+					$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
+				}
 			}
-		}
-
-		foreach($TJours as $cle=>$val){
-			if($mode == 'edittime'){
-				$chaine = $form2->timepicker('', 'temps['.$task->id.']['.$cle.']', $TTimeTemp[$task->id][$cle],5);
-			}
-			else{
-				$chaine = ($TTimeTemp[$task->id][$cle]) ? convertSecondToTime($TTimeTemp[$task->id][$cle],'allhourmin') : '';
-			}
-			$TligneTimesheet[$task->id][$cle]= $chaine ;
-
-			$Tcle = explode('-',$cle);
-			$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
 		}
 	}
 	
@@ -263,7 +265,9 @@ function _fiche(&$timesheet, $mode='edit') {
 		//Chargement du formulaire se saisie des temps		
 		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps[0]['.$date_deb->format('Y-m-d').']', '',5);
 	}
-
+	
+	//pre($TligneTimesheet);
+	
 	/*
 	 * Affichage tableau de saisie des temps
 	 */

@@ -75,6 +75,10 @@ class TTimesheet extends TObjetStd {
 			if(is_array($value)){
 				
 				foreach($value as $idTask => $TTemps){
+					
+					if($idTask = explode('_',$idTask)){
+						$idTask = $idTask[0];
+					}
 
 					$task = new Task($db);
 					$task->fetch($idTask);
@@ -103,7 +107,9 @@ class TTimesheet extends TObjetStd {
 							unset($Tab['serviceid_0']);
 							unset($Tab['userid_0']);
 							
-							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask);
+							$task->fetch($rowid);
+							
+							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$rowid);
 						}
 						else{
 							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask);
@@ -117,7 +123,7 @@ class TTimesheet extends TObjetStd {
 	
 	function _updatetimespent(&$PDOdb,&$Tab,&$TTemps,&$task,$idTask){
 		global $db, $user;
-		
+
 		if(!in_array($Tab['userid_'.$idTask], $Tab)) $Tab['userid_'.$idTask] = $Tab['userid_0'];
 		
 		foreach($TTemps as $date=>$temps){
@@ -140,7 +146,7 @@ class TTimesheet extends TObjetStd {
 				}
 				//Un temps pour ce projet, cette tache et cet utilisateur n'existe pas encore, il faut l'ajouter
 				else{
-
+					
 					$task->timespent_date = $date;
 					$task->timespent_duration = $timespent_duration_temp;
 					$task->timespent_fk_user = $Tab['userid_'.$idTask];
