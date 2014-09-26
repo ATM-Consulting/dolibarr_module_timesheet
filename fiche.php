@@ -72,6 +72,18 @@ function _action() {
 				</script>
 				<?
 				break;
+				
+			case 'facturer':
+				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
+				$timesheet->status = 2;
+				$timesheet->save($PDOdb);
+				$timesheet->createFacture($PDOdb);
+				?>
+				<script language="javascript">
+					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/fiche.php?id=<?php echo $timesheet->rowid; ?>";					
+				</script>
+				<?
+				break;
 
 			case 'delete':
 				$timesheet->load($PDOdb, $_REQUEST['id']);
@@ -150,11 +162,13 @@ function _fiche(&$timesheet, $mode='edit') {
 				'id'=>$timesheet->rowid
 				,'project'=>_fiche_visu_project($timesheet,$mode)
 				,'societe'=>_fiche_visu_societe($timesheet,$mode)
+				,'status'=>$form->combo('', 'status', $timesheet->TStatus, $timesheet->status)
 				,'date_deb'=>$form->calendrier('', 'date_deb', $timesheet->date_deb)
 				,'date_fin'=>$form->calendrier('', 'date_fin', $timesheet->date_fin)
 			)
 			,'fiche'=>array(
 				'mode'=>$mode
+				,'statusval'=>$timesheet->status
 			)
 		)
 	);
@@ -201,14 +215,14 @@ function _fiche(&$timesheet, $mode='edit') {
 					$userstatic->id         = $time->fk_user;
 					$userstatic->lastname	= $time->lastname;
 					$userstatic->firstname 	= $time->firstname;
-	
+
 					$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
 					$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
 					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
 					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
-	
+
 					$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
-	
+
 					foreach($TJours as $cle=>$val){
 						if($mode == 'edittime'){
 							$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
@@ -217,7 +231,7 @@ function _fiche(&$timesheet, $mode='edit') {
 							$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
 						}
 						$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
-	
+
 						$Tcle = explode('-',$cle);
 						$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
 					}

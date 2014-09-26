@@ -5,9 +5,15 @@ class TTimesheet extends TObjetStd {
 		global $langs,$db;
 
 		parent::set_table(MAIN_DB_PREFIX.'timesheet');
-		parent::add_champs('entity,fk_project,fk_societe','type=entier;');
+		parent::add_champs('entity,fk_project,fk_societe,status','type=entier;');
 		parent::add_champs('date_deb,date_fin','type=date;');
-
+		
+		$this->TStatus = array(
+			'0'=>'Brouillon',
+			'1'=>'Validé',
+			'2'=>'Facturé'
+		);
+		
 		parent::_init_vars();
 		parent::start();
 	}
@@ -226,5 +232,20 @@ class TTimesheet extends TObjetStd {
 			//exit($idTask);
 			$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask);
 		}
+	}
+
+	function createFacture(&$PDOdb){
+		global $db,$conf,$user;
+		
+		//Voir si une facture au status brouillon associé au tier et au projet existe
+		
+		//Si oui la charger
+		
+		//Sinon la créer
+		
+		//Ajouter la ligne à la facture
+		
+		//Ajouter la liaison element_element entre la facture et la feuille de temps
+		
 	}
 }
