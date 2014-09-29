@@ -19,6 +19,9 @@ class TTimesheet extends TObjetStd {
 		//Tableau de tâches
 		$this->TTask = array();
 		
+		//Tableau de temps en seconde permettant de calculer la quantité à facturer
+		$this->TQty = array();
+		
 		parent::_init_vars();
 		parent::start();
 	}
@@ -366,7 +369,7 @@ class TTimesheet extends TObjetStd {
 			foreach ($facture->lines as $factureLine) {
 				if($factureLine->label == $this->libelleFactureLigne){
 					
-					$description = $this->_makeFactureDescription($PDOdb);
+					list($pu_ht,$description) = $this->_makeFactureLigne($PDOdb);
 
 					$facture->updateline($factureLine->rowid, $description, $factureLine->subprice, $factureLine->qty, 
 											$factureLine->remise_percent, $this->date_deb, $this->date_fin, $factureLine->tva_tx);
@@ -375,22 +378,20 @@ class TTimesheet extends TObjetStd {
 		}
 		else{
 			//Ajout de la ligne de facture
-			$description = $this->_makeFactureDescription($PDOdb);
-			
-			//Calculer la quantité
-			$qty = $this->_getQuantité();
+			list($pu_ht,$description) = $this->_makeFactureLigne($PDOdb);
 
-			$facture->addline($description, $pu_ht, $qty, $txtva);
+			$facture->addline($description, $pu_ht, 1, 0);
 		}
 		
 		
 	}
 	
-	function _makeFactureDescription(&$PDOdb){
+	function _makeFactureLigne(&$PDOdb){
 		global $db, $conf, $user;
 
 		$description = "";
-
+		$pu_ht = 0;
+		
 		$lastIdTask = null;
 
 		foreach($this->TTask as $idTask=>$Task){
@@ -409,12 +410,43 @@ class TTimesheet extends TObjetStd {
 				
 				$userTemp = new User($db);
 				$userTemp->fetch($fk_user);
-
+				
+				$pu_ht += $this->_getQty($product);
 				$description .= $product->label." : ".$userTemp->lastname." ".$userTemp->firstname." - ".convertSecondToTime($timevalue,'all')."<br>";
 			}
 		}
 		
-		return $description;
+		return array($pu_ht,$description);
+	}
+	
+	function _getQty(&$product){
+		global $db, $user, $conf;
+
+		$qty = 0;
+
+		switch ($product->duration_unit) {
+			case 'h':
+				$qty += ($product->duration / 3600);
+				break;
+			case 'd':
+				$qty += ($product->duration / 86400);
+				break;
+			case 'w':
+				$qty += ($product->duration / 604800);
+				break;
+			case 'm':
+				$qty += ($product->duration / 18144000);
+				break;
+			case 'd':
+				$qty += ($product->duration / 217728000);
+				break;
+			default:
+				
+				break;
+		}
+		
+		return round($qty,1);
+		
 	}
 
 }
