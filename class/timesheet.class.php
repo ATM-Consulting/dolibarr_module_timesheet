@@ -319,18 +319,18 @@ class TTimesheet extends TObjetStd {
 				FROM ".MAIN_DB_PREFIX."facture
 				WHERE fk_projet = ".$this->project->id." 
 					AND fk_soc = ".$this->societe->id." 
-					AND fk_status = 0";
-
+					AND fk_statut = 0";
+		
 		$PDOdb->Execute($sql);
 		if($PDOdb->Get_line()){
-				
 			$facture->fetch($PDOdb->Get_field('rowid'));	
 			
 			//Si oui vérifier si une ligne associé au timesheet n'existe pas déjà (présence d'un TUple dans llx_element_element)
 			$sql = "SELECT rowid 
 					FROM ".MAIN_DB_PREFIX."element_element
-					WHERE ee.sourcetype = 'timesheet' 
-						AND ee.fk_target = 'facture' 
+					WHERE sourcetype = 'timesheet' 
+						AND targettype = 'facture'
+						AND fk_target = ".$facture->id."
 						AND fk_source = ".$this->rowid;
 
 			$PDOdb->Execute($sql);
@@ -349,38 +349,45 @@ class TTimesheet extends TObjetStd {
 			$facture->type = 0;
 			$facture->socid = $this->societe->id;
 			$facture->fk_project = $this->project->id;
-			
-			$facture->create($user);
-			
+			$facture->date = $db->idate(dol_now());
+
+			$res = $facture->create($user);
+
 			//Ajouter la ligne à la facture
 			$this->_addFactureLine($PDOdb,$facture);
 			
 			//Ajouter la liaison element_element entre la facture et la feuille de temps
-			$PDOdb->Execute('INSERT INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->rowid.',"facture")');
+			$PDOdb->Execute('INSERT INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->id.',"facture")');
 		}
 		
 	}
 	
 	function _addFactureLine(&$PDOdb,&$facture,$update=false){
 		global $db,$user,$conf;
-		
+
+		$label = $this->libelleFactureLigne."<br>";
+
 		if($update){
 			//MAJ de la ligne de facture
+			pre($facture->line);exit;
 			foreach ($facture->lines as $factureLine) {
+				echo $factureLine->label." == ".$this->libelleFactureLigne;
 				if($factureLine->label == $this->libelleFactureLigne){
 					
 					list($pu_ht,$description) = $this->_makeFactureLigne($PDOdb);
 
 					$facture->updateline($factureLine->rowid, $description, $factureLine->subprice, $factureLine->qty, 
-											$factureLine->remise_percent, $this->date_deb, $this->date_fin, $factureLine->tva_tx);
+											$factureLine->remise_percent, $this->date_deb, $this->date_fin, $factureLine->tva_tx,
+											0, 0, 'HT', 0, 1, 0, 0, null, 0, $label);
 				}
 			}
+			exit;
 		}
 		else{
 			//Ajout de la ligne de facture
 			list($pu_ht,$description) = $this->_makeFactureLigne($PDOdb);
 
-			$facture->addline($description, $pu_ht, 1, 0);
+			$facture->addline($description, $pu_ht, 1, 0,0,0,0,0,$date_deb,$date_fin,0,0,'','HT',0,1,0,0,'',0,0,null,0,$label);
 		}
 		
 		

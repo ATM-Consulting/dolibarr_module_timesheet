@@ -76,7 +76,7 @@ function _action() {
 				
 			case 'facturer':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				$timesheet->status = 2;
+				//$timesheet->status = 2;
 				$timesheet->save($PDOdb);
 				$timesheet->createFacture($PDOdb);
 				?>
@@ -92,7 +92,7 @@ function _action() {
 				
 				?>
 				<script language="javascript">
-					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/liste.php?delete_ok=1";					
+					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/liste.php?delete_ok=1";
 				</script>
 				<?
 				
