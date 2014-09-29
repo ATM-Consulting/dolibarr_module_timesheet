@@ -5,6 +5,7 @@ dol_include_once('/timesheet/class/timesheet.class.php');
 dol_include_once('/projet/class/project.class.php');
 dol_include_once('/projet/class/task.class.php');
 dol_include_once('/product/class/product.class.php');
+dol_include_once('/compta/facture/class/facture.class.php');
 dol_include_once('/societe/class/societe.class.php');
 dol_include_once('/timesheet/lib/timesheet.lib.php');
 dol_include_once('/core/class/html.formprojet.class.php');
@@ -172,7 +173,7 @@ function _fiche(&$timesheet, $mode='edit') {
 			)
 		)
 	);
-	
+
 	echo $form->end_form();
 	
 	//Construction du nombre de colonne correspondant aux jours
@@ -180,67 +181,16 @@ function _fiche(&$timesheet, $mode='edit') {
 	$TFormJours = array(); //Formulaire de saisis nouvelle ligne de temps
 	$TligneJours = array(); //Tableau des lignes de temps déjà existante
 	
-	$date_deb = new DateTime($timesheet->get_date('date_deb','Y-m-d'));
-	$date_fin = new DateTime($timesheet->get_date('date_fin','Y-m-d'));
-	$diff = $date_deb->diff($date_fin);
-	$diff = $diff->format('%d') +1;
-
-	$date_deb->sub(new DateInterval('P1D'));
-
-	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
+	$TJours = $timesheet->_loadTJours(); 
 	
-	for($i=1;$i<=$diff;$i++){
-		$date_deb->add(new DateInterval('P1D'));
-		$TJours[$date_deb->format('Y-m-d')] = $date_deb->format('D');
-	}
+	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 
 	//Charger les lignes existante dans le timeSheet
 	$TligneTimesheet=array();
 	
 	if($mode!='new' && $mode!='edit'){
-		foreach($timesheet->TTask as $task){
-	
-			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
-			$PDOdb->Get_line();
-			
-			$productstatic = new Product($db);
-			$productstatic->fetch($PDOdb->Get_field('rowid'));
-			$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
-	
-			//Comptabilisation des temps + peuplage de $TligneJours
-			if(!empty($task->TTime)){
-				foreach($task->TTime as $idtime => $time){
-					
-					$userstatic = new User($db);
-					$userstatic->id         = $time->fk_user;
-					$userstatic->lastname	= $time->lastname;
-					$userstatic->firstname 	= $time->firstname;
-
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
-
-					$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
-
-					foreach($TJours as $cle=>$val){
-						if($mode == 'edittime'){
-							$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
-						}
-						else{
-							$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
-						}
-						$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
-
-						$Tcle = explode('-',$cle);
-						$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
-					}
-				}
-			}
-		}
+		list($TJours,$TligneTimesheet) = $timesheet->_loadLines($PDOdb, $TligneTimesheet,$TJours,$doliform,$form2,$mode);
 	}
-
-	$TJours = $TJourstemp;
 
 	foreach($TligneTimesheet as $cle => $val){
 		$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',28800)/24);

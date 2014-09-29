@@ -14,6 +14,11 @@ class TTimesheet extends TObjetStd {
 			'2'=>'Facturé'
 		);
 		
+		$this->libelleFactureLigne = "Temps de réalisation";
+		
+		//Tableau de tâches
+		$this->TTask = array();
+		
 		parent::_init_vars();
 		parent::start();
 	}
@@ -199,6 +204,72 @@ class TTimesheet extends TObjetStd {
 		}
 
 	}
+
+	function _loadLines(&$PDOdb, &$TligneTimesheet,&$TJours,$doliform,$form2,$mode='view'){
+		global $db, $user, $conf;
+		
+		foreach($this->TTask as $task){
+	
+			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
+			$PDOdb->Get_line();
+			
+			$productstatic = new Product($db);
+			$productstatic->fetch($PDOdb->Get_field('rowid'));
+			$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
+	
+			//Comptabilisation des temps + peuplage de $TligneJours
+			if(!empty($task->TTime)){
+				foreach($task->TTime as $idtime => $time){
+					
+					$userstatic = new User($db);
+					$userstatic->id         = $time->fk_user;
+					$userstatic->lastname	= $time->lastname;
+					$userstatic->firstname 	= $time->firstname;
+
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
+					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
+
+					$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
+
+					foreach($TJours as $cle=>$val){
+						if($mode == 'edittime'){
+							$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
+						}
+						else{
+							$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
+						}
+						$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
+
+						$Tcle = explode('-',$cle);
+						$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
+					}
+				}
+			}
+		}
+		
+		return array($TJourstemp,$TligneTimesheet);
+	}
+
+	function _loadTJours(){
+		
+		$TJours = array();
+
+		$date_deb = new DateTime($this->get_date('date_deb','Y-m-d'));
+		$date_fin = new DateTime($this->get_date('date_fin','Y-m-d'));
+		$diff = $date_deb->diff($date_fin);
+		$diff = $diff->format('%d') +1;
+
+		$date_deb->sub(new DateInterval('P1D'));
+
+		for($i=1;$i<=$diff;$i++){
+			$date_deb->add(new DateInterval('P1D'));
+			$TJours[$date_deb->format('Y-m-d')] = $date_deb->format('D');
+		}
+		
+		return $TJours;
+	}
 	
 	function _addtask(&$PDOdb,&$Tab,&$TTemps,$idTask){
 		global $db,$user,$conf;
@@ -237,16 +308,113 @@ class TTimesheet extends TObjetStd {
 
 	function createFacture(&$PDOdb){
 		global $db,$conf,$user;
+
+		$facture = new Facture($db);
 		
 		//Voir si une facture au status brouillon associé au tier et au projet existe
-		
-		//Si oui la charger
-		
-		//Sinon la créer
-		
-		//Ajouter la ligne à la facture
-		
-		//Ajouter la liaison element_element entre la facture et la feuille de temps
+		$sql = "SELECT rowid 
+				FROM ".MAIN_DB_PREFIX."facture
+				WHERE fk_projet = ".$this->project->id." 
+					AND fk_soc = ".$this->societe->id." 
+					AND fk_status = 0";
+
+		$PDOdb->Execute($sql);
+		if($PDOdb->Get_line()){
+				
+			$facture->fetch($PDOdb->Get_field('rowid'));	
+			
+			//Si oui vérifier si une ligne associé au timesheet n'existe pas déjà (présence d'un TUple dans llx_element_element)
+			$sql = "SELECT rowid 
+					FROM ".MAIN_DB_PREFIX."element_element
+					WHERE ee.sourcetype = 'timesheet' 
+						AND ee.fk_target = 'facture' 
+						AND fk_source = ".$this->rowid;
+
+			$PDOdb->Execute($sql);
+			if($PDOdb->Get_line()){
+				//Si ligne déjà présente dans facture alors update line
+				$this->_addFactureLine($PDOdb,$facture,true);
+			}
+			else{
+				//Ajouter la ligne à la facture
+				$this->_addFactureLine($PDOdb,$facture);
+			}
+			
+		}
+		else{
+			//Sinon la créer
+			$facture->type = 0;
+			$facture->socid = $this->societe->id;
+			$facture->fk_project = $this->project->id;
+			
+			$facture->create($user);
+			
+			//Ajouter la ligne à la facture
+			$this->_addFactureLine($PDOdb,$facture);
+			
+			//Ajouter la liaison element_element entre la facture et la feuille de temps
+			$PDOdb->Execute('INSERT INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->rowid.',"facture")');
+		}
 		
 	}
+	
+	function _addFactureLine(&$PDOdb,&$facture,$update=false){
+		global $db,$user,$conf;
+		
+		if($update){
+			//MAJ de la ligne de facture
+			foreach ($facture->lines as $factureLine) {
+				if($factureLine->label == $this->libelleFactureLigne){
+					
+					$description = $this->_makeFactureDescription($PDOdb);
+
+					$facture->updateline($factureLine->rowid, $description, $factureLine->subprice, $factureLine->qty, 
+											$factureLine->remise_percent, $this->date_deb, $this->date_fin, $factureLine->tva_tx);
+				}
+			}
+		}
+		else{
+			//Ajout de la ligne de facture
+			$description = $this->_makeFactureDescription($PDOdb);
+			
+			//Calculer la quantité
+			$qty = $this->_getQuantité();
+
+			$facture->addline($description, $pu_ht, $qty, $txtva);
+		}
+		
+		
+	}
+	
+	function _makeFactureDescription(&$PDOdb){
+		global $db, $conf, $user;
+
+		$description = "";
+
+		$lastIdTask = null;
+
+		foreach($this->TTask as $idTask=>$Task){
+			
+			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label ="'.$Task->label.'"');
+			$PDOdb->Get_line();
+
+			$product = new Product($db);
+			$product->fetch($PDOdb->Get_field('rowid'));
+
+			foreach($Task->TTime as $Time){
+				$TTimeUser[$Time->fk_user] += $Time->task_duration;
+			}
+			
+			foreach($TTimeUser as $fk_user => $timevalue){
+				
+				$userTemp = new User($db);
+				$userTemp->fetch($fk_user);
+
+				$description .= $product->label." : ".$userTemp->lastname." ".$userTemp->firstname." - ".convertSecondToTime($timevalue,'all')."<br>";
+			}
+		}
+		
+		return $description;
+	}
+
 }
