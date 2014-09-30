@@ -1,23 +1,9 @@
 <?php
 
 require('config.php');
-dol_include_once('/timesheet/class/timesheet.class.php');
-dol_include_once('/projet/class/project.class.php');
-dol_include_once('/projet/class/task.class.php');
-dol_include_once('/product/class/product.class.php');
-dol_include_once('/compta/facture/class/facture.class.php');
-dol_include_once('/societe/class/societe.class.php');
-dol_include_once('/timesheet/lib/timesheet.lib.php');
-dol_include_once('/core/class/html.formprojet.class.php');
-dol_include_once('/core/lib/date.lib.php');
 
 if(!$user->rights->timesheet->user->read) accessforbidden();
 
-// Load traductions files requiredby by page
-$langs->Load("timesheet@timesheet");
-
-//pre($_REQUEST);exit;
-// Get parameters
 _action();
 
 // Protection if external user
@@ -27,7 +13,7 @@ if ($user->societe_id > 0)
 }
 
 function _action() {
-	global $user;
+	global $user,$langs,$conf;
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
@@ -37,7 +23,9 @@ function _action() {
 	*
 	* Put here all code to do according to value of "action" parameter
 	********************************************************************/
+	llxHeader('',$langs->trans('Timesheet'),'','');
 
+	
 	if(isset($_REQUEST['action'])) {
 		switch($_REQUEST['action']) {
 			case 'new':
@@ -56,22 +44,14 @@ function _action() {
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				$timesheet->set_values($_REQUEST);
 				$timesheet->save($PDOdb);
-				?>
-				<script language="javascript">
-					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/fiche.php?id=<?php echo $timesheet->rowid; ?>";					
-				</script>
-				<?
+				_fiche($timesheet);
 				break;
 			
 			case 'savetime':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				//pre($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				?>
-				<script language="javascript">
-					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/fiche.php?id=<?php echo $timesheet->rowid; ?>";					
-				</script>
-				<?
+				_fiche($timesheet);
 				break;
 				
 			case 'facturer':
@@ -79,22 +59,14 @@ function _action() {
 				//$timesheet->status = 2;
 				$timesheet->save($PDOdb);
 				$timesheet->createFacture($PDOdb);
-				?>
-				<script language="javascript">
-					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/fiche.php?id=<?php echo $timesheet->rowid; ?>";					
-				</script>
-				<?
+				_fiche($timesheet);
 				break;
 
 			case 'delete':
 				$timesheet->load($PDOdb, $_REQUEST['id']);
 				$timesheet->delete($PDOdb);
 				
-				?>
-				<script language="javascript">
-					document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/liste.php?delete_ok=1";
-				</script>
-				<?
+				_liste();
 				
 				break;
 		}
@@ -105,25 +77,89 @@ function _action() {
 		_fiche($timesheet, 'view');
 	}
 	else{
-		?>
-		<script language="javascript">
-			document.location.href="<?php echo dirname($_SERVER['PHP_SELF']); ?>/liste.php";					
-		</script>
-		<?
+		_liste();
 	}
 
 
-	
+	llxFooter();
 	
 }
 
+function _liste() {
+	global $langs,$db,$user,$conf;
+
+	$langs->Load('timesheet@timesheet');
+
+	$TPDOdb=new TPDOdb;
+	$TTimesheet = new TTimesheet;
+
+	$sql = "SELECT t.rowid, p.ref, s.nom, t.fk_project, t.fk_societe, t.date_deb, t.date_fin
+			FROM ".MAIN_DB_PREFIX."timesheet as t
+				LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON (p.rowid = t.fk_project)
+				LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt ON (pt.fk_projet = p.rowid)
+				LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON (s.rowid = t.fk_societe)
+			WHERE t.entity = ".$conf->entity."
+			GROUP BY p.rowid
+			ORDER BY t.date_cre DESC";
+
+	$THide = array(
+			'ref',
+			'nom'
+		);
+
+	$r = new TSSRenderControler($TTimesheet);
+	
+	$r->liste($TPDOdb, $sql, array(
+		'limit'=>array(
+			'nbLine'=>'30'
+		)
+		,'subQuery'=>array()
+		,'link'=>array(
+			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@',2).'">'.img_picto('','object_company.png','',0).' @nom@</a>'
+			,'fk_project'=>'<a href="'.dol_buildpath('/projet/fiche.php?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
+			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/timesheet.php?id=@rowid@',2).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
+		)
+		,'translate'=>array()
+		,'hide'=>$THide
+		,'type'=>array(
+			'date_deb'=>'date'
+			,'date_fin'=>'date'
+		)
+		,'liste'=>array(
+			'titre'=>$langs->trans('ListTimesheet')
+			,'image'=>img_picto('','title.png', '', 0)
+			,'picto_precedent'=>img_picto('','previous.png', '', 0)
+			,'picto_suivant'=>img_picto('','next.png', '', 0)
+			,'noheader'=> 0
+			,'messageNothing'=>$langs->trans('AnyTimesheet')
+			,'picto_search'=>img_picto('','search.png', '', 0)
+		)
+		,'title'=>array(
+			'date_deb'=>'Date début période'
+			,'date_fin'=>'Date fin période'
+			,'fk_project'=>'Projet'
+			,'fk_societe'=>'Société'
+			,'rowid'=>'Identifiant'
+		)
+	));
+
+	if($user->rights->timesheet->user->add){
+		echo '<div class="tabsAction">';
+		echo '<a class="butAction" href="fiche.php?action=new">'.$langs->trans('CreateTimesheet').'</a>';
+		echo '</div>';
+	}
+	
+	$TPDOdb->close();
+
+	
+
+}
 function _fiche(&$timesheet, $mode='edit') {
 	
 	global $langs,$db,$conf,$user;
 	
 	$PDOdb = new TPDOdb;
 	
-	llxHeader('',$langs->trans('FicheTimesheet'),'','');
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
 
 	$form=new TFormCore($_SERVER['PHP_SELF'],'form','POST');
@@ -261,8 +297,6 @@ function _fiche(&$timesheet, $mode='edit') {
 	}
 	 
 	echo $form2->end_form();
-
-	llxFooter('$Date: 2011/07/31 22:21:57 $ - $Revision: 1.19 $');
 }
 
 function _fiche_visu_project(&$timesheet, $mode){

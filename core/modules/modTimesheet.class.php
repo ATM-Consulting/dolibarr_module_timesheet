@@ -298,10 +298,9 @@ class modTimesheet extends DolibarrModules
         	'titre'=>'Time Sheet',
         	'mainmenu'=>'timesheet',
         	'leftmenu'=>'timesheet',
-        	'url'=>'/timesheet/liste.php',
+        	'url'=>'/timesheet/timesheet.php',
         //	// Lang file to use (without .lang) by module.
         //	// File must be in langs/code_CODE/ directory.
-        	'langs'=>'timesheet',
         	'position'=>100,
         //	// Define condition to show or hide menu entry.
         //	// Use '$conf->mymodule->enabled' if entry must be visible if module is enabled.
