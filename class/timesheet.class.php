@@ -355,10 +355,10 @@ class TTimesheet extends TObjetStd {
 
 			//Ajouter la ligne à la facture
 			$this->_addFactureLine($PDOdb,$facture);
-			
-			//Ajouter la liaison element_element entre la facture et la feuille de temps
-			$PDOdb->Execute('INSERT INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->id.',"facture")');
 		}
+		
+		//Ajouter la liaison element_element entre la facture et la feuille de temps
+		$PDOdb->Execute('REPLACE INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->id.',"facture")');
 		
 	}
 	
@@ -369,19 +369,18 @@ class TTimesheet extends TObjetStd {
 
 		if($update){
 			//MAJ de la ligne de facture
-			pre($facture->line);exit;
+
 			foreach ($facture->lines as $factureLine) {
-				echo $factureLine->label." == ".$this->libelleFactureLigne;
 				if($factureLine->label == $this->libelleFactureLigne){
 					
 					list($pu_ht,$description) = $this->_makeFactureLigne($PDOdb);
 
-					$facture->updateline($factureLine->rowid, $description, $factureLine->subprice, $factureLine->qty, 
+					$facture->updateline($factureLine->rowid, $description, $pu_ht, $factureLine->qty, 
 											$factureLine->remise_percent, $this->date_deb, $this->date_fin, $factureLine->tva_tx,
 											0, 0, 'HT', 0, 1, 0, 0, null, 0, $label);
 				}
 			}
-			exit;
+
 		}
 		else{
 			//Ajout de la ligne de facture
@@ -418,7 +417,7 @@ class TTimesheet extends TObjetStd {
 				$userTemp = new User($db);
 				$userTemp->fetch($fk_user);
 				
-				$pu_ht += $this->_getQty($product);
+				$pu_ht += $this->_getQty($product,$timevalue) * $product->multiprices[$this->societe->price_level];
 				$description .= $product->label." : ".$userTemp->lastname." ".$userTemp->firstname." - ".convertSecondToTime($timevalue,'all')."<br>";
 			}
 		}
@@ -426,34 +425,34 @@ class TTimesheet extends TObjetStd {
 		return array($pu_ht,$description);
 	}
 	
-	function _getQty(&$product){
+	function _getQty(&$product,$timevalue){
 		global $db, $user, $conf;
 
 		$qty = 0;
 
 		switch ($product->duration_unit) {
 			case 'h':
-				$qty += ($product->duration / 3600);
+				$qty += ($timevalue / 3600);
 				break;
 			case 'd':
-				$qty += ($product->duration / 86400);
+				$qty += ($timevalue / 86400);
 				break;
 			case 'w':
-				$qty += ($product->duration / 604800);
+				$qty += ($timevalue / 604800);
 				break;
 			case 'm':
-				$qty += ($product->duration / 18144000);
+				$qty += ($timevalue / 18144000);
 				break;
 			case 'd':
-				$qty += ($product->duration / 217728000);
+				$qty += ($timevalue / 217728000);
 				break;
 			default:
 				
 				break;
 		}
-		
+
 		return round($qty,1);
-		
+
 	}
 
 }

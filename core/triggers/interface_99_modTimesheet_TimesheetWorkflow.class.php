@@ -45,7 +45,7 @@ class InterfaceTimesheetWorkflow
      */
     public function __construct($db)
     {
-        $this->db = $db;
+        $this->db = &$db;
 
         $this->name = preg_replace('/^Interface/i', '', get_class($this));
         $this->family = "demo";
@@ -118,7 +118,7 @@ class InterfaceTimesheetWorkflow
         // Users
         if ($action == 'LINEBILL_DELETE') {
         	
-			$db->query('DELETE FROM '.MAIN_DB_PREFIX.'element_element WHERE fk_target = '.$object->id.' AND targettype = "facture" AND sourcetype = "timesheet"');
+			$this->db->query('DELETE FROM '.MAIN_DB_PREFIX.'element_element WHERE fk_target = '.$object->id.' AND targettype = "facture" AND sourcetype = "timesheet"');
 			
             dol_syslog(
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
