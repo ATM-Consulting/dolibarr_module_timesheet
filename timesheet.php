@@ -225,10 +225,9 @@ function _fiche(&$timesheet, $mode='view') {
 	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 
 	//Charger les lignes existante dans le timeSheet
-	$TligneTimesheet=array();
 	
 	if($mode!='new' && $mode!='edit'){
-		list($TTropBete,$TligneTimesheet) = $timesheet->loadLines($PDOdb, $TligneTimesheet,$TJours,$doliform,$form2,$mode);
+		list($TTropBete,$TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
 	}
 
 	foreach($TligneTimesheet as $cle => $val){

@@ -115,7 +115,7 @@ class TTimesheet extends TObjetStd {
 		$PDOdb->Execute($sql);
 
 		while ($row = $PDOdb->Get_line()) {
-			$this->TTask[$taskid]->TTime[$row->rowid] = $row;
+			$this->TTask[$taskid]->TTime[$row->task_date] = $row;
 		}
 	}
 	
@@ -216,28 +216,44 @@ class TTimesheet extends TObjetStd {
 
 	}
 
-	function loadLines(&$PDOdb, &$TligneTimesheet,&$TJours,$doliform,$form2,$mode='view'){
+	private function fillWithJour($TJours, $TTime) {
+						var_dump($TJours);
+		foreach($TJours as $date=>$dummy) {
+					
+			if(empty($TTime[$date])) $TTime[$date] = -1;	
+			
+		}
+		
+		return $TTime;
+		
+	}
+
+	function loadLines(&$PDOdb,&$TJours,$doliform,$form2,$mode='view'){
 		global $db, $user, $conf;
 		
+		$TLigneTimesheet=array();
+	
 		foreach($this->TTask as $task){
-			
 			$productstatic = new Product($db);
 			$productstatic->fetch((int)$task->array_options['options_fk_service']); //et oui, y avait un mind map
 			$productstatic->ref = $productstatic->ref." - ".$productstatic->label; // TODELETE ah oui ?! mais ça sert au moins ? parce que j'ai pas le sentiment profond d'une corrélation avec quoi que ce soit
 	
+			$task->TTime = $this->fillWithJour($TJours, $task->TTime);
+	
 			//Comptabilisation des temps + peuplage de $TligneJours
 			if(!empty($task->TTime)){
-				foreach($task->TTime as $idtime => $time){
+				foreach($task->TTime as $time){
 					
 					$userstatic = new User($db);
 					$userstatic->id         = $time->fk_user;
 					$userstatic->lastname	= $time->lastname;
 					$userstatic->firstname 	= $time->firstname;
 
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
-					$TligneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
+					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
+					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);	
+					
+					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
+					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
 
 					$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
 
@@ -248,16 +264,17 @@ class TTimesheet extends TObjetStd {
 						else{
 							$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
 						}
-						$TligneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
+						$TLigneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
 
 						$Tcle = explode('-',$cle);
 						$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
 					}
 				}
 			}
+			
 		}
 		
-		return array($TJourstemp,$TligneTimesheet);
+		return array($TJourstemp,$TLigneTimesheet);
 	}
 
 	function loadTJours(){
