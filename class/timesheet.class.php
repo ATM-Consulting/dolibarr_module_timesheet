@@ -66,6 +66,8 @@ class TTimesheet extends TObjetStd {
 	        $projet->date_start= $this->date_deb;
 	        $projet->date_end= $this->date_fin;
 
+			$projet->array_options['options_is_timesheet']=1;
+
 			$idProjet = $projet->create($user);
 			
 			$projet->setValid($user);
@@ -92,6 +94,7 @@ class TTimesheet extends TObjetStd {
 
 			$task = new Task($db);
 			$task->fetch($id);
+			$task->fetch_optionals($task->id);
 
 			$this->TTask[$task->id] = $task;
 			
@@ -217,13 +220,10 @@ class TTimesheet extends TObjetStd {
 		global $db, $user, $conf;
 		
 		foreach($this->TTask as $task){
-	
-			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label = "'.$task->label.'" LIMIT 1');
-			$PDOdb->Get_line();
 			
 			$productstatic = new Product($db);
-			$productstatic->fetch($PDOdb->Get_field('rowid'));
-			$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
+			$productstatic->fetch((int)$task->array_options['options_fk_service']); //et oui, y avait un mind map
+			$productstatic->ref = $productstatic->ref." - ".$productstatic->label; // TODELETE ah oui ?! mais ça sert au moins ? parce que j'ai pas le sentiment profond d'une corrélation avec quoi que ce soit
 	
 			//Comptabilisation des temps + peuplage de $TligneJours
 			if(!empty($task->TTime)){
@@ -304,6 +304,8 @@ class TTimesheet extends TObjetStd {
 			$task->date_start = $this->date_deb;
 			$task->date_end = $this->date_fin;
 			$task->fk_task_parent = 0;
+
+			$task->array_options['options_fk_service'] = $product->id;
 
 			$idTask = $task->create($user);
 			

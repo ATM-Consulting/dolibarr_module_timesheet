@@ -476,6 +476,8 @@ class modTimesheet extends DolibarrModules
 
         $url = dol_buildpath('/timesheet/script/create-maj-base.php', 2);
         file_get_contents($url);
+		
+		
 
         return $this->_init($sql, $options);
     }
