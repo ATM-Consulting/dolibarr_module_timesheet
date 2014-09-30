@@ -23,7 +23,7 @@ function _action() {
 	*
 	* Put here all code to do according to value of "action" parameter
 	********************************************************************/
-	llxHeader('',$langs->trans('Timesheet'),'','');
+	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	
 	if(isset($_REQUEST['action'])) {

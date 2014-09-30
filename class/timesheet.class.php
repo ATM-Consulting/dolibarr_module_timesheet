@@ -276,6 +276,15 @@ class TTimesheet extends TObjetStd {
 							else{
 								$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
 							}
+							
+							if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled) {
+								
+								//tablelines
+								
+								$chaine.=' <a href="javascript:addNdf('.$userstatic->id.','.$task->id.');">+</a>';
+								
+							}
+							
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;
 	
 							
