@@ -60,7 +60,7 @@ function timesheetPrepareHead(&$timesheet,$type='timesheet') {
 	switch ($type) {
 		case 'timesheet':
 			return array(
-				array(dol_buildpath('/timesheet/fiche.php?id='.$timesheet->rowid,2), 'Fiche','fiche')
+				array(dol_buildpath('/timesheet/timesheet.php?id='.$timesheet->rowid,2), 'Fiche','fiche')
 			);
 			break;
 	}

@@ -220,7 +220,7 @@ function _fiche(&$timesheet, $mode='view') {
 	$TFormJours = array(); //Formulaire de saisis nouvelle ligne de temps
 	$TligneJours = array(); //Tableau des lignes de temps déjà existante
 	
-	$TJours = $timesheet->_loadTJours(); 
+	$TJours = $timesheet->loadTJours(); 
 	
 	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 
@@ -228,7 +228,7 @@ function _fiche(&$timesheet, $mode='view') {
 	$TligneTimesheet=array();
 	
 	if($mode!='new' && $mode!='edit'){
-		list($TJours,$TligneTimesheet) = $timesheet->_loadLines($PDOdb, $TligneTimesheet,$TJours,$doliform,$form2,$mode);
+		list($TTropBete,$TligneTimesheet) = $timesheet->loadLines($PDOdb, $TligneTimesheet,$TJours,$doliform,$form2,$mode);
 	}
 
 	foreach($TligneTimesheet as $cle => $val){
@@ -258,7 +258,7 @@ function _fiche(&$timesheet, $mode='view') {
 	$diff = $date_deb->diff($date_fin);
 	$diff = $diff->format('%d') +1;
 
-	$date_deb->sub(new DateInterval('P1D'));
+	$date_deb->sub(new DateInterval('P1D')); // une utilisation intéressante, reste que l'absence de comm m'empêche d'en comprendre le but
 
 	for($i=1;$i<=$diff;$i++){
 		$date_temp = $date_deb->add(new DateInterval('P1D'));
@@ -273,6 +273,8 @@ function _fiche(&$timesheet, $mode='view') {
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
+		
+		 
 		print $TBS->render('tpl/fiche_saisie.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,

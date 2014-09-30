@@ -41,7 +41,7 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function save(&$PDOdb){
-		global $db,$user,$conf;
+		global $db,$user,$conf,$langs;
 		
 		if($this->fk_project == 0){
 			
@@ -60,7 +60,7 @@ class TTimesheet extends TObjetStd {
 		    }
 			
 			$projet->ref = $defaultref;
-	        $projet->title = $this->societe->name." - Feuille de saisie des temps";
+	        $projet->title = $this->societe->name." - ".$langs->trans('Timesheet');
 	        $projet->description = "";
 	        $projet->socid = $this->fk_societe;
 	        $projet->date_start= $this->date_deb;
@@ -210,7 +210,7 @@ class TTimesheet extends TObjetStd {
 
 	}
 
-	function _loadLines(&$PDOdb, &$TligneTimesheet,&$TJours,$doliform,$form2,$mode='view'){
+	function loadLines(&$PDOdb, &$TligneTimesheet,&$TJours,$doliform,$form2,$mode='view'){
 		global $db, $user, $conf;
 		
 		foreach($this->TTask as $task){
@@ -257,7 +257,7 @@ class TTimesheet extends TObjetStd {
 		return array($TJourstemp,$TligneTimesheet);
 	}
 
-	function _loadTJours(){
+	function loadTJours(){
 		
 		$TJours = array();
 
