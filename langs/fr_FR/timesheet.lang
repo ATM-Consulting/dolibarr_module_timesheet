@@ -7,6 +7,7 @@ AnyTimesheet=Il n'y a aucune feuille de temps à afficher
 CreateTimesheet=Créer une feuille de temps
 FicheTimesheet=Fiche feuille de temps
 TimeSheetSaved=Feuille de temps sauvegardée
+TimeSheetNewNoService=Pas de service sélectionné
 
 //Droits
 ReadTimesheet=Lire les feuilles de temps

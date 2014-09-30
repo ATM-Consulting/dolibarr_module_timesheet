@@ -120,13 +120,13 @@ class TTimesheet extends TObjetStd {
 		global $db,$user;
 
 		//Parcours des tâches existantes pour MAJ temps
-		foreach($Tab as $cle => $value){
+		foreach($Tab as $cle => $TValue){
 
-			if(is_array($value)){
+			if(is_array($TValue)){
 				
-				foreach($value as $idTask => $TTemps){
+				foreach($TValue as $idTask => $TTemps){
 					
-					if($Tid = explode('_',$idTask)){
+					if($Tid = explode('_',$idTask)){ // forcément... Je me demandais bien en regardant le code de créa de la ligne pourquoi ce n'était pas simplement une clef... Je me demande toujours
 						$idTask = $Tid[0];
 						$idUser = $Tid[1];
 					}
@@ -134,12 +134,12 @@ class TTimesheet extends TObjetStd {
 					$task = new Task($db);
 					$task->fetch($idTask);
 
-					if($idTask != 0){
+					if($idTask > 0){
 						
 						$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask,$idUser);
 
 					}
-					else{
+					else if(!empty($Tab['serviceid_0'])){
 						$product = new Product($db);
 						$product->fetch($Tab['serviceid_0']);
 						//La tâche n'existe peux être pas encore mais une tache associé au service pour ce projet existe déjà peux être
@@ -164,8 +164,11 @@ class TTimesheet extends TObjetStd {
 						}
 						else{
 							//pre($Tab);exit;
-							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask);
+							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$idUser);
 						}
+					}
+					else{
+						setEventMessage("TimeSheetNewNoService","errors");	
 					}
 				}
 			}
@@ -276,12 +279,12 @@ class TTimesheet extends TObjetStd {
 		return $TJours;
 	}
 	
-	function _addtask(&$PDOdb,&$Tab,&$TTemps,$idTask){
+	function _addtask(&$PDOdb,&$Tab,&$TTemps,$idTask,$idUser){
 		global $db,$user,$conf;
 
 		$product = new Product($db);
 
-		if($Tab['serviceid_0'] != 0 && $product->fetch($Tab['serviceid_0'])){
+		if($product->fetch((int)$Tab['serviceid_0'])){
 			
 			$task = new Task($db);
 			$task->label = $product->label;
@@ -307,7 +310,7 @@ class TTimesheet extends TObjetStd {
 			$this->TTask[$task->id] = $task;
 			
 			//exit($idTask);
-			$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask);
+			$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask,$idUser);
 		}
 	}
 
