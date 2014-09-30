@@ -54,7 +54,9 @@ function _action() {
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				//pre($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				_fiche($timesheet);
+				
+				setEventMessage('TimeSheetSaved');
+				_fiche($timesheet,'edittime');
 				break;
 				
 			case 'facturer':
@@ -227,7 +229,7 @@ function _fiche(&$timesheet, $mode='view') {
 	//Charger les lignes existante dans le timeSheet
 	
 	if($mode!='new' && $mode!='edit'){
-		list($TTropBete,$TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
+		list($TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
 	}
 
 	foreach($TligneTimesheet as $cle => $val){

@@ -9,9 +9,9 @@ class TTimesheet extends TObjetStd {
 		parent::add_champs('date_deb,date_fin','type=date;');
 		
 		$this->TStatus = array(
-			'0'=>'Brouillon',
-			'1'=>'Validé',
-			'2'=>'Facturé'
+			0=>'Brouillon',
+			1=>'Validée',
+			2=>'Facturée'
 		);
 		
 		$this->libelleFactureLigne = "Temps de réalisation";
@@ -146,7 +146,9 @@ class TTimesheet extends TObjetStd {
 						$product = new Product($db);
 						$product->fetch($Tab['serviceid_0']);
 						//La tâche n'existe peux être pas encore mais une tache associé au service pour ce projet existe déjà peux être
-						$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task WHERE fk_projet = ".$this->project->id." AND label = '".$product->label."'";
+						$sql = "SELECT t.rowid 
+						FROM ".MAIN_DB_PREFIX."projet_task t INNER JOIN ".MAIN_DB_PREFIX."projet_task_extrafields ex ON (ex.fk_object=t.rowid)
+						WHERE t.fk_projet = ".$this->project->id." AND ex.fk_service=".$product->id;
 						$PDOdb->Execute($sql);
 						
 						if($PDOdb->Get_line()){
@@ -154,9 +156,10 @@ class TTimesheet extends TObjetStd {
 							$rowid = $PDOdb->Get_field('rowid');
 							$TTemps[$rowid] = $TTemps[0];
 							$Tab['serviceid_'.$rowid] = $Tab['serviceid_0'];
-							$Tab['userid_'.$rowid] = $Tab['userid_0'];
+							$Tab['userid_'.$rowid] = $Tab['userid_0']; // il y a tellement de manière de faire ça plus mieux zolie ! 
 							
 							//On vide le contenu du tableau correspondant à l'ajout de ligne sinon ça va bugger
+							// même sans ça tu sais...
 							unset($TTemps[0]);
 							unset($Tab['serviceid_0']);
 							unset($Tab['userid_0']);
@@ -170,9 +173,7 @@ class TTimesheet extends TObjetStd {
 							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$idUser);
 						}
 					}
-					else{
-						setEventMessage("TimeSheetNewNoService","errors");	
-					}
+					
 				}
 			}
 		}
@@ -183,10 +184,10 @@ class TTimesheet extends TObjetStd {
 		global $db, $user;
 
 		if(!in_array($Tab['userid_'.$idTask.'_'.$idUser], $Tab)) $Tab['userid_'.$idTask.'_'.$idUser] = $Tab['userid_0'];
-		
 		foreach($TTemps as $date=>$temps){
 							
 			if($temps != ''){
+				
 				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time WHERE fk_task = ".$idTask." AND fk_user = ".$idUser." AND task_date = '".$date."' LIMIT 1";
 				$PDOdb->Execute($sql);
 
@@ -217,10 +218,16 @@ class TTimesheet extends TObjetStd {
 	}
 
 	private function fillWithJour($TJours, $TTime) {
-						var_dump($TJours);
+	global $user;							
+						
 		foreach($TJours as $date=>$dummy) {
+							
+			$o=new stdClass;
+			$o->fk_user = $user->id;			
+			$o->task_duration = 0;
+			$o->task_date = $date;
 					
-			if(empty($TTime[$date])) $TTime[$date] = -1;	
+			if(empty($TTime[$date])) $TTime[$date] = $o;	
 			
 		}
 		
@@ -228,53 +235,59 @@ class TTimesheet extends TObjetStd {
 		
 	}
 
-	function loadLines(&$PDOdb,&$TJours,$doliform,$form2,$mode='view'){
+	function loadLines(&$PDOdb,&$TJours,$doliform,$formATM,$mode='view'){
 		global $db, $user, $conf;
 		
 		$TLigneTimesheet=array();
 	
 		foreach($this->TTask as $task){
 			$productstatic = new Product($db);
-			$productstatic->fetch((int)$task->array_options['options_fk_service']); //et oui, y avait un mind map
-			$productstatic->ref = $productstatic->ref." - ".$productstatic->label; // TODELETE ah oui ?! mais ça sert au moins ? parce que j'ai pas le sentiment profond d'une corrélation avec quoi que ce soit
+			
+			if($task->array_options['options_fk_service']>0) { //et oui, y avait un mind map
+				$productstatic->fetch((int)$task->array_options['options_fk_service']);
+				$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
+				$url_service = $productstatic->getNomUrl(1); 
+			}
+			else{
+				$url_service = $task->getNomUrl(1).' - '.$task->label;
+			}
 	
 			$task->TTime = $this->fillWithJour($TJours, $task->TTime);
 	
 			//Comptabilisation des temps + peuplage de $TligneJours
 			if(!empty($task->TTime)){
 				foreach($task->TTime as $time){
+				
+						$userstatic = new User($db);
+						$userstatic->fetch($time->fk_user);
 					
-					$userstatic = new User($db);
-					$userstatic->id         = $time->fk_user;
-					$userstatic->lastname	= $time->lastname;
-					$userstatic->firstname 	= $time->firstname;
-
-					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['service'] = ($mode == 'edittime') ? $doliform->select_produits_list($productstatic->id,'serviceid_'.$task->id.'_'.$time->fk_user.'','1') : $productstatic->getNomUrl(1,'',48);
-					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['consultant'] = ($mode == 'edittime') ? $doliform->select_dolusers($userstatic->id,'userid_'.$task->id.'_'.$time->fk_user) : $userstatic->getNomUrl(1);	
-					
-					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['total_jours'] += $time->task_duration;
-					$TLigneTimesheet[$task->id.'_'.$time->fk_user]['total_heures'] += $time->task_duration;
-
-					$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
-
-					foreach($TJours as $cle=>$val){
-						if($mode == 'edittime'){
-							$chaine = $form2->timepicker('', 'temps['.$task->id.'_'.$time->fk_user.']['.$cle.']', $TTimeTemp[$task->id.'_'.$time->fk_user][$cle],5);
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
+						
+							
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_heures'] += $time->task_duration;
+						$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
+						
+						foreach($TJours as $date=>$val){
+							if($mode == 'edittime'){
+								$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'),5);
+							}
+							else{
+								$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
+							}
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;
+	
+							
 						}
-						else{
-							$chaine = ($TTimeTemp[$task->id.'_'.$time->fk_user][$cle]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$time->fk_user][$cle],'allhourmin') : '';
-						}
-						$TLigneTimesheet[$task->id.'_'.$time->fk_user][$cle]= $chaine ;
-
-						$Tcle = explode('-',$cle);
-						$TJourstemp[$Tcle[2].'/'.$Tcle[1]] = $val;
+						
 					}
-				}
+				
 			}
 			
 		}
 		
-		return array($TJourstemp,$TLigneTimesheet);
+		return array($TLigneTimesheet);
 	}
 
 	function loadTJours(){

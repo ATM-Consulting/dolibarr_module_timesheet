@@ -1,6 +1,5 @@
 
-		<div class="fiche"> <!-- begin div class="fiche" -->
-
+	
 			<table width="100%" class="border">
 				<tr><td width="10%">Identifiant</td><td>[timesheet.id;strconv=no]</td></tr>
 				<tr><td>Société</td><td>[timesheet.societe;strconv=no]</td></tr>
@@ -11,7 +10,6 @@
 
 			</table>
 
-		</div>
 		
 		[onshow;block=begin;when [fiche.mode]!='edit']
 			[onshow;block=begin;when [fiche.mode]!='new']
