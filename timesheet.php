@@ -44,6 +44,9 @@ function _action() {
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				$timesheet->set_values($_REQUEST);
 				$timesheet->save($PDOdb);
+				
+				setEventMessage('TimeSheetSaved');
+				
 				_fiche($timesheet);
 				break;
 			
@@ -145,7 +148,7 @@ function _liste() {
 
 	if($user->rights->timesheet->user->add){
 		echo '<div class="tabsAction">';
-		echo '<a class="butAction" href="fiche.php?action=new">'.$langs->trans('CreateTimesheet').'</a>';
+		echo '<a class="butAction" href="?action=new">'.$langs->trans('CreateTimesheet').'</a>';
 		echo '</div>';
 	}
 	
@@ -154,7 +157,7 @@ function _liste() {
 	
 
 }
-function _fiche(&$timesheet, $mode='edit') {
+function _fiche(&$timesheet, $mode='view') {
 	
 	global $langs,$db,$conf,$user;
 	
@@ -304,7 +307,6 @@ function _fiche_visu_project(&$timesheet, $mode){
 
 	if($mode=='edit' || $mode=='new') {
 		ob_start();
-
 		$html=new FormProjets($db);
 		$html->select_projects($timesheet->fk_societe, $timesheet->fk_project, 'fk_project');
 
@@ -317,8 +319,9 @@ function _fiche_visu_project(&$timesheet, $mode){
 
 			$project = new Project($db);
 			$project->fetch($timesheet->fk_project);
-
-			return '<a href="'.DOL_URL_ROOT.'/projet/fiche.php?id='.$timesheet->fk_project.'" style="font-weight:bold;">'.img_picto('','object_project.png', '', 0).' '.$project->ref.'</a>';
+			
+			return $project->getNomUrl(1);
+			
 		} else {
 			return 'Non défini';
 		}

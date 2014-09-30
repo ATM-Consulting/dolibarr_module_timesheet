@@ -67,6 +67,8 @@ class TTimesheet extends TObjetStd {
 	        $projet->date_end= $this->date_fin;
 
 			$idProjet = $projet->create($user);
+			
+			$projet->setValid($user);
 
 			$this->fk_project = $idProjet;
 		}
