@@ -260,18 +260,17 @@ class TTimesheet extends TObjetStd {
 				
 						$userstatic = new User($db);
 						$userstatic->fetch($time->fk_user);
-					
+
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
-						
-							
+
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_heures'] += $time->task_duration;
 						$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
 						
 						foreach($TJours as $date=>$val){
 							if($mode == 'edittime'){
-								$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'),5);
+								$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'): '',5);
 							}
 							else{
 								$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
@@ -282,12 +281,11 @@ class TTimesheet extends TObjetStd {
 								//tablelines
 								
 								$chaine.=' <a href="javascript:addNdf('.$userstatic->id.','.$task->id.');">+</a>';
-								
+
 							}
 							
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;
-	
-							
+
 						}
 						
 					}

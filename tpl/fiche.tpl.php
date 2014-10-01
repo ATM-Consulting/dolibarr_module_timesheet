@@ -13,8 +13,8 @@
 		
 		[onshow;block=begin;when [fiche.mode]!='edit']
 			[onshow;block=begin;when [fiche.mode]!='new']
-				[onshow;block=begin;when [fiche.mode]!='edittime']
 				<div class="tabsAction">
+					[onshow;block=begin;when [fiche.mode]!='edittime']
 						[onshow;block=begin;when [fiche.statusval]!=2]
 							<input type="button" id="action-delete" value="Supprimer" name="cancel" class="butActionDelete" onclick="if(confirm('Supprimer cette feuille de temps?')) document.location.href='?action=delete&id=[timesheet.id]'">
 						[onshow;block=end]
@@ -23,8 +23,8 @@
 							&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=facturer" class="butAction">Facturer</a>
 						[onshow;block=end]
 						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='liste.php'" name="retour-liste" value="Retour">
+					[onshow;block=end]
 				</div>
-				[onshow;block=end]
 			[onshow;block=end]
 		[onshow;block=end]
 		[onshow;block=begin;when [fiche.mode]!='view']

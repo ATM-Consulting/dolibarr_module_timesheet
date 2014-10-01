@@ -236,11 +236,11 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	if($mode!='new' && $mode!='edit'){
 		list($TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
-	}
-
-	foreach($TligneTimesheet as $cle => $val){
-		$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',28800)/24);
-		$TligneTimesheet[$cle]['total_heures'] = convertSecondToTime($val['total_heures'],'allhourmin');
+		
+		foreach($TligneTimesheet as $cle => $val){
+			$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',28800)/24);
+			$TligneTimesheet[$cle]['total_heures'] = convertSecondToTime($val['total_heures'],'allhourmin');
+		}
 	}
 	
 	$TBS=new TTemplateTBS();
