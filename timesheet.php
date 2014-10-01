@@ -224,6 +224,12 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	$TJours = $timesheet->loadTJours(); 
 	
+	//transformation de $TJours pour jolie affichage
+	foreach ($TJours as $key => $value) {
+		$TKey = explode('-', $key);
+		$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
+	}
+	
 	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 
 	//Charger les lignes existante dans le timeSheet
@@ -281,6 +287,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'ligneTimesheet'=>$TligneTimesheet,
 				'lignejours'=>$TligneJours,
 				'jours'=>$TJours,
+				'joursVisu'=>$TJoursVisu,
 				'formjour'=>$TFormJours
 			)
 			,array(

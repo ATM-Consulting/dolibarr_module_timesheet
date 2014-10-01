@@ -7,7 +7,7 @@
 				<td>Consultant</td>
 				<td>Total<br>jours</td>
 				<td>Total<br>heures</td>
-				<td>[jours.key;block=td]<br>[jours.val]</td>
+				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>
 				<td>Actions</td>
 			</tr>
 		</thead>
@@ -16,7 +16,7 @@
 		<!-- Contenu déjà existant -->
 		<tr id="[ligneTimesheet.$;strconv=no;block=tr;sub1]" >
 			<td>[ligneTimesheet_sub1.val;block=td;strconv=no]</td>
-			<td><a href="#"><img src="img/delete.png"  onclick="document.location.href='?id=[ligneTimesheet.$]&action=deleteligne'"></a></td>
+			<td><a href="#"><img src="img/delete.png"  onclick="if(confirm('Supprimer cette ligne de saisie des temps?')) document.location.href='?id=[ligneTimesheet.$]&action=deleteligne'"></a></td>
 		</tr>
 		
 		[onshow;block=begin;when [view.mode]=='edittime']
