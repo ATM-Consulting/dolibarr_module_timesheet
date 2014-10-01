@@ -26,10 +26,15 @@ class TTimesheet extends TObjetStd {
 		parent::start();
 	}
 	
-	function load(&$PDOdb,$id){
+	function load(&$PDOdb,$id='',$id_Projet=0){
 		global $db;
-
-		parent::load($PDOdb,$id);
+		
+		if(!empty($id_Projet)){
+			parent::loadBy($PDOdb,$id_Projet,'fk_project');
+		}
+		else{
+			parent::load($PDOdb,$id);
+		}
 
 		$this->project = new Project($db);
 		$this->project->fetch($this->fk_project);

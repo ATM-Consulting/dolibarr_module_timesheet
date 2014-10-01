@@ -124,6 +124,34 @@ class InterfaceTimesheetWorkflow
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
             );
         }
+		elseif ($action == 'LINEBILL_INSERT') {
+
+			if(isset($_REQUEST['fk_timesheet']) && !empty($_REQUEST['fk_timesheet'])){
+
+				define('INC_FROM_DOLIBARR', true);
+				dol_include_once('/timesheet/config.php');
+				global $db;
+				
+				$PDOdb = new TPDOdb;
+
+				$timesheet = new TTimesheet;
+				$timesheet->load($PDOdb,'',$_REQUEST['fk_timesheet']);
+				
+				$facture = new Facture($db);
+				$facture->fetch($object->fk_facture);
+				
+				list($pu_ht, $description) = $timesheet->_makeFactureLigne($PDOdb);
+				
+				$object->subprice = $pu_ht;
+				$object->label = $object->desc;
+				$object->desc = $description;
+				
+				$object->update($user,1);
+				
+				//Ajouter la liaison element_element entre la facture et la feuille de temps
+				$PDOdb->Execute('REPLACE INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$timesheet->rowid.',"timesheet",'.$facture->id.',"facture")');
+			}
+		}
 
         return 0;
     }
