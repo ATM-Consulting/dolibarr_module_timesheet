@@ -54,7 +54,7 @@ function _action() {
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				//pre($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				
+				$timesheet->load($PDOdb,$timesheet->rowid);
 				setEventMessage('TimeSheetSaved');
 				_fiche($timesheet,'edittime');
 				break;

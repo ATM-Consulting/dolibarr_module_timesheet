@@ -143,12 +143,13 @@ class TTimesheet extends TObjetStd {
 
 					}
 					else if(!empty($Tab['serviceid_0'])){
+						
 						$product = new Product($db);
 						$product->fetch($Tab['serviceid_0']);
 						//La tâche n'existe peux être pas encore mais une tache associé au service pour ce projet existe déjà peux être
 						$sql = "SELECT t.rowid 
-						FROM ".MAIN_DB_PREFIX."projet_task t INNER JOIN ".MAIN_DB_PREFIX."projet_task_extrafields ex ON (ex.fk_object=t.rowid)
-						WHERE t.fk_projet = ".$this->project->id." AND ex.fk_service=".$product->id;
+								FROM ".MAIN_DB_PREFIX."projet_task t INNER JOIN ".MAIN_DB_PREFIX."projet_task_extrafields ex ON (ex.fk_object=t.rowid)
+								WHERE t.fk_projet = ".$this->project->id." AND ex.fk_service=".$product->id;
 						$PDOdb->Execute($sql);
 						
 						if($PDOdb->Get_line()){
@@ -170,7 +171,7 @@ class TTimesheet extends TObjetStd {
 						}
 						else{
 							//pre($Tab);exit;
-							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$idUser);
+							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$Tab['userid_0']);
 						}
 					}
 					
@@ -184,6 +185,7 @@ class TTimesheet extends TObjetStd {
 		global $db, $user;
 
 		if(!in_array($Tab['userid_'.$idTask.'_'.$idUser], $Tab)) $Tab['userid_'.$idTask.'_'.$idUser] = $Tab['userid_0'];
+
 		foreach($TTemps as $date=>$temps){
 							
 			if($temps != ''){
@@ -347,8 +349,7 @@ class TTimesheet extends TObjetStd {
 			$idTask = $task->create($user);
 			
 			$this->TTask[$task->id] = $task;
-			
-			//exit($idTask);
+
 			$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask,$idUser);
 		}
 	}
