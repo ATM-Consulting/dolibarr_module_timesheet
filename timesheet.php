@@ -280,7 +280,6 @@ function _fiche(&$timesheet, $mode='view') {
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
-		
 		 
 		print $TBS->render('tpl/fiche_saisie.tpl.php'
 			,array(
@@ -304,7 +303,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
 				)
 				
-			)	
+			)
 			
 		);
 	}

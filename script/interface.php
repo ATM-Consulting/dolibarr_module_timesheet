@@ -20,40 +20,37 @@
 
 	}
 	
-	
 	function _get_ndfp(&$PDOdb,$fk_user,$fk_task,$fk_timesheet){
 
 		dol_include_once('/ndfp/class/ndfp.class.php');
 		dol_include_once('/core/class/html.form.class.php');
 		
+		$timesheet = new TTimesheet;
+		$timesheet->load($PDOdb,$fk_timesheet);
+	
 		$sql = "SELECT n.rowid as 'rowid'
 				FROM ".MAIN_DB_PREFIX."ndfp as n
-					LEFT JOIN ".MAIN_DB_PREFIX."ndfp_det as nd On (nb.fk_ndfp = n.rowid)
-					LEFT JOIN ".MAIN_DB_PREFIX."task as t ON (t.rowid = nd.fk_task)
-				WHERE t.rowid = ".$fk_task." AND n.fk_user = ".$fk_user;
+				WHERE n.fk_user = ".$fk_user." AND n.fk_soc = ".$timesheet->societe->id." AND n.statut = 0";
 
 		$PDOdb->Execute($sql);
-
+		
 		if($PDOdb->Get_line()){
 			return $PDOdb->Get_field('rowid');
 		}
 		else{
 			
-			$idNdfp = _createNdfp($PDOdb,$fk_user,$fk_timesheet);
+			$idNdfp = _createNdfp($PDOdb,$timesheet,$fk_user);
 
 			return $idNdfp;
 		}
 	}
 
-	function _createNdfp(&$PDOdb,$fk_user,$fk_timesheet){
+	function _createNdfp(&$PDOdb,&$timesheet,$fk_user){
 		global $db,$conf,$user;
 
 		$userNdfp = new User($db);
 		$userNdfp->fetch($fk_user);
 
-		$timesheet = new TTimesheet;
-		$timesheet->load($PDOdb,$fk_timesheet);
-		
 		$ndfp = new Ndfp($db);
 		$html = new Form($db);
 
@@ -95,15 +92,15 @@
         $ndfp->total_ht     	= 0;
         $ndfp->total_ttc      	= 0;
 		$ndfp->previous_exp 	= $previous_exp;
-		
+
         $ndfp->description      = $description;
         $ndfp->comment_user	    = $note_public;
         $ndfp->comment_admin    = $note;
 
         $ndfp->model_pdf        = $model;
         $ndfp->statut      		= 0;
-		
+
 		$idNdfp = $ndfp->create($user);
-		
+
 		return $idNdfp;
 	}
