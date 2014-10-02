@@ -136,7 +136,7 @@ class InterfaceTimesheetWorkflow
 
 				$timesheet = new TTimesheet;
 				$timesheet->load($PDOdb,'',$_REQUEST['fk_timesheet']);
-				
+
 				$facture = new Facture($db);
 				$facture->fetch($object->fk_facture);
 				
@@ -149,7 +149,7 @@ class InterfaceTimesheetWorkflow
 				$object->desc = $desc;
 				$object->total_ht = $pu_ht;
 				$object->update($user,1);
-				
+
 				//Ajouter la liaison element_element entre la facture et la feuille de temps
 				$PDOdb->Execute('REPLACE INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$timesheet->rowid.',"timesheet",'.$facture->id.',"facture")');
 			}

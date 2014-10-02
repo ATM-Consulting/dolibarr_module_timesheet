@@ -42,18 +42,21 @@ class ActionsTimesheet
         	$sql = "SELECT p.rowid, p.ref, p.title
         			FROM ".MAIN_DB_PREFIX."projet as p
         				INNER JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe ON (pe.fk_object = p.rowid)
-        			WHERE p.rowid NOT IN (SELECT fk_source 
+        				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
+        			WHERE t.rowid NOT IN (SELECT fk_source 
         								  FROM ".MAIN_DB_PREFIX."element_element
         								  WHERE sourcetype = 'timesheet' AND targettype = 'facture')";
-										  
+
 			dol_include_once('/core/class/html.form.core.php');
 			$form = new Form($db);
 			
-			$TIdProjet = array('0'=>'');
+			$TIdProjet = array('0'=>'Choisir une feuille de temps');
 			
 			$resql = $db->query($sql);
-			while ($res = $db->fetch_object($resql)) {
-				$TIdProjet[$res->rowid] = $res->ref." - ".$res->title;
+			if($resql){
+				while ($res = $db->fetch_object($resql)) {
+					$TIdProjet[$res->rowid] = $res->ref." - ".$res->title;
+				}
 			}
 			$select = " Sélectionnez une feuille de temps : ";
 			$select .=$form->selectarray('fk_timesheet', $TIdProjet);
@@ -70,11 +73,11 @@ class ActionsTimesheet
 				});
 			</script>
 			<tr class="liste_titre nodrag nodrop">
-				<td colspan="8">Ajouter une ligne de feuille de temps</td>
+				<td colspan="9">Ajouter une ligne de feuille de temps</td>
 				<td></td>
 			</tr>
 			<tr class="pair">
-				<td colspan="8"><?php echo $select; ?></td>
+				<td colspan="7"><?php echo $select; ?></td>
 				<td valign="middle" align="center">
 					<input id="addline_timesheet" class="button" type="submit" name="addline_timesheet" value="Ajouter">
 				</td>
