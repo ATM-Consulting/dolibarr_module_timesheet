@@ -55,14 +55,30 @@ class ActionsTimesheet
 			while ($res = $db->fetch_object($resql)) {
 				$TIdProjet[$res->rowid] = $res->ref." - ".$res->title;
 			}
-			$select = " ou Sélectionnez une feuille de temps : ";
-			$select .= addslashes(str_replace("\n",'',$form->selectarray('fk_timesheet', $TIdProjet)));
+			$select = " Sélectionnez une feuille de temps : ";
+			$select .=$form->selectarray('fk_timesheet', $TIdProjet);
+			
 			?>
 			<script type="text/javascript">
 				$(document).ready(function(){
-					$('input[name=qty]').parent().parent().children().eq(0).children().eq(0).append("<?php echo $select; ?>");
-				})
+					$('#fk_timesheet').change(function(){
+						$('#select_type option[value=1]').attr('selected','selected');
+						$('input[name=price_ht]').val('1');
+						$('#dp_desc').text('Temps de réalisation');
+						CKEDITOR.instances.dp_desc.setData('Temps de réalisation');
+					});
+				});
 			</script>
+			<tr class="liste_titre nodrag nodrop">
+				<td colspan="8">Ajouter une ligne de feuille de temps</td>
+				<td></td>
+			</tr>
+			<tr class="pair">
+				<td colspan="8"><?php echo $select; ?></td>
+				<td valign="middle" align="center">
+					<input id="addline_timesheet" class="button" type="submit" name="addline_timesheet" value="Ajouter">
+				</td>
+			</tr>
 			<?php
         }
 

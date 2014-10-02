@@ -140,12 +140,14 @@ class InterfaceTimesheetWorkflow
 				$facture = new Facture($db);
 				$facture->fetch($object->fk_facture);
 				
-				list($pu_ht, $description) = $timesheet->_makeFactureLigne($PDOdb);
+				list($pu_ht,$description) = $timesheet->_makeFactureLigne($PDOdb);
+				
+				$desc = $timesheet->libelleFactureLigne." : <br>";
+				$desc .= $description;
 				
 				$object->subprice = $pu_ht;
-				$object->label = $object->desc;
-				$object->desc = $description;
-				
+				$object->desc = $desc;
+				$object->total_ht = $pu_ht;
 				$object->update($user,1);
 				
 				//Ajouter la liaison element_element entre la facture et la feuille de temps
