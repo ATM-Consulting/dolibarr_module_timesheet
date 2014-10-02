@@ -13,6 +13,9 @@ $PDOdb->db->debug=true;
 $o=new TTimesheet;
 $o->init_db_by_vars($PDOdb);
 
+$o=new TTimesheetNdfp;
+$o->init_db_by_vars($PDOdb);
+
 dol_include_once('/core/class/extrafields.class.php');
 $extrafields=new ExtraFields($db);
 $res = $extrafields->addExtraField('fk_service', 'Service lié', 'sellist', 0, '', 'projet_task',0,0,'','a:1:{s:7:"options";a:1:{s:19:"product:label:rowid";N;}}');

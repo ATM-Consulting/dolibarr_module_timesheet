@@ -35,4 +35,6 @@
 			</p>
 			[onshow;block=end]
 		[onshow;block=end]
+		
+		<div id="saisie" style="display:none;"></div>
 

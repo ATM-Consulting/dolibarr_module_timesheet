@@ -287,7 +287,7 @@ class TTimesheet extends TObjetStd {
 								
 								//tablelines
 								
-								$chaine.=' <a href="javascript:addNdf('.$userstatic->id.','.$task->id.');">+</a>';
+								$chaine.=' <a href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.');">+</a>';
 
 							}
 							
@@ -505,4 +505,17 @@ class TTimesheet extends TObjetStd {
 
 	}
 
+}
+
+
+class TTimesheetNdfp extends TObjetStd {
+	function __construct() { /* declaration */
+		global $langs,$db;
+
+		parent::set_table(MAIN_DB_PREFIX.'ndfp_det');
+		parent::add_champs('fk_task','type=entier;');
+		
+		parent::_init_vars();
+		parent::start();
+	}
 }
