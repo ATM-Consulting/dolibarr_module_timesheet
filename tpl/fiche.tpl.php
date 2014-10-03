@@ -36,5 +36,8 @@
 			[onshow;block=end]
 		[onshow;block=end]
 		
-		<div id="saisie" style="display:none;"></div>
+		<div id="saisie" style="display:none;">
+			<div id="viewlines"></div>
+			<div id="adlines"></div>
+		</div>
 
