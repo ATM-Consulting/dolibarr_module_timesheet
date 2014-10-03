@@ -1,4 +1,4 @@
-
+			<script type="text/javascript" src="[fiche.link]"></script>
 	
 			<table width="100%" class="border">
 				<tr><td width="10%">Identifiant</td><td>[timesheet.id;strconv=no]</td></tr>

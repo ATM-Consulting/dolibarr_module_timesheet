@@ -211,6 +211,7 @@ function _fiche(&$timesheet, $mode='view') {
 			,'fiche'=>array(
 				'mode'=>$mode
 				,'statusval'=>$timesheet->status
+				,'link'=>dol_buildpath('/ndfp/js/functions.js.php',2)
 			)
 		)
 	);
