@@ -45,9 +45,9 @@ class ActionsTimesheet
         			FROM ".MAIN_DB_PREFIX."projet as p
         				INNER JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe ON (pe.fk_object = p.rowid)
         				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
-        			WHERE t.rowid NOT IN (SELECT fk_facture
+        			WHERE t.rowid NOT IN (SELECT rowid
         								  FROM ".MAIN_DB_PREFIX."timesheet
-        								  WHERE 1)";
+        								  WHERE fk_facture>0)";
 
 			dol_include_once('/core/class/html.form.core.php');
 			$form = new Form($db);

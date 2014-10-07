@@ -5,7 +5,7 @@ class TTimesheet extends TObjetStd {
 		global $langs,$db;
 
 		parent::set_table(MAIN_DB_PREFIX.'timesheet');
-		parent::add_champs('entity,fk_project,fk_societe,status,fk_facture','type=entier;index;');
+		parent::add_champs('entity,fk_project,fk_societe,status,fk_facture,fk_facture_ligne','type=entier;index;');
 		parent::add_champs('date_deb,date_fin','type=date;');
 		
 		$this->TStatus = array(
@@ -377,11 +377,8 @@ class TTimesheet extends TObjetStd {
 			
 			//Si oui vérifier si une ligne associé au timesheet n'existe pas déjà (présence d'un TUple dans llx_element_element)
 			$sql = "SELECT rowid 
-					FROM ".MAIN_DB_PREFIX."element_element
-					WHERE sourcetype = 'timesheet' 
-						AND targettype = 'facture'
-						AND fk_target = ".$facture->id."
-						AND fk_source = ".$this->rowid;
+					FROM ".MAIN_DB_PREFIX."timesheet
+					WHERE fk_facture = ".$facture->id;
 
 			$PDOdb->Execute($sql);
 			if($PDOdb->Get_line()){
@@ -422,7 +419,7 @@ class TTimesheet extends TObjetStd {
 			//MAJ de la ligne de facture
 
 			foreach ($facture->lines as $factureLine) {
-				if($factureLine->label == $this->libelleFactureLigne){
+				if($factureLine->label == $this->libelleFactureLigne){ // TODO so moche !
 					
 					list($pu_ht,$description) = $this->_makeFactureLigne($PDOdb);
 
@@ -444,33 +441,51 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function _makeFactureLigne(&$PDOdb){
-		global $db, $conf, $user;
+		global $db, $conf, $user, $langs;
 
 		$description = "";
 		$pu_ht = 0;
 		
 		$lastIdTask = null;
 
-		foreach($this->TTask as $idTask=>$Task){
-			
-			$PDOdb->Execute('SELECT rowid FROM '.MAIN_DB_PREFIX.'product WHERE label ="'.$Task->label.'"');
-			$PDOdb->Get_line();
+		foreach($this->TTask as $idTask=>$task){
+			$fk_service = (int)$task->array_options['options_fk_service'];
 
-			$product = new Product($db);
-			$product->fetch($PDOdb->Get_field('rowid'));
+			if($fk_service>0) {
+				$product = new Product($db);
+				$product->fetch($fk_service);
+	
+				if (! empty($conf->global->PRODUIT_MULTIPRICES)) {
+					$price = $product->multiprices[$this->societe->price_level];
+				}
+				else{
+					$price = $product->price;
+				}
+	
+				foreach($task->TTime as $Time){
+				
+					$TTimeUser[$Time->fk_user] += $Time->task_duration;
+				
+				}
+				
+				foreach($TTimeUser as $fk_user => $timevalue){
+					
+					$userTemp = new User($db);
+					$userTemp->fetch($fk_user);
+					$nom = $userTemp->getFullName($langs);
+					$qty = $this->_getQty($product,$timevalue);
+					
+					$pu_ht += $qty * $price;
+					$description .= $product->label." : ".$nom." - ".convertSecondToTime($timevalue,'all').", ".$qty." x ".price($price)."<br>";
+				
+				}
+				
+			}
+			else{
+					$description .= $task->label." : ".$nom.'<br>';
+				
+			}
 
-			foreach($Task->TTime as $Time){
-				$TTimeUser[$Time->fk_user] += $Time->task_duration;
-			}
-			
-			foreach($TTimeUser as $fk_user => $timevalue){
-				
-				$userTemp = new User($db);
-				$userTemp->fetch($fk_user);
-				
-				$pu_ht += $this->_getQty($product,$timevalue) * $product->multiprices[$this->societe->price_level];
-				$description .= $product->label." : ".$userTemp->lastname." ".$userTemp->firstname." - ".convertSecondToTime($timevalue,'all')."<br>";
-			}
 		}
 		
 		return array($pu_ht,$description);

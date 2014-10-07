@@ -117,16 +117,18 @@ class InterfaceTimesheetWorkflow
         // Data and type of action are stored into $object and $action
         // Users
         if ($action == 'LINEBILL_DELETE') {
-        	
-			$this->db->query('DELETE FROM '.MAIN_DB_PREFIX.'element_element WHERE fk_target = '.$object->id.' AND targettype = "facture" AND sourcetype = "timesheet"');
+			$this->db->query('UPDATE '.MAIN_DB_PREFIX.'timesheet
+			SET fk_facture=0,fk_facture_ligne=0
+			WHERE fk_facture_ligne = '.$object->rowid);
 			
             dol_syslog(
-                "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
+                "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->rowid
             );
         }
 		elseif ($action == 'LINEBILL_INSERT') {
+			$fk_timesheet = (int)GETPOST('fk_timesheet');
 
-			if(isset($_REQUEST['fk_timesheet']) && !empty($_REQUEST['fk_timesheet'])){
+			if($fk_timesheet>0){
 
 				define('INC_FROM_DOLIBARR', true);
 				dol_include_once('/timesheet/config.php');
@@ -139,8 +141,13 @@ class InterfaceTimesheetWorkflow
 
 				$facture = new Facture($db);
 				$facture->fetch($object->fk_facture);
-				
+
 				list($pu_ht,$description) = $timesheet->_makeFactureLigne($PDOdb);
+				//var_dump($pu_ht, $description);exit;
+				$timesheet->fk_facture = $facture->id;
+				$timesheet->fk_facture_ligne = $object->rowid;
+				$timesheet->save($PDOdb);
+				
 				
 				$desc = $timesheet->libelleFactureLigne." : <br>";
 				$desc .= $description;
@@ -150,8 +157,6 @@ class InterfaceTimesheetWorkflow
 				$object->total_ht = $pu_ht;
 				$object->update($user,1);
 
-				//Ajouter la liaison element_element entre la facture et la feuille de temps
-				$PDOdb->Execute('REPLACE INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$timesheet->rowid.',"timesheet",'.$facture->id.',"facture")');
 			}
 		}
 
