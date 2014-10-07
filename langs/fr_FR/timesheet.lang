@@ -8,6 +8,7 @@ CreateTimesheet=Créer une feuille de temps
 FicheTimesheet=Fiche feuille de temps
 TimeSheetSaved=Feuille de temps sauvegardée
 TimeSheetNewNoService=Pas de service sélectionné
+TimeSheetaddNdfExpense=Ajouter des frais associés aux feuilles de temps
 
 //Droits
 ReadTimesheet=Lire les feuilles de temps

@@ -24,6 +24,7 @@
 	}
 	
 	function _get_ndfp(&$PDOdb,$fk_user,$fk_task,$fk_timesheet){
+		global $db;
 
 		dol_include_once('/ndfp/class/ndfp.class.php');
 		dol_include_once('/core/class/html.form.class.php');
@@ -38,14 +39,23 @@
 		$PDOdb->Execute($sql);
 		
 		if($PDOdb->Get_line()){
-			return $PDOdb->Get_field('rowid');
+			$fk_ndfp = $PDOdb->Get_field('rowid');
 		}
 		else{
 			
-			$idNdfp = _createNdfp($PDOdb,$timesheet,$fk_user);
+			$fk_ndfp = _createNdfp($PDOdb,$timesheet,$fk_user);
 
-			return $idNdfp;
 		}
+		
+		$ndfp=new Ndfp($db);
+		$ndfp->fetch($fk_ndfp);
+				
+		return json_encode(array(
+				'id'=>$ndfp->id
+				,'fk_cat'=>$ndfp->fk_cat
+		));
+		
+		
 	}
 	
 	function _get_line_ndfp(&$PDOdb,$fk_ndfp){
@@ -213,7 +223,7 @@
 
 		$fk_user = $fk_user;
         $fk_soc = $timesheet->societe->id;
-        $fk_cat = 22; //Mis en dure pour le moment = "not applicable"
+        $fk_cat = 6; //TODO Mis en dur pour le moment = 5 CV, prévoir un paramétrage fiche user
         $fk_project = 0; //0 puisqu'une note de frais peux être lié à plusieurs projets d'un client
 
 		$previous_exp = 0; //Aucune idée du pk = 0

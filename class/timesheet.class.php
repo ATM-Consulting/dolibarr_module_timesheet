@@ -243,7 +243,7 @@ class TTimesheet extends TObjetStd {
 	}
 
 	function loadLines(&$PDOdb,&$TJours,$doliform,$formATM,$mode='view'){
-		global $db, $user, $conf;
+		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=array();
 	
@@ -287,7 +287,7 @@ class TTimesheet extends TObjetStd {
 								
 								//tablelines
 								
-								$chaine.=' <a href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.');">+</a>';
+								$chaine.=' <a title="'.$langs->trans('TimeSheetaddNdfExpense').'" href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.', \''.dol_print_date(strtotime($date), 'day').'\');">+</a>';
 
 							}
 							
