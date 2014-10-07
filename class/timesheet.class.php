@@ -5,7 +5,7 @@ class TTimesheet extends TObjetStd {
 		global $langs,$db;
 
 		parent::set_table(MAIN_DB_PREFIX.'timesheet');
-		parent::add_champs('entity,fk_project,fk_societe,status','type=entier;');
+		parent::add_champs('entity,fk_project,fk_societe,status,fk_facture','type=entier;index;');
 		parent::add_champs('date_deb,date_fin','type=date;');
 		
 		$this->TStatus = array(
@@ -408,7 +408,8 @@ class TTimesheet extends TObjetStd {
 		}
 		
 		//Ajouter la liaison element_element entre la facture et la feuille de temps
-		$PDOdb->Execute('REPLACE INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->id.',"facture")');
+		// pose problème ne 3.6 avec le load automatique des objets liés (ici inexistant)
+		// $PDOdb->Execute('REPLACE INTO '.MAIN_DB_PREFIX.'element_element (fk_source,sourcetype,fk_target,targettype) VALUES ('.$this->rowid.',"timesheet",'.$facture->id.',"facture")');
 		
 	}
 	

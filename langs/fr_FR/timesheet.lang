@@ -9,6 +9,8 @@ FicheTimesheet=Fiche feuille de temps
 TimeSheetSaved=Feuille de temps sauvegardée
 TimeSheetNewNoService=Pas de service sélectionné
 TimeSheetaddNdfExpense=Ajouter des frais associés aux feuilles de temps
+TimeSheetSelOne=Choisir une feuille de temps
+TimeSheetSelectOne=Sélectionnez une feuille de temps
 
 //Droits
 ReadTimesheet=Lire les feuilles de temps

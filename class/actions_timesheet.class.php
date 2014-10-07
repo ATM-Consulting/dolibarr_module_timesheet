@@ -33,24 +33,26 @@ class ActionsTimesheet
 
 	function formAddObjectLine ($parameters, &$object, &$action, $hookmanager) {
 		
-		global $db;
+		global $db,$langs;
 
 		if (in_array('invoicecard',explode(':',$parameters['context']))) 
         {
         	//Charger les liste des projets de type feuille de temps pas encore facturé
         	
+        	$langs->load('timesheet@timesheet');
+        	
         	$sql = "SELECT p.rowid, p.ref, p.title
         			FROM ".MAIN_DB_PREFIX."projet as p
         				INNER JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe ON (pe.fk_object = p.rowid)
         				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
-        			WHERE t.rowid NOT IN (SELECT fk_source 
-        								  FROM ".MAIN_DB_PREFIX."element_element
-        								  WHERE sourcetype = 'timesheet' AND targettype = 'facture')";
+        			WHERE t.rowid NOT IN (SELECT fk_facture
+        								  FROM ".MAIN_DB_PREFIX."timesheet
+        								  WHERE 1)";
 
 			dol_include_once('/core/class/html.form.core.php');
 			$form = new Form($db);
 			
-			$TIdProjet = array('0'=>'Choisir une feuille de temps');
+			$TIdProjet = array('0'=>$langs->trans('TimeSheetSelOne'));
 			
 			$resql = $db->query($sql);
 			if($resql){
@@ -58,7 +60,7 @@ class ActionsTimesheet
 					$TIdProjet[$res->rowid] = $res->ref." - ".$res->title;
 				}
 			}
-			$select = " Sélectionnez une feuille de temps : ";
+			$select = ' '.$langs->trans('TimeSheetSelectOne').' : ';
 			$select .=$form->selectarray('fk_timesheet', $TIdProjet);
 			
 			?>
