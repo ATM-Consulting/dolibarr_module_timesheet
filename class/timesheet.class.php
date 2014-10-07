@@ -311,11 +311,10 @@ class TTimesheet extends TObjetStd {
 		$date_deb = new DateTime($this->get_date('date_deb','Y-m-d'));
 		$date_fin = new DateTime($this->get_date('date_fin','Y-m-d'));
 		$diff = $date_deb->diff($date_fin);
-		$diff = $diff->format('%d') +1;
 
 		$date_deb->sub(new DateInterval('P1D'));
 
-		for($i=1;$i<=$diff;$i++){
+		for($i=1;$i<=$diff->days;$i++){
 			$date_deb->add(new DateInterval('P1D'));
 			$TJours[$date_deb->format('Y-m-d')] = $date_deb->format('D');
 		}

@@ -148,7 +148,6 @@ class InterfaceTimesheetWorkflow
 				$timesheet->fk_facture_ligne = $object->rowid;
 				$timesheet->save($PDOdb);
 				
-				
 				$desc = $timesheet->libelleFactureLigne." : <br>";
 				$desc .= $description;
 				
