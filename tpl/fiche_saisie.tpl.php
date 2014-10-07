@@ -16,7 +16,6 @@
 		<!-- Contenu déjà existant -->
 		<tr id="[ligneTimesheet.$;strconv=no;block=tr;sub1]" >
 			<td>[ligneTimesheet_sub1.val;block=td;strconv=no]</td>
-			<td><a href="#"><img src="img/delete.png"  onclick="if(confirm('Supprimer cette ligne de saisie des temps?')) document.location.href='?id=[ligneTimesheet.$]&action=deleteligne'"></a></td>
 		</tr>
 		
 		[onshow;block=begin;when [view.mode]=='edittime']

@@ -269,10 +269,12 @@ class TTimesheet extends TObjetStd {
 	
 							$userstatic = new User($db);
 							$userstatic->fetch($time->fk_user);
-	
+
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
+
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
-	
+
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_heures'] += $time->task_duration;
 							$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
@@ -297,6 +299,13 @@ class TTimesheet extends TObjetStd {
 	
 							}
 							
+							if($user->rights->timesheet->user->delete) {
+								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\'Supprimer cette ligne de saisie des temps?\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
+							}
+							else{
+								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
+							}
+							
 						}
 							
 					}
@@ -309,7 +318,25 @@ class TTimesheet extends TObjetStd {
 		
 		return array($TLigneTimesheet);
 	}
-
+	
+	function deleteAllTimeForTaskUser(&$PDOdb, $fk_task, $fk_user) {
+		global $db, $user;
+		
+		$task=new Task($db);
+		$task->fetch($fk_task);
+		
+		$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time 
+		WHERE fk_task=".$task->id." AND fk_user=".$fk_user." AND task_date BETWEEN '".$this->get_date('date_deb', 'Y-m-d')."' AND '".$this->get_date('date_fin', 'Y-m-d')."'";
+		
+		$Tab = $PDOdb->ExecuteAsArray($sql);
+		foreach($Tab as $row) {
+			$task->fetchTimeSpent($row->rowid);
+			
+			$task->delTimeSpent($user);
+		}
+		
+	}
+	
 	function loadTJours(){
 		
 		$TJours = array();

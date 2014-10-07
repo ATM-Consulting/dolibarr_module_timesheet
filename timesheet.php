@@ -74,6 +74,18 @@ function _action() {
 				_liste();
 				
 				break;
+			case 'deleteligne':
+				$timesheet->load($PDOdb, $_REQUEST['id']);
+				
+				$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
+			
+				setEventMessage("Ligne de temps supprimée");
+			
+				$timesheet->load($PDOdb, $_REQUEST['id']);
+				
+			
+				_fiche($timesheet);	
+				
 		}
 		
 	}
