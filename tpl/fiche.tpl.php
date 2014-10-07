@@ -16,7 +16,10 @@
 				<div class="tabsAction">
 					[onshow;block=begin;when [fiche.mode]!='edittime']
 						[onshow;block=begin;when [fiche.statusval]!=2]
+						[onshow;block=begin;when [fiche.righttodelete]==1]
+						
 							<input type="button" id="action-delete" value="Supprimer" name="cancel" class="butActionDelete" onclick="if(confirm('Supprimer cette feuille de temps?')) document.location.href='?action=delete&id=[timesheet.id]'">
+						[onshow;block=end]
 						[onshow;block=end]
 							&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier</a>
 						[onshow;block=begin;when [fiche.statusval]==1]

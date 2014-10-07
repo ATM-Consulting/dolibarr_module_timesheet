@@ -35,7 +35,9 @@
 	
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
+		[onshow;block=begin;when [view.righttoedit]==1]	
 		<a href="?id=[timesheet.id]&action=edittime" class="butAction">Modifier les temps</a>
+		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	
 	[onshow;block=begin;when [view.mode]=='edittime']

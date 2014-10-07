@@ -265,37 +265,43 @@ class TTimesheet extends TObjetStd {
 			if(!empty($task->TTime)){
 				foreach($task->TTime as $time){
 				
-						$userstatic = new User($db);
-						$userstatic->fetch($time->fk_user);
-
-						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
-						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
-
-						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
-						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_heures'] += $time->task_duration;
-						$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
-						
-						foreach($TJours as $date=>$val){
-							if($mode == 'edittime'){
-								$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'): '',5);
-							}
-							else{
-								$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
+						if($user->rights->timesheet->all->read || $user->id == $time->fk_user) {
+	
+							$userstatic = new User($db);
+							$userstatic->fetch($time->fk_user);
+	
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
+	
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_heures'] += $time->task_duration;
+							$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
+							
+							foreach($TJours as $date=>$val){
+								if($mode == 'edittime'){
+									$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'): '',5);
+								}
+								else{
+									$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
+								}
+								
+								if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled) {
+									
+									//tablelines
+									
+									$chaine.=' <a title="'.$langs->trans('TimeSheetaddNdfExpense').'" href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.', \''.dol_print_date(strtotime($date), 'day').'\');">+</a>';
+	
+								}
+								
+								$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;
+	
 							}
 							
-							if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled) {
-								
-								//tablelines
-								
-								$chaine.=' <a title="'.$langs->trans('TimeSheetaddNdfExpense').'" href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.', \''.dol_print_date(strtotime($date), 'day').'\');">+</a>';
-
-							}
-							
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;
-
 						}
-						
+							
 					}
+				
+
 				
 			}
 			

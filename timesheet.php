@@ -212,6 +212,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'mode'=>$mode
 				,'statusval'=>$timesheet->status
 				,'link'=>'' //dol_buildpath('/ndfp/js/functions.js.php',2)
+				,'righttodelete'=>$user->rights->timesheet->user->delete
 			)
 		)
 	);
@@ -279,7 +280,7 @@ function _fiche(&$timesheet, $mode='view') {
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
-		 
+		
 		print $TBS->render('tpl/fiche_saisie.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,
@@ -300,6 +301,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'nbChamps'=>count($asset->TField)
 					,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
+					,'righttoedit'=>$user->rights->timesheet->user->edit
 				)
 				
 			)
