@@ -34,10 +34,18 @@ function _action() {
 				_fiche($timesheet,'new');
 				break;
 
+			case 'approve':
+				$timesheet->load($PDOdb, GETPOST('id'));
+				$timesheet->status=1;
+				$timesheet->save($PDOdb);
+				
+				_fiche($timesheet);
+
+				break;
 			case 'edit'	:
 			case 'edittime'	:
-				$timesheet->load($PDOdb, $_REQUEST['id']);
-				_fiche($timesheet,$_REQUEST['action']);
+				$timesheet->load($PDOdb, GETPOST('id'));
+				_fiche($timesheet,GETPOST('action'));
 				break;
 
 			case 'save':
@@ -110,13 +118,12 @@ function _liste() {
 	$TPDOdb=new TPDOdb;
 	$TTimesheet = new TTimesheet;
 
-	$sql = "SELECT t.rowid, p.ref, s.nom, t.fk_project, t.fk_societe, t.date_deb, t.date_fin
+	$sql = "SELECT DISTINCT t.rowid, p.ref, s.nom, t.fk_project, t.fk_societe, t.status, t.date_deb, t.date_fin
 			FROM ".MAIN_DB_PREFIX."timesheet as t
 				LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON (p.rowid = t.fk_project)
 				LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt ON (pt.fk_projet = p.rowid)
 				LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON (s.rowid = t.fk_societe)
 			WHERE t.entity = ".$conf->entity."
-			GROUP BY p.rowid
 			ORDER BY t.date_cre DESC";
 
 	$THide = array(
@@ -136,7 +143,9 @@ function _liste() {
 			,'fk_project'=>'<a href="'.dol_buildpath('/projet/fiche.php?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
 			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/timesheet.php?id=@rowid@',2).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
 		)
-		,'translate'=>array()
+		,'translate'=>array(
+			'status'=>$TTimesheet->TStatus		
+		)
 		,'hide'=>$THide
 		,'type'=>array(
 			'date_deb'=>'date'
@@ -157,6 +166,7 @@ function _liste() {
 			,'fk_project'=>'Projet'
 			,'fk_societe'=>'Société'
 			,'rowid'=>'Identifiant'
+			,'status'=>$langs->trans('Status')
 		)
 	));
 
@@ -216,7 +226,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'id'=>$timesheet->rowid
 				,'project'=>_fiche_visu_project($timesheet,$mode)
 				,'societe'=>_fiche_visu_societe($timesheet,$mode)
-				,'status'=>$form->combo('', 'status', $timesheet->TStatus, $timesheet->status,1)
+				,'status'=>$timesheet->TStatus[$timesheet->status]
 				,'date_deb'=>$form->calendrier('', 'date_deb', $timesheet->date_deb)
 				,'date_fin'=>$form->calendrier('', 'date_fin', $timesheet->date_fin)
 			)
@@ -225,6 +235,7 @@ function _fiche(&$timesheet, $mode='view') {
 				,'statusval'=>$timesheet->status
 				,'link'=>'' //dol_buildpath('/ndfp/js/functions.js.php',2)
 				,'righttodelete'=>$user->rights->timesheet->user->delete
+				,'righttoapprove'=>$user->rights->timesheet->user->approve
 			)
 		)
 	);

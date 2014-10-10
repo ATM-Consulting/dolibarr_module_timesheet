@@ -118,7 +118,7 @@ class InterfaceTimesheetWorkflow
         // Users
         if ($action == 'LINEBILL_DELETE') {
 			$this->db->query('UPDATE '.MAIN_DB_PREFIX.'timesheet
-			SET fk_facture=0,fk_facture_ligne=0
+			SET fk_facture=0,fk_facture_ligne=0,status=1
 			WHERE fk_facture_ligne = '.$object->rowid);
 			
             dol_syslog(
@@ -146,6 +146,9 @@ class InterfaceTimesheetWorkflow
 				//var_dump($pu_ht, $description);exit;
 				$timesheet->fk_facture = $facture->id;
 				$timesheet->fk_facture_ligne = $object->rowid;
+				
+				$timesheet->status = 2;
+				
 				$timesheet->save($PDOdb);
 				
 				$desc = $timesheet->libelleFactureLigne." : <br>";

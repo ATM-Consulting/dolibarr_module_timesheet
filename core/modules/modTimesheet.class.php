@@ -227,6 +227,8 @@ class modTimesheet extends DolibarrModules
         $this->rights = array(); // Permission array used by this module
         $r = 0;
 
+		$langs->load('timesheet@timesheet');
+
 		$r++;
 		$this->rights[$r][0] = 104241;
 		$this->rights[$r][1] = $langs->trans('ReadTimesheet');
@@ -263,21 +265,30 @@ class modTimesheet extends DolibarrModules
 		$this->rights[$r][5] = 'delete';
 		
 		$r++;
-		$this->rights[$r][0] = 104241;
+		$this->rights[$r][0] = 104246;
+		$this->rights[$r][1] = $langs->trans('ApproveTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'approve';
+		
+		
+		
+		$r++;
+		$this->rights[$r][0] = 104247;
 		$this->rights[$r][1] = $langs->trans('ReadTimesheetNDF');
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
-		$this->rights[$r][0] = 104241;
+		$this->rights[$r][0] = 104248;
 		$this->rights[$r][1] = $langs->trans('ReadAllTimesheetNDF');
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'allndf';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
-		$this->rights[$r][0] = 104241;
+		$this->rights[$r][0] = 104249;
 		$this->rights[$r][1] = $langs->trans('EditTimesheetNDF');
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'ndf';
