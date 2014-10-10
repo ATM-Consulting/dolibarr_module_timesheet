@@ -61,7 +61,7 @@ class modTimesheet extends DolibarrModules
         // (where XXX is value of numeric property 'numero' of module)
         $this->description = "Description of module MyModule";
         // Possible values for version are: 'development', 'experimental' or version
-        $this->version = '0.1';
+        $this->version = '1.0';
         // Key used in llx_const table to save module status enabled/disabled
         // (where MYMODULE is value of property name of module in uppercase)
         $this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
@@ -103,7 +103,7 @@ class modTimesheet extends DolibarrModules
 
         // Config pages. Put here list of php pages
         // stored into mymodule/admin directory, used to setup module.
-        $this->config_page_url = array("timesheet_setup.php@timesheet");
+      //  $this->config_page_url = array("timesheet_setup.php@timesheet");
 
         // Dependencies
         // List of modules id that must be enabled if this module is enabled
