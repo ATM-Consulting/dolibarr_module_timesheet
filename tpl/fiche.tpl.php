@@ -30,7 +30,7 @@
 								&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=approve" class="butAction">Approuver</a>
 							[onshow;block=end]
 							[onshow;block=begin;when [fiche.statusval]==1]
-								&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=facturer" class="butAction">Facturer</a>
+								<!-- &nbsp; &nbsp; <a href="?id=[timesheet.id]&action=facturer" class="butAction">Facturer</a> -->
 							[onshow;block=end]
 						[onshow;block=end]
 						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='liste.php'" name="retour-liste" value="Retour">
