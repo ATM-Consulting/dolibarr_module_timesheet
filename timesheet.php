@@ -285,15 +285,9 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	echo $form2->hidden('entity', $conf->entity);
 	
-	$date_deb = new DateTime($timesheet->get_date('date_deb','Y-m-d'));
-	$date_fin = new DateTime($timesheet->get_date('date_fin','Y-m-d'));
-	$diff = $date_deb->diff($date_fin);
-	$date_deb->sub(new DateInterval('P1D')); // une utilisation intéressante, reste que l'absence de comm m'empêche d'en comprendre le but
 
-	for($i=0;$i<=$diff->days;$i++){
-		$date_temp = $date_deb->add(new DateInterval('P1D'));
-		//Chargement du formulaire se saisie des temps		
-		$TFormJours['temps'.$i] = $form2->timepicker('', 'temps[0]['.$date_deb->format('Y-m-d').']', '',5);
+	foreach($TJours as $date=>$jour){
+		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
 	
 	/*echo '<pre>';

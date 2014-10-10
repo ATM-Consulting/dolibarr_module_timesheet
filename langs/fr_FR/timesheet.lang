@@ -11,6 +11,7 @@ TimeSheetNewNoService=Pas de service sélectionné
 TimeSheetaddNdfExpense=Ajouter des frais associés aux feuilles de temps
 TimeSheetSelOne=Choisir une feuille de temps
 TimeSheetSelectOne=Sélectionnez une feuille de temps
+TimeSheetShoulNotWorkThisDay=Cet utilisateur ne travaille pas ce jour là
 
 //Droits
 ReadTimesheet=Lire les feuilles de temps

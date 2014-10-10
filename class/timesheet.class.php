@@ -287,6 +287,17 @@ class TTimesheet extends TObjetStd {
 									$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
 								}
 								
+								if($conf->absence->enabled) {
+									
+									dol_include_once('/absence/class/absence.class.php');
+									$absence=new TRH_Absence;
+									$absence->fk_user = $userstatic->id;
+									if(!$absence->isWorkingDay($PDOdb, $date)){
+										$chaine.=img_picto($langs->trans('TimeSheetShoulNotWorkThisDay'), 'warning');
+									}
+									
+								}
+								
 								if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled) {
 									
 									//tablelines
@@ -338,6 +349,7 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function loadTJours(){
+		global $conf, $langs;
 		
 		$TJours = array();
 
@@ -347,9 +359,18 @@ class TTimesheet extends TObjetStd {
 
 		$date_deb->sub(new DateInterval('P1D'));
 
+		$TJourNonTravaille=array();
+		if($conf->global->RH_JOURS_NON_TRAVAILLE) {
+			$TJourNonTravaille = explode(',', $conf->global->RH_JOURS_NON_TRAVAILLE);
+		}
+		
 		for($i=0;$i<=$diff->days;$i++){
 			$date_deb->add(new DateInterval('P1D'));
-			$TJours[$date_deb->format('Y-m-d')] = $date_deb->format('D');
+			
+			$jourSemaine = strtolower ($langs->trans($date_deb->format('l')));
+			
+			if(!in_array($jourSemaine, $TJourNonTravaille))$TJours[$date_deb->format('Y-m-d')] = $langs->trans($date_deb->format('l'));
+			
 		}
 		
 		return $TJours;
