@@ -1,9 +1,11 @@
 			<script type="text/javascript" src="[fiche.link]"></script>
 	
 			<table width="100%" class="border">
-				<tr><td width="10%">Identifiant</td><td>[timesheet.id;strconv=no]</td></tr>
-				<tr><td>Société</td><td>[timesheet.societe;strconv=no]</td></tr>
-				<tr><td>Project</td><td>[timesheet.project;strconv=no]</td></tr>
+				[onshow;block=begin; when [timesheet.id]!=0 ]
+				<tr><td >Identifiant</td><td>[timesheet.id;strconv=no]</td></tr>
+				[onshow;block=end]
+				<tr><td width="20%">Société</td><td>[timesheet.societe;strconv=no]</td></tr>
+				<tr><td>Project</td><td id="timesheet-project-list">[timesheet.project;strconv=no]</td></tr>
 				<tr><td>Status</td><td>[timesheet.status;strconv=no]</td></tr>
 				<tr><td>Date début période</td><td>[timesheet.date_deb;strconv=no]</td></tr>
 				<tr><td>Date fin période</td><td>[timesheet.date_fin;strconv=no]</td></tr>

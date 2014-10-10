@@ -216,7 +216,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'id'=>$timesheet->rowid
 				,'project'=>_fiche_visu_project($timesheet,$mode)
 				,'societe'=>_fiche_visu_societe($timesheet,$mode)
-				,'status'=>$form->combo('', 'status', $timesheet->TStatus, $timesheet->status)
+				,'status'=>$form->combo('', 'status', $timesheet->TStatus, $timesheet->status,1)
 				,'date_deb'=>$form->calendrier('', 'date_deb', $timesheet->date_deb)
 				,'date_fin'=>$form->calendrier('', 'date_fin', $timesheet->date_fin)
 			)
@@ -358,6 +358,20 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 
 		$html=new Form($db);
 		echo $html->select_company($timesheet->fk_societe,'fk_societe','',1);
+
+		?>
+		<script type="text/javascript">
+			
+			$('#fk_societe').change(function() {
+				
+				$('#timesheet-project-list').load('<?php echo $_SERVER['PHP_SELF'] ?>?action=new&fk_societe='+$(this).val()+' #timesheet-project-list')
+				
+			});
+			
+		</script>
+		
+		
+		<?
 
 		return ob_get_clean();
 
