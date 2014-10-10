@@ -347,7 +347,7 @@ class TTimesheet extends TObjetStd {
 
 		$date_deb->sub(new DateInterval('P1D'));
 
-		for($i=1;$i<=$diff->days;$i++){
+		for($i=0;$i<=$diff->days;$i++){
 			$date_deb->add(new DateInterval('P1D'));
 			$TJours[$date_deb->format('Y-m-d')] = $date_deb->format('D');
 		}
