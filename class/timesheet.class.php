@@ -493,13 +493,15 @@ class TTimesheet extends TObjetStd {
 		
 	}
 	
-	function _makeFactureLigne(&$PDOdb){
+	function _makeFactureLigne(&$PDOdb,&$facture){
 		global $db, $conf, $user, $langs;
 
-		$description = "";
+		$description = '';
 		$pu_ht = 0;
 		
 		$lastIdTask = null;
+
+		$TIdLine=array();
 
 		foreach($this->TTask as $idTask=>$task){
 			$fk_service = (int)$task->array_options['options_fk_service'];
@@ -515,6 +517,8 @@ class TTimesheet extends TObjetStd {
 					$price = $product->price;
 				}
 	
+				$tx_tva = $product->tva_tx;
+	
 				foreach($task->TTime as $Time){
 				
 					$TTimeUser[$Time->fk_user] += $Time->task_duration;
@@ -529,23 +533,57 @@ class TTimesheet extends TObjetStd {
 					$qty = $this->_getQty($product,$timevalue);
 					
 					$pu_ht += $qty * $price;
-					$description .= $product->label." : ".$nom." - ".convertSecondToTime($timevalue,'all').", ".$qty." x ".price($price)."<br>";
+					$desc_line= $product->label." : ".$nom/*.", ".$qty." x ".price($price)*/;
 				
 				}
 				
 			}
 			else{
-					$description .= $task->label." : ".$nom.'<br>';
+					$desc_line= $task->label." : ".$nom;
 				
 			}
 
+			$TIdLine[]=$facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
+
 		}
 		
-		return array($pu_ht,$description);
+		$tx_tva = null;
+		foreach($TIdLine as $id) {
+			
+			$line=new FactureLigne($db);
+			$line->fetch($id);
+			
+			$price = $line->total_ht;
+			$qty = $line->qty;
+			$subprice = $line->subprice * (1-( $line->remise_percent / 100));
+			
+			$description.=$line->desc;
+
+			if($line->fk_product) {
+				$description.=', '.$qty.' x '.$subprice.'<br />';
+			}
+			else{
+				$description.=', '.$qty.'<br />';
+			}
+			
+			$pu_ht+=$price;
+			
+			if(is_null($tx_tva))$tx_tva = $line->tx_tva;
+			if($line->tx_tva!=$tx_tva)$tx_tva=0;
+			
+			$line->delete();	
+		}
+		
+	//	var_dump(array($pu_ht,$description));exit;
+		return array($pu_ht,$description,$tx_tva);
 	}
 	
 	function _getQty(&$product,$timevalue){
 		global $db, $user, $conf;
+
+		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+
+		$nb_second_per_day = $hour_per_day * 3600;
 
 		$qty = 0;
 
@@ -554,16 +592,16 @@ class TTimesheet extends TObjetStd {
 				$qty += ($timevalue / 3600);
 				break;
 			case 'd':
-				$qty += ($timevalue / 86400);
+				$qty += ($timevalue / $nb_second_per_day);
 				break;
 			case 'w':
-				$qty += ($timevalue / 604800);
+				$qty += ($timevalue / ($nb_second_per_day * 5)); // five open days
 				break;
 			case 'm':
-				$qty += ($timevalue / 18144000);
+				$qty += ($timevalue / ($nb_second_per_day*20)); // 20 working day per month
 				break;
-			case 'd':
-				$qty += ($timevalue / 217728000);
+			case 'y':
+				$qty += ($timevalue / $nb_second_per_day * 200); // 200 working day per year
 				break;
 			default:
 				

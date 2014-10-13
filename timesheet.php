@@ -229,6 +229,7 @@ function _fiche(&$timesheet, $mode='view') {
 				,'status'=>$timesheet->TStatus[$timesheet->status]
 				,'date_deb'=>$form->calendrier('', 'date_deb', $timesheet->date_deb)
 				,'date_fin'=>$form->calendrier('', 'date_fin', $timesheet->date_fin)
+				,'libelleFactureLigne'=>$form->texte('','libelleFactureLigne', $timesheet->libelleFactureLigne, 50,255)
 			)
 			,'fiche'=>array(
 				'mode'=>$mode

@@ -126,40 +126,7 @@ class InterfaceTimesheetWorkflow
             );
         }
 		elseif ($action == 'LINEBILL_INSERT') {
-			$fk_timesheet = (int)GETPOST('fk_timesheet');
-
-			if($fk_timesheet>0){
-
-				define('INC_FROM_DOLIBARR', true);
-				dol_include_once('/timesheet/config.php');
-				global $db;
-				
-				$PDOdb = new TPDOdb;
-
-				$timesheet = new TTimesheet;
-				$timesheet->load($PDOdb,'',$_REQUEST['fk_timesheet']);
-
-				$facture = new Facture($db);
-				$facture->fetch($object->fk_facture);
-
-				list($pu_ht,$description) = $timesheet->_makeFactureLigne($PDOdb);
-				//var_dump($pu_ht, $description);exit;
-				$timesheet->fk_facture = $facture->id;
-				$timesheet->fk_facture_ligne = $object->rowid;
-				
-				$timesheet->status = 2;
-				
-				$timesheet->save($PDOdb);
-				
-				$desc = $timesheet->libelleFactureLigne." : <br>";
-				$desc .= $description;
-				
-				$object->subprice = $pu_ht;
-				$object->desc = $desc;
-				$object->total_ht = $pu_ht;
-				$object->update($user,1);
-
-			}
+			
 		}
 
         return 0;
