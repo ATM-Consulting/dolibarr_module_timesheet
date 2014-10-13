@@ -362,16 +362,22 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 		ob_start();
 
 		$html=new Form($db);
-		echo $html->select_company($timesheet->fk_societe,'fk_societe','',1);
+		echo $html->select_company($timesheet->fk_societe,'fk_societe','',1,0,1);
 
 		?>
 		<script type="text/javascript">
 			
 			$('#fk_societe').change(function() {
 				
-				$('#timesheet-project-list').load('<?php echo $_SERVER['PHP_SELF'] ?>?action=new&fk_societe='+$(this).val()+' #timesheet-project-list')
+				_select_other_project();
 				
 			});
+			
+			function _select_other_project() {
+				
+				$('#timesheet-project-list').load('<?php echo $_SERVER['PHP_SELF'] ?>?action=new&fk_societe='+$('#fk_societe').val()+' #timesheet-project-list');
+				
+			}
 			
 		</script>
 		
