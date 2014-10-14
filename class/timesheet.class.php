@@ -570,16 +570,16 @@ class TTimesheet extends TObjetStd {
 			$line=new FactureLigne($db);
 			$line->fetch($id);
 			
-			$price = $line->total_ht * $devise_taux;
+			$price = $line->total_ht;
 			$qty = $line->qty;
-			$subprice = $line->subprice * (1-( $line->remise_percent / 100)) * $devise_taux;
+			$subprice_currency = $line->subprice * (1-( $line->remise_percent / 100)) * $devise_taux;
 
 			$currency = $devise_code;
 			
 			$description.=$line->desc;
 
 			if($line->fk_product) {
-				$description.=', '.$qty.' x '.price(round($subprice,2)).$currency.'<br />';
+				$description.=', '.$qty.' x '.price(round($subprice_currency,2)).$currency.'<br />';
 			}
 			else{
 				$description.=', '.$qty.'<br />';
