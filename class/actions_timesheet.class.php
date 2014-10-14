@@ -8,7 +8,7 @@ class ActionsTimesheet
       *  @return       void 
       */
     function doActions($parameters, &$object, &$action, $hookmanager) {
-    	global $langs,$user;
+    	global $langs,$user,$conf,$db;
 		
 		if (in_array('invoicecard',explode(':',$parameters['context']))) 
         {
@@ -27,9 +27,32 @@ class ActionsTimesheet
 	
 					$facture = &$object;
 					
-					list($pu_ht,$description,$tx_tva) = $timesheet->_makeFactureLigne($PDOdb, $facture);
+					if($conf->multidevise->enabled){
+						if(empty($devise_taux)){
+							$sql = "SELECT devise_taux,devise_code FROM ".MAIN_DB_PREFIX."facture WHERE rowid = ".$facture->id;
+				            $resql = $db->query($sql);
+				            $res = $db->fetch_object($resql);
+				            $devise_taux = __val($res->devise_taux,1);
+							$devise_code = $res->devise_code;
+							
+						}
+					}
+					if(empty($devise_taux))$devise_taux = 1;
+					if(empty($devise_code))$devise_code=$conf->currency;
+							
+					
+					list($pu_ht,$description,$tx_tva) = $timesheet->_makeFactureLigne($PDOdb, $facture, $devise_taux, $devise_code);
 					
 					$idline = $facture->addline($timesheet->libelleFactureLigne." : <br>".$description, $pu_ht, 1, $tx_tva,0,0,0,0,'','',0,0,0,'HT',0,1);
+					
+					if($conf->multidevise->enabled){
+						$line = new FactureLigne($db);
+						$line->fetch($idline);
+						
+						dol_include_once('/multidevise/class/multidevise.class.php');
+						TMultidevise::updateLine($db, $line,$user, 'LINEBILL_UPDATE',$idline,0, $devise_taux);
+					}
+					
 					
 					$timesheet->fk_facture = $facture->id;
 					$timesheet->fk_facture_ligne = $idline;

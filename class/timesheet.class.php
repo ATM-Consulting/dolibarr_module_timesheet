@@ -498,7 +498,7 @@ class TTimesheet extends TObjetStd {
 		
 	}
 	
-	function _makeFactureLigne(&$PDOdb,&$facture){
+	function _makeFactureLigne(&$PDOdb,&$facture, $devise_taux=1, $devise_code='EUR'){
 		global $db, $conf, $user, $langs;
 
 		$description = '';
@@ -558,7 +558,8 @@ class TTimesheet extends TObjetStd {
 					$desc_line.=', '.$this->TLineLabel[$idTask][$fk_user];
 				}
 				
-				$TIdLine[]=$facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
+				$idNewLine = $facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
+				$TIdLine[]=$idNewLine;
 			}
 	
 		}
@@ -569,14 +570,16 @@ class TTimesheet extends TObjetStd {
 			$line=new FactureLigne($db);
 			$line->fetch($id);
 			
-			$price = $line->total_ht;
+			$price = $line->total_ht * $devise_taux;
 			$qty = $line->qty;
-			$subprice = $line->subprice * (1-( $line->remise_percent / 100));
+			$subprice = $line->subprice * (1-( $line->remise_percent / 100)) * $devise_taux;
+
+			$currency = $devise_code;
 			
 			$description.=$line->desc;
 
 			if($line->fk_product) {
-				$description.=', '.$qty.' x '.price(round($subprice,2)).'<br />';
+				$description.=', '.$qty.' x '.price(round($subprice,2)).$currency.'<br />';
 			}
 			else{
 				$description.=', '.$qty.'<br />';
