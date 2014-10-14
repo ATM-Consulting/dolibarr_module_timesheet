@@ -576,7 +576,7 @@ class TTimesheet extends TObjetStd {
 			$description.=$line->desc;
 
 			if($line->fk_product) {
-				$description.=', '.$qty.' x '.$subprice.'<br />';
+				$description.=', '.$qty.' x '.price(round($subprice,2)).'<br />';
 			}
 			else{
 				$description.=', '.$qty.'<br />';
