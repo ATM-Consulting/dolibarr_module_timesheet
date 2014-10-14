@@ -23,3 +23,5 @@ DelTimesheet=Delete timesheets
 ReadTimesheetNDF=Read spendings from timesheets
 ReadAllTimesheetNDF=Read all spendings from timesheets
 EditTimesheetNDF=Add/Update spendings from timesheets
+ApproveTimesheet=Approve timesheet
+BillingTimesheet=Billing the timesheet

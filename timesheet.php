@@ -60,7 +60,9 @@ function _action() {
 			
 			case 'savetime':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				//pre($_REQUEST);
+				$timesheet->set_values($_REQUEST);
+				$timesheet->save($PDOdb);
+				
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				$timesheet->load($PDOdb,$timesheet->rowid);
 				setEventMessage('TimeSheetSaved');
@@ -260,6 +262,10 @@ function _fiche(&$timesheet, $mode='view') {
 	//Charger les lignes existante dans le timeSheet
 
 	if($mode!='new' && $mode!='edit'){
+			
+		if($mode=='edittime')$form2->Set_typeaff('edit');
+		else $form2->Set_typeaff('view');
+		
 		list($TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;

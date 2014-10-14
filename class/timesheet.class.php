@@ -7,6 +7,8 @@ class TTimesheet extends TObjetStd {
 		parent::set_table(MAIN_DB_PREFIX.'timesheet');
 		parent::add_champs('entity,fk_project,fk_societe,status,fk_facture,fk_facture_ligne','type=entier;index;');
 		parent::add_champs('date_deb,date_fin','type=date;');
+		parent::add_champs('TLineLabel',array('type'=>'array'));
+		parent::add_champs('libelleFactureLigne',array('type'=>'string'));
 		
 		$this->TStatus = array(
 			0=>'Brouillon',
@@ -243,7 +245,7 @@ class TTimesheet extends TObjetStd {
 		
 	}
 
-	function loadLines(&$PDOdb,&$TJours,$doliform,$formATM,$mode='view'){
+	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view'){
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=array();
@@ -276,7 +278,8 @@ class TTimesheet extends TObjetStd {
 
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
-
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '', 30,255);	
+							
 							//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
 							$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
@@ -521,32 +524,43 @@ class TTimesheet extends TObjetStd {
 	
 				$tx_tva = $product->tva_tx;
 	
-				foreach($task->TTime as $Time){
+			}
+
+
+			foreach($task->TTime as $Time){
+			
+				$TTimeUser[$Time->fk_user] += $Time->task_duration;
+			
+			}
+			
+			foreach($TTimeUser as $fk_user => $timevalue){
 				
-					$TTimeUser[$Time->fk_user] += $Time->task_duration;
+				$userTemp = new User($db);
+				$userTemp->fetch($fk_user);
+				$nom = $userTemp->getFullName($langs);
 				
-				}
-				
-				foreach($TTimeUser as $fk_user => $timevalue){
-					
-					$userTemp = new User($db);
-					$userTemp->fetch($fk_user);
-					$nom = $userTemp->getFullName($langs);
-					$qty = $this->_getQty($product,$timevalue);
-					
+				if($fk_service>0){
+					$qty = $this->_getQty($product,$timevalue);	
 					$pu_ht += $qty * $price;
 					$desc_line= $product->label." : ".$nom/*.", ".$qty." x ".price($price)*/;
-				
+				}
+				else{
+					$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+					$nb_second_per_day = $hour_per_day * 3600;
+					$qty = $timevalue / $nb_second_per_day;
+					$desc_line= $task->label." : ".$nom;
 				}
 				
-			}
-			else{
-					$desc_line= $task->label." : ".$nom;
 				
+				
+				
+				if(!empty($this->TLineLabel[$idTask][$fk_user])) {
+					$desc_line.=', '.$this->TLineLabel[$idTask][$fk_user];
+				}
+				
+				$TIdLine[]=$facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
 			}
-
-			$TIdLine[]=$facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
-
+	
 		}
 		
 		$tx_tva = null;

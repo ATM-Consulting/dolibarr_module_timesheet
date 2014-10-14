@@ -272,6 +272,14 @@ class modTimesheet extends DolibarrModules
 		$this->rights[$r][5] = 'approve';
 		
 		
+		$r++;
+		$this->rights[$r][0] = 104250;
+		$this->rights[$r][1] = $langs->trans('BillingTimesheet');
+		$this->rights[$r][3] = 1;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'bill';
+		
+		
 		
 		$r++;
 		$this->rights[$r][0] = 104247;

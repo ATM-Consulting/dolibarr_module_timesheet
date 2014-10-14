@@ -78,7 +78,7 @@ class ActionsTimesheet
 		if (in_array('invoicecard',explode(':',$parameters['context']))) 
         {
         	
-			if($user->rights->timesheet->user->approve) {
+			if($user->rights->timesheet->user->bill) {
         	//Charger les liste des projets de type feuille de temps pas encore facturé
         	
 	        	$langs->load('timesheet@timesheet');
@@ -118,10 +118,10 @@ class ActionsTimesheet
 				<script type="text/javascript">
 					$(document).ready(function(){
 						$('#fk_timesheet').change(function(){
-							$('#select_type option[value=1]').attr('selected','selected');
+							/*$('#select_type option[value=1]').attr('selected','selected');
 							$('input[name=price_ht]').val('1');
 							$('#dp_desc').text('Temps de réalisation');
-							CKEDITOR.instances.dp_desc.setData('Temps de réalisation');
+							CKEDITOR.instances.dp_desc.setData('Temps de réalisation');*/
 						});
 						
 						
