@@ -106,7 +106,7 @@ class ActionsTimesheet
         	
 	        	$langs->load('timesheet@timesheet');
 	        	
-	        	$sql = "SELECT p.rowid, p.ref, p.title,t.status,t.rowid as 'idTS'
+	        	$sql = "SELECT p.rowid, p.ref, p.title,t.status,t.rowid as 'idTS',t.date_deb,t.date_fin
 	        			FROM ".MAIN_DB_PREFIX."projet as p
 	        				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
 	        			WHERE t.status=1 AND t.rowid NOT IN (SELECT rowid
@@ -121,7 +121,7 @@ class ActionsTimesheet
 				$resql = $db->query($sql);
 				if($resql){
 					while ($res = $db->fetch_object($resql)) {
-						$TTimeSheet[$res->idTS] = $res->ref." - ".$res->title/*.' + '.$res->status.' '.$res->idTS*/;
+						$TTimeSheet[$res->idTS] = $res->ref." - ".$res->title.' ('.dol_print_date(strtotime($res->date_deb)).' - '.dol_print_date(strtotime($res->date_fin)).')' /*.' + '.$res->status.' '.$res->idTS*/;
 					}
 				}
 				$select = ' '.$langs->trans('TimeSheetSelectOne').' : ';
