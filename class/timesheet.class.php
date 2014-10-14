@@ -105,6 +105,7 @@ class TTimesheet extends TObjetStd {
 			
 			$this->loadTimeSpentByTask($PDOdb,$task->id);
 		}
+		
 	}
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid){
@@ -114,7 +115,6 @@ class TTimesheet extends TObjetStd {
 				FROM ".MAIN_DB_PREFIX."projet_task_time as t
 					LEFT JOIN ".MAIN_DB_PREFIX."user as u ON (t.fk_user = u.rowid)
 				WHERE t.fk_task =".$taskid." 
-					AND t.fk_user = u.rowid
 				ORDER BY t.task_date DESC";
 
 		$PDOdb->Execute($sql);
@@ -122,6 +122,7 @@ class TTimesheet extends TObjetStd {
 		while ($row = $PDOdb->Get_line()) {
 			$this->TTask[$taskid]->TTime[$row->task_date] = $row;
 		}
+		
 	}
 	
 	function savetimevalues(&$PDOdb,$Tab){
@@ -246,7 +247,7 @@ class TTimesheet extends TObjetStd {
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=array();
-	
+		
 		foreach($this->TTask as $task){
 			$productstatic = new Product($db);
 			
@@ -258,11 +259,12 @@ class TTimesheet extends TObjetStd {
 			else{
 				$url_service = $task->getNomUrl(1).' - '.$task->label;
 			}
-	
-			$task->TTime = $this->fillWithJour($TJours, $task->TTime);
+				
+			if(empty($task->TTime)) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
 	
 			//Comptabilisation des temps + peuplage de $TligneJours
 			if(!empty($task->TTime)){
+				
 				foreach($task->TTime as $time){
 				
 						if($user->rights->timesheet->all->read || $user->id == $time->fk_user) {
@@ -270,13 +272,13 @@ class TTimesheet extends TObjetStd {
 							$userstatic = new User($db);
 							$userstatic->fetch($time->fk_user);
 
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
+							if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id]) ) $TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
 
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
 
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_heures'] += $time->task_duration;
+							//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
 							$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
 							
 							foreach($TJours as $date=>$val){
@@ -287,7 +289,7 @@ class TTimesheet extends TObjetStd {
 									$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
 								}
 								
-								if($conf->absence->enabled) {
+								if($conf->absence->enabled && empty($conf->global->TIMESHEET_RH_NO_CHECK)  ) {
 									
 									dol_include_once('/absence/class/absence.class.php');
 									$absence=new TRH_Absence;

@@ -5,8 +5,7 @@
 			<tr>
 				<td>Service</td>
 				<td>Consultant</td>
-				<td>Total<br>jours</td>
-				<td>Total<br>heures</td>
+				<td>Total</td>
 				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>
 				<td>Actions</td>
 			</tr>
@@ -24,7 +23,7 @@
 				<td>[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
 				<td><!-- total jours vide en mode création --></td>
-				<td><!-- total heures vide en mode création --></td>
+				
 				<td>[formjour.val;block=td;strconv=no]</td>
 				<td></td>
 			</tr>

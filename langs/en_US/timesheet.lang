@@ -5,6 +5,14 @@ ListTimesheet=Time sheets list
 AnyTimesheet=No timesheets to display
 CreateTimesheet=Create new timesheet
 FicheTimesheet=Record timesheet
+TimeSheetSaved=Timesheet recorded
+TimeSheetNewNoService=Service not selected
+TimeSheetaddNdfExpense=Add expenses to a note
+TimeSheetSelOne=Choose a Timesheet
+TimeSheetSelectOne=Choose a Timesheet
+TimeSheetShoulNotWorkThisDay=This user don't work this day
+TimeSheetToInvoice=Timesheet added to bill
+
 
 //Droits
 ReadTimesheet=Read timesheets

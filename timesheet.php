@@ -184,7 +184,6 @@ function _liste() {
 function _fiche(&$timesheet, $mode='view') {
 	
 	global $langs,$db,$conf,$user;
-	
 	$PDOdb = new TPDOdb;
 	
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
@@ -259,13 +258,16 @@ function _fiche(&$timesheet, $mode='view') {
 	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
 
 	//Charger les lignes existante dans le timeSheet
-	
+
 	if($mode!='new' && $mode!='edit'){
 		list($TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
 		
+		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+		$nb_second_per_day = $hour_per_day * 3600;
+		
 		foreach($TligneTimesheet as $cle => $val){
-			$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',28800)/24);
-			$TligneTimesheet[$cle]['total_heures'] = convertSecondToTime($val['total_heures'],'allhourmin');
+			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
+			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
 		}
 	}
 	
@@ -290,6 +292,7 @@ function _fiche(&$timesheet, $mode='view') {
 	foreach($TJours as $date=>$jour){
 		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
+	
 	
 	/*echo '<pre>';
 	print_r($TligneTimesheet);exit;
