@@ -182,8 +182,7 @@ class TTimesheet extends TObjetStd {
 							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$rowid,$Tab['userid_'.$rowid]);
 						}
 						else{
-							print 1;
-							pre($Tab);exit;
+							
 							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$Tab['userid_0']);
 						}
 					}
