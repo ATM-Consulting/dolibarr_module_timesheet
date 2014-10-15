@@ -61,9 +61,9 @@ function _action() {
 			case 'savetime':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				$timesheet->set_values($_REQUEST);
+				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				$timesheet->save($PDOdb);
 				
-				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				$timesheet->load($PDOdb,$timesheet->rowid);
 				setEventMessage('TimeSheetSaved');
 				_fiche($timesheet,'edittime');
@@ -322,6 +322,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'id'=>$timesheet->rowid
 					,'services'=>$doliform->select_produits_list('','serviceid_0','1')
 					,'consultants'=>$doliform->select_dolusers('','userid_0')
+					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
 					'mode'=>$mode

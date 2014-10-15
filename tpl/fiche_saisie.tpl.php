@@ -23,7 +23,7 @@
 			<tr id="[timesheet.rowid;strconv=no]">
 				<td>[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
-				<td><!-- total jours vide en mode création --></td>
+				<td>[timesheet.commentaireNewLine;strconv=no]</td>
 				<td><!--  --></td>
 				
 				<td>[formjour.val;block=td;strconv=no]</td>

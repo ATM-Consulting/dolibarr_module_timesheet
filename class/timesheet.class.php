@@ -161,11 +161,17 @@ class TTimesheet extends TObjetStd {
 						$PDOdb->Execute($sql);
 						
 						if($PDOdb->Get_line()){
+						
 							//Une tache associé à ce service existe dans le projet, on ajoute alors le temps de l'utilisateur concerné
 							$rowid = $PDOdb->Get_field('rowid');
 							$TTemps[$rowid] = $TTemps[0];
 							$Tab['serviceid_'.$rowid] = $Tab['serviceid_0'];
 							$Tab['userid_'.$rowid] = $Tab['userid_0']; // il y a tellement de manière de faire ça plus mieux zolie ! 
+							
+							
+							$task->fetch($rowid);
+							
+							$this->TLineLabel[$task->id][$Tab['userid_0']] = $Tab['lineLabel_0']; 
 							
 							//On vide le contenu du tableau correspondant à l'ajout de ligne sinon ça va bugger
 							// même sans ça tu sais...
@@ -173,12 +179,11 @@ class TTimesheet extends TObjetStd {
 							unset($Tab['serviceid_0']);
 							unset($Tab['userid_0']);
 							
-							$task->fetch($rowid);
-							
 							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$rowid,$Tab['userid_'.$rowid]);
 						}
 						else{
-							//pre($Tab);exit;
+							print 1;
+							pre($Tab);exit;
 							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$Tab['userid_0']);
 						}
 					}
@@ -412,6 +417,8 @@ class TTimesheet extends TObjetStd {
 			$idTask = $task->create($user);
 			
 			$this->TTask[$task->id] = $task;
+			
+			$this->TLineLabel[$task->id][$idUser] = GETPOST('lineLabel_0'); 			
 
 			$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask,$idUser);
 		}

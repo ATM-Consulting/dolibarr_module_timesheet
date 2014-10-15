@@ -105,14 +105,14 @@ class ActionsTimesheet
         	//Charger les liste des projets de type feuille de temps pas encore facturé
         	
 	        	$langs->load('timesheet@timesheet');
-	        	
+
 	        	$sql = "SELECT p.rowid, p.ref, p.title,t.status,t.rowid as 'idTS',t.date_deb,t.date_fin
 	        			FROM ".MAIN_DB_PREFIX."projet as p
 	        				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
 	        			WHERE t.status=1 AND t.rowid NOT IN (SELECT rowid
 	        								  FROM ".MAIN_DB_PREFIX."timesheet
 	        								  WHERE fk_facture>0)";
-	
+
 				dol_include_once('/core/class/html.form.core.php');
 				$form = new Form($db);
 				
