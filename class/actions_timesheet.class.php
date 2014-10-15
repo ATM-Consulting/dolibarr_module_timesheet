@@ -43,7 +43,11 @@ class ActionsTimesheet
 					
 					list($pu_ht,$description,$tx_tva) = $timesheet->_makeFactureLigne($PDOdb, $facture, $devise_taux, $devise_code);
 					
-					$idline = $facture->addline($timesheet->libelleFactureLigne." : <br>".$description, $pu_ht, 1, $tx_tva,0,0,0,0,'','',0,0,0,'HT',0,1);
+					$label = $timesheet->project->ref.' - '.$timesheet->project->title;
+					if(!empty($timesheet->libelleFactureLigne))$label.=' - '.$timesheet->libelleFactureLigne;
+					$label  .=' : <br>'.$description;
+					
+					$idline = $facture->addline($label, $pu_ht, 1, $tx_tva,0,0,0,0,'','',0,0,0,'HT',0,1);
 					
 					if($conf->multidevise->enabled){
 						$line = new FactureLigne($db);
@@ -121,7 +125,7 @@ class ActionsTimesheet
 				$resql = $db->query($sql);
 				if($resql){
 					while ($res = $db->fetch_object($resql)) {
-						$TTimeSheet[$res->idTS] = $res->ref." - ".$res->title.' ('.dol_print_date(strtotime($res->date_deb)).' - '.dol_print_date(strtotime($res->date_fin)).')' /*.' + '.$res->status.' '.$res->idTS*/;
+						$TTimeSheet[$res->idTS] = '('.$res->idTS.') '.$res->ref." - ".$res->title.' ('.dol_print_date(strtotime($res->date_deb)).' - '.dol_print_date(strtotime($res->date_fin)).')' /*.' + '.$res->status.' '.$res->idTS*/;
 					}
 				}
 				$select = ' '.$langs->trans('TimeSheetSelectOne').' : ';

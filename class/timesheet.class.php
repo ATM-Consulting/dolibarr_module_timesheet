@@ -533,11 +533,15 @@ class TTimesheet extends TObjetStd {
 	
 			}
 
-
-			foreach($task->TTime as $Time){
+			$TTimeUser=array();
 			
-				$TTimeUser[$Time->fk_user] += $Time->task_duration;
-			
+			if(!empty($task->TTime)) {
+				foreach($task->TTime as $Time){
+				
+					$TTimeUser[$Time->fk_user] += $Time->task_duration;
+				
+				}
+				
 			}
 			
 			foreach($TTimeUser as $fk_user => $timevalue){
