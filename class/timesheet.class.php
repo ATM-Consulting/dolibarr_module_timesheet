@@ -90,6 +90,8 @@ class TTimesheet extends TObjetStd {
 	function loadProjectTask(&$PDOdb){
 		global $db;
 		
+		$this->TTask=array();
+		
 		$sql = "SELECT rowid 
 				FROM ".MAIN_DB_PREFIX."projet_task 
 				WHERE fk_projet = ".$this->project->id.'
@@ -122,6 +124,7 @@ class TTimesheet extends TObjetStd {
 				ORDER BY t.fk_user,t.task_date DESC";
 
 		$PDOdb->Execute($sql);
+		$this->TTask[$taskid]->TTime=array();
 		while ($row = $PDOdb->Get_line()) {
 			$this->TTask[$taskid]->TTime[$row->task_date] = $row;
 		}
@@ -352,9 +355,41 @@ class TTimesheet extends TObjetStd {
 		$Tab = $PDOdb->ExecuteAsArray($sql);
 		foreach($Tab as $row) {
 			$task->fetchTimeSpent($row->rowid);
-			
 			$task->delTimeSpent($user);
 		}
+		
+		$task->fetch($fk_task);
+		if($task->duration_effective==0) {
+			$task->delete($user);
+		}
+
+	}
+	
+	function delete(&$PDOdb) {
+		global $db,$user;
+		
+		$this->loadProjectTask($PDOdb);
+		foreach($this->TTask as $task) {
+			
+			foreach($task->TTime as $time) {
+				
+				$this->deleteAllTimeForTaskUser($PDOdb, $task->id, $time->fk_user);
+				
+			}
+			
+		}
+		
+		
+		$this->loadProjectTask($PDOdb);
+		if(empty($this->TTask)) {
+			
+			$project=new Project($db);
+			$project->fetch($this->project->id);
+			$project->delete($user);
+				
+		}
+		
+		parent::delete($PDOdb);
 		
 	}
 	
