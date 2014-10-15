@@ -515,6 +515,9 @@ class TTimesheet extends TObjetStd {
 
 		$TIdLine=array();
 
+		$soc=new Societe($db);
+		$soc->fetch($facture->socid);
+
 		foreach($this->TTask as $idTask=>$task){
 			$fk_service = (int)$task->array_options['options_fk_service'];
 
@@ -531,6 +534,9 @@ class TTimesheet extends TObjetStd {
 	
 				$tx_tva = $product->tva_tx;
 	
+			}
+			else{
+				$price=0;
 			}
 
 			$TTimeUser=array();
@@ -552,7 +558,7 @@ class TTimesheet extends TObjetStd {
 				
 				if($fk_service>0){
 					$qty = $this->_getQty($product,$timevalue);	
-					$pu_ht += $qty * $price;
+					
 					$desc_line= $product->label." : ".$nom/*.", ".$qty." x ".price($price)*/;
 				}
 				else{
@@ -568,28 +574,51 @@ class TTimesheet extends TObjetStd {
 				if(!empty($this->TLineLabel[$idTask][$fk_user])) {
 					$desc_line.=', '.$this->TLineLabel[$idTask][$fk_user];
 				}
+			
+				$remise=0;
+				if($conf->tarif->enabled && $fk_service>0) {
+					dol_include_once('/tarif/class/tarif.class.php');
+					
+					$TFk_categorie = TTarif::getCategClient($soc->id);
+					$TRes = TTarif::getRemise($db, $fk_service,$qty,1,69, $soc->country_id, $TFk_categorie);
+					if($TRes[0]!==false){
+						$remise = $TRes[0];
+					}
+					
+					$TRes = TTarif::getPrix($db,$fk_service,$qty,1,69,$price,$devise_taux,$devise_code,$soc->price_level,$soc->country_id, $TFk_categorie);
+					
+					if($TRes[0]!==false){
+						list($price, $tx_tva) = $TRes;
+					}
+					
 				
-				$idNewLine = $facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
-				$TIdLine[]=$idNewLine;
+				}
+				
+				//$idNewLine = $facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
+				$TIdLine[]=array(
+					'price'=>$price
+					,'tx_tva'=>$tx_tva
+					,'desc'=>$desc_line
+					,'qty'=>$qty
+					,'fk_product'=>$product->id
+					,'remise'=>$remise
+				);
 			}
 	
 		}
 		
 		$tx_tva = null;
-		foreach($TIdLine as $id) {
+		foreach($TIdLine as $line) {
 			
-			$line=new FactureLigne($db);
-			$line->fetch($id);
+			$qty = $line['qty'];
+			$subprice_currency = $line['price'] * (1-( $line['remise'] / 100)) * $devise_taux;
+			$price = $subprice_currency*$qty;
 			
-			$price = $line->total_ht;
-			$qty = $line->qty;
-			$subprice_currency = $line->subprice * (1-( $line->remise_percent / 100)) * $devise_taux;
-
 			$currency = $devise_code;
 			
-			$description.=$line->desc;
+			$description.=$line['desc'];
 
-			if($line->fk_product) {
+			if($line['fk_product']) {
 				$description.=', '.$qty.' x '.price(round($subprice_currency,2)).$currency.'<br />';
 			}
 			else{
@@ -598,10 +627,10 @@ class TTimesheet extends TObjetStd {
 			
 			$pu_ht+=$price;
 			
-			if(is_null($tx_tva))$tx_tva = $line->tx_tva;
-			if($line->tx_tva!=$tx_tva)$tx_tva=0;
+			if(is_null($tx_tva))$tx_tva = $line['tx_tva'];
+			if($line['tx_tva']!=$tx_tva)$tx_tva=0;
 			
-			$line->delete();	
+			
 		}
 		
 	//	var_dump(array($pu_ht,$description));exit;
