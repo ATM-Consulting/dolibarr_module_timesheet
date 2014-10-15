@@ -596,7 +596,7 @@ class TTimesheet extends TObjetStd {
 				
 				//$idNewLine = $facture->addline($desc_line, $price, $qty, $tx_tva, 0, 0, $product->id);
 				$TIdLine[]=array(
-					'price'=>$price
+					'price'=>$price / $devise_taux
 					,'tx_tva'=>$tx_tva
 					,'desc'=>$desc_line
 					,'qty'=>$qty
