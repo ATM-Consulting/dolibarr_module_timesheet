@@ -15,13 +15,13 @@ TimeSheetToInvoice=Timesheet added to bill
 
 
 //Droits
-ReadTimesheet=Read timesheets
-ReadAllTimesheet=Read all timesheets
+ReadTimesheet=Read your times
+ReadAllTimesheet=Read all times
 EditTimesheet=Add/Update timesheets
 AddTimesheet=Add/Update task times
 DelTimesheet=Delete timesheets
-ReadTimesheetNDF=Read spendings from timesheets
-ReadAllTimesheetNDF=Read all spendings from timesheets
-EditTimesheetNDF=Add/Update spendings from timesheets
+ReadTimesheetNDF=Read expenses from timesheets
+ReadAllTimesheetNDF=Read all expenses from timesheets
+EditTimesheetNDF=Add/Update expenses from timesheets
 ApproveTimesheet=Approve timesheet
 BillingTimesheet=Billing the timesheet

@@ -8,24 +8,26 @@ class TTimesheet extends TObjetStd {
 		parent::add_champs('entity,fk_project,fk_societe,status,fk_facture,fk_facture_ligne','type=entier;index;');
 		parent::add_champs('date_deb,date_fin','type=date;');
 		parent::add_champs('TLineLabel',array('type'=>'array'));
-		parent::add_champs('libelleFactureLigne',array('type'=>'string'));
+		parent::add_champs('libelleFactureLigne');
 		
+		parent::_init_vars();
+		parent::start();
+
+		$this->libelleFactureLigne = "Temps de réalisation";
+
 		$this->TStatus = array(
 			0=>'Brouillon',
 			1=>'Validée',
 			2=>'Facturée'
 		);
 		
-		$this->libelleFactureLigne = "Temps de réalisation";
 		
 		//Tableau de tâches
 		$this->TTask = array();
 		
 		//Tableau de temps en seconde permettant de calculer la quantité à facturer
 		$this->TQty = array();
-		
-		parent::_init_vars();
-		parent::start();
+
 	}
 	
 	function load(&$PDOdb,$id='',$id_Projet=0){
@@ -91,8 +93,8 @@ class TTimesheet extends TObjetStd {
 		$sql = "SELECT rowid 
 				FROM ".MAIN_DB_PREFIX."projet_task 
 				WHERE fk_projet = ".$this->project->id.'
-					AND dateo >= "'.$this->get_date('date_deb','Y-m-d 00:00:00').'" AND dateo <= "'.$this->get_date('date_fin','Y-m-d 23:59:59').'"
-				ORDER BY dateo ASC';
+					
+				ORDER BY label ASC';
 
 		//echo $sql;exit;
 		$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
@@ -116,11 +118,10 @@ class TTimesheet extends TObjetStd {
 		$sql = "SELECT t.rowid, t.task_date, t.task_duration, t.fk_user, t.note, u.lastname, u.firstname
 				FROM ".MAIN_DB_PREFIX."projet_task_time as t
 					LEFT JOIN ".MAIN_DB_PREFIX."user as u ON (t.fk_user = u.rowid)
-				WHERE t.fk_task =".$taskid." 
-				ORDER BY t.task_date DESC";
+				WHERE t.fk_task =".$taskid." AND t.task_date BETWEEN '".$this->get_date('date_deb', 'Y-m-d')."' AND '".$this->get_date('date_fin', 'Y-m-d')."' 
+				ORDER BY t.fk_user,t.task_date DESC";
 
 		$PDOdb->Execute($sql);
-
 		while ($row = $PDOdb->Get_line()) {
 			$this->TTask[$taskid]->TTime[$row->task_date] = $row;
 		}
@@ -253,23 +254,23 @@ class TTimesheet extends TObjetStd {
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=array();
-		
-		foreach($this->TTask as $task){
-			$productstatic = new Product($db);
 			
-			if($task->array_options['options_fk_service']>0) { //et oui, y avait un mind map
-				$productstatic->fetch((int)$task->array_options['options_fk_service']);
-				$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
-				$url_service = $productstatic->getNomUrl(1); 
-			}
-			else{
-				$url_service = $task->getNomUrl(1).' - '.$task->label;
-			}
-				
-			if(empty($task->TTime)) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
-	
+		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
 			if(!empty($task->TTime)){
+
+				$productstatic = new Product($db);
+				
+				if($task->array_options['options_fk_service']>0) { //et oui, y avait un mind map
+					$productstatic->fetch((int)$task->array_options['options_fk_service']);
+					$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
+					$url_service = $productstatic->getNomUrl(1); 
+				}
+				else{
+					$url_service = $task->getNomUrl(1).' - '.$task->label;
+				}
+					
+				//$task->TTime = $this->fillWithJour($TJours, $task->TTime);
 				
 				foreach($task->TTime as $time){
 				
