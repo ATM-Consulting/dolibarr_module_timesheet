@@ -382,11 +382,11 @@ class TTimesheet extends TObjetStd {
 		
 		$this->loadProjectTask($PDOdb);
 		if(empty($this->TTask)) {
-			
+		/*	
 			$project=new Project($db);
 			$project->fetch($this->project->id);
 			$project->delete($user);
-				
+			*/	
 		}
 		
 		parent::delete($PDOdb);
