@@ -164,7 +164,7 @@ class ActionsTimesheet
 				</script>
 				
 				<?php				
-			}approve
+			}
 
         }
 
