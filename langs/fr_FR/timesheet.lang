@@ -26,3 +26,13 @@ ReadAllTimesheetNDF=Lire tous les frais associés aux feuilles de temps
 EditTimesheetNDF=Ajouter/Modifier les frais associés aux feuilles de temps
 ApproveTimesheet=Approuver les feuilles de temps
 BillingTimesheet=Facturer les feuilles de temps
+
+//ODT
+TimeSheetDates=Période : %s au %s
+TimeSheetproject=Projet : %s
+TimeSheetService=Service
+TimeSheetApproval=Approbation
+TimeSheetApprovalBy=Approuvé par 
+TimeSheetTotal=Total
+TimeSheetComment=Commentaire
+TimeSheetConsultant=Consultant

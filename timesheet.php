@@ -13,7 +13,7 @@ if ($user->societe_id > 0)
 }
 
 function _action() {
-	global $user,$langs,$conf;
+	global $user,$langs,$conf,$mysoc;
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
@@ -23,11 +23,39 @@ function _action() {
 	*
 	* Put here all code to do according to value of "action" parameter
 	********************************************************************/
+	
+	$action=GETPOST('action');
+	
+	if($action=='print') {
+		
+		$timesheet->load($PDOdb, GETPOST('id'));
+
+		$TBS=new TTemplateTBS;
+		$TBS->render('./tpl/approve.odt'
+			,array()
+			,array(
+				'timesheet'=>array(
+					'socname'=>$timesheet->societe->name
+					,'mysocname'=>$mysoc->name
+					,'date_dates'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetDates', dol_print_date($timesheet->date_deb), dol_print_date($timesheet->date_fin) ) )
+					,'project'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetproject', $timesheet->project->title))
+				)
+				,'langs'=>getLangTranslate()
+			)
+			,array()
+		);
+		
+		
+		exit;
+	}
+	
+
 	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	
-	if(isset($_REQUEST['action'])) {
-		switch($_REQUEST['action']) {
+	if($action) {
+		switch($action) {
+			
 			case 'new':
 			case 'add':
 				$timesheet->set_values($_REQUEST);
@@ -111,7 +139,19 @@ function _action() {
 	llxFooter();
 	
 }
-
+function getLangTranslate() {
+	global $langs;
+	
+	$Tab=array();
+	foreach($langs->tab_translate as $k=>$v) {
+		$Tab[$k] = utf8_decode($v);
+	}
+	
+	return $Tab;
+	
+}
+	
+	
 function _liste() {
 	global $langs,$db,$user,$conf;
 
@@ -212,7 +252,7 @@ function _fiche(&$timesheet, $mode='view') {
 	echo $form->hidden('entity', $conf->entity);
 
 	$TBS=new TTemplateTBS();
-	$liste=new TListviewTBS('timesheet');
+	$liste=new TListviewTBS('timesheet');PDOdb,$TJours,$doliform,$form2,$mode
 
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
@@ -253,16 +293,16 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	$TJours = $timesheet->loadTJours(); 
 	
+	$form2=new TFormCore($_SERVER['PHP_SELF'],'formtime','POST');
+
 	//transformation de $TJours pour jolie affichage
 	foreach ($TJours as $key => $value) {
 		$TKey = explode('-', $key);
 		$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
 	}
 	
-	$form2=new TFormCore($_SERVER['PHP_SELF'],'formtime','POST');
-
 	//Charger les lignes existante dans le timeSheet
-
+	
 	if($mode!='new' && $mode!='edit'){
 			
 		if($mode=='edittime')$form2->Set_typeaff('edit');
