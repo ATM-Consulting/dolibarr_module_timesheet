@@ -363,7 +363,15 @@ class TTimesheet extends TObjetStd {
 		}
 		
 		$task->fetch($fk_task);
-		if($task->duration_effective==0) {
+		
+		$sql = "SELECT SUM(task_duration) as task_duration
+					FROM ".MAIN_DB_PREFIX."projet_task_time 
+					WHERE fk_task =".$fk_task ;
+		
+		$res = $db->query($sql);
+		$obj=$db->fetch_object($res);
+		
+		if($obj->task_duration==0) {
 			$task->delete($user);
 		}
 
