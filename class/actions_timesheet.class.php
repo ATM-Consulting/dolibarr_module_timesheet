@@ -12,7 +12,7 @@ class ActionsTimesheet
 		
 		if (in_array('invoicecard',explode(':',$parameters['context']))) 
         {
-        	if($action==='addtimesheet' && $user->rights->timesheet->user->approve) {
+        	if($action==='addtimesheet' && $user->rights->timesheet->user->bill) {
 				$fk_timesheet = (int)GETPOST('fk_timesheet');
 
 				if($fk_timesheet>0){
@@ -164,7 +164,7 @@ class ActionsTimesheet
 				</script>
 				
 				<?php				
-			}
+			}approve
 
         }
 
