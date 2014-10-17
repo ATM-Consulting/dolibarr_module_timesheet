@@ -311,7 +311,7 @@ class TTimesheet extends TObjetStd {
 									
 								}
 								
-								if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled) {
+								if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled && $user->rights->timesheet->ndf->read) {
 									
 									//tablelines
 									

@@ -24,8 +24,9 @@
 							<input type="button" id="action-delete" value="Supprimer" name="cancel" class="butActionDelete" onclick="if(confirm('Supprimer cette feuille de temps?')) document.location.href='?action=delete&id=[timesheet.id]'">
 						[onshow;block=end]
 						[onshow;block=end]
+						[onshow;block=begin;when [fiche.righttomodify]==1]
 							&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier</a>
-							
+						[onshow;block=end]	
 						[onshow;block=begin;when [fiche.righttoapprove]==1]
 							[onshow;block=begin;when [fiche.statusval]==0]
 								&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=approve" class="butAction">Approuver</a>
@@ -33,6 +34,9 @@
 							[onshow;block=begin;when [fiche.statusval]==1]
 								<!-- &nbsp; &nbsp; <a href="?id=[timesheet.id]&action=facturer" class="butAction">Facturer</a> -->
 							[onshow;block=end]
+						[onshow;block=end]
+						[onshow;block=begin;when [fiche.righttoprint]==1]
+						<!--  nbsp; &nbsp; <a href="?id=[timesheet.id]&action=print" class="butAction">Imprimer</a> -->
 						[onshow;block=end]
 						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='liste.php'" name="retour-liste" value="Retour">
 					[onshow;block=end]

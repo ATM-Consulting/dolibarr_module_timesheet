@@ -172,7 +172,7 @@ function _liste() {
 		)
 	));
 
-	if($user->rights->timesheet->user->add){
+	if($user->rights->timesheet->user->edit){
 		echo '<div class="tabsAction">';
 		echo '<a class="butAction" href="?action=new">'.$langs->trans('CreateTimesheet').'</a>';
 		echo '</div>';
@@ -236,8 +236,10 @@ function _fiche(&$timesheet, $mode='view') {
 				'mode'=>$mode
 				,'statusval'=>$timesheet->status
 				,'link'=>'' //dol_buildpath('/ndfp/js/functions.js.php',2)
+				,'righttomodify'=>$user->rights->timesheet->user->edit
 				,'righttodelete'=>$user->rights->timesheet->user->delete
 				,'righttoapprove'=>$user->rights->timesheet->user->approve
+				,'righttoprint'=>$conf->abricot->enabled
 			)
 		)
 	);
@@ -321,7 +323,7 @@ function _fiche(&$timesheet, $mode='view') {
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
 					,'services'=>$doliform->select_produits_list('','serviceid_0','1')
-					,'consultants'=>$doliform->select_dolusers('','userid_0')
+					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
@@ -329,7 +331,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'nbChamps'=>count($asset->TField)
 					,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
-					,'righttoedit'=>$user->rights->timesheet->user->edit
+					,'righttoedit'=>$user->rights->timesheet->user->add
 				)
 				
 			)
