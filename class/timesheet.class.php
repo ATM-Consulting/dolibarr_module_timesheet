@@ -256,7 +256,7 @@ class TTimesheet extends TObjetStd {
 	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view'){
 		global $db, $user, $conf, $langs;
 		
-		$TLigneTimesheet=array();
+		$TLigneTimesheet=$THidden=array();
 			
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
@@ -323,12 +323,16 @@ class TTimesheet extends TObjetStd {
 	
 							}
 							
-							if($user->rights->timesheet->user->delete) {
+							if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2) {
 								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\'Supprimer cette ligne de saisie des temps?\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
 							}
 							else{
 								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
 							}
+							
+						}
+						else{
+							if($mode!='view') $THidden[$task->id.'_'.$time->fk_user] = $formATM->hidden('TLineLabel['.$task->id.']['.$time->fk_user.']', !empty($this->TLineLabel[$task->id][$time->fk_user] ) ? $this->TLineLabel[$task->id][$time->fk_user] : '');	
 							
 						}
 							
@@ -340,7 +344,7 @@ class TTimesheet extends TObjetStd {
 			
 		}
 		
-		return array($TLigneTimesheet);
+		return array($TLigneTimesheet, $THidden);
 	}
 	
 	function deleteAllTimeForTaskUser(&$PDOdb, $fk_task, $fk_user) {

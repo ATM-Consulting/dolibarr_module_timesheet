@@ -259,7 +259,7 @@ function _fiche(&$timesheet, $mode='view') {
 		$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
 	}
 	
-	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
+	$form2=new TFormCore($_SERVER['PHP_SELF'],'formtime','POST');
 
 	//Charger les lignes existante dans le timeSheet
 
@@ -268,7 +268,7 @@ function _fiche(&$timesheet, $mode='view') {
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
 		
-		list($TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
@@ -301,10 +301,6 @@ function _fiche(&$timesheet, $mode='view') {
 		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
 	
-	
-	/*echo '<pre>';
-	print_r($TligneTimesheet);exit;
-	echo '</pre>';*/
 	if($mode!='new' && $mode != "edit"){
 		/*
 		 * Affichage tableau de saisie des temps
@@ -317,6 +313,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'jours'=>$TJours,
 				'joursVisu'=>$TJoursVisu,
 				'formjour'=>$TFormJours
+				,'THidden'=>$THidden
 			)
 			,array(
 				'timesheet'=>array(
@@ -331,7 +328,8 @@ function _fiche(&$timesheet, $mode='view') {
 					,'nbChamps'=>count($asset->TField)
 					,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
-					,'righttoedit'=>$user->rights->timesheet->user->add
+					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
+					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
 				)
 				
 			)

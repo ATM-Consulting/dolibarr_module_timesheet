@@ -12,7 +12,7 @@ TimeSheetSelOne=Choose a Timesheet
 TimeSheetSelectOne=Choose a Timesheet
 TimeSheetShoulNotWorkThisDay=This user don't work this day
 TimeSheetToInvoice=Timesheet added to bill
-
+TimesheetYouCantIsEmpty=You can't create an entry with no booked time on it
 
 //Droits
 ReadTimesheet=Read your times

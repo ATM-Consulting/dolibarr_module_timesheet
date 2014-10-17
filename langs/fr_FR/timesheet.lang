@@ -13,6 +13,7 @@ TimeSheetSelOne=Choisir une feuille de temps
 TimeSheetSelectOne=Sélectionnez une feuille de temps
 TimeSheetShoulNotWorkThisDay=Cet utilisateur ne travaille pas ce jour là
 TimeSheetToInvoice=Feuille de temps facturée
+TimesheetYouCantIsEmpty=Vous devez saisir des temps pour ajouter une ligne
 
 //Droits
 ReadTimesheet=Lire les feuilles de temps
