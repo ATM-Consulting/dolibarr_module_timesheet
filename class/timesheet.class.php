@@ -126,7 +126,7 @@ class TTimesheet extends TObjetStd {
 		$PDOdb->Execute($sql);
 		$this->TTask[$taskid]->TTime=array();
 		while ($row = $PDOdb->Get_line()) {
-			$this->TTask[$taskid]->TTime[$row->task_date] = $row;
+			$this->TTask[$taskid]->TTime[$row->task_date.'_'.$row->fk_user] = $row;
 		}
 		
 	}
@@ -260,6 +260,9 @@ class TTimesheet extends TObjetStd {
 			
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
+			
+			//var_dump($task->TTime);
+
 			if(!empty($task->TTime)){
 
 				$productstatic = new Product($db);
@@ -331,7 +334,7 @@ class TTimesheet extends TObjetStd {
 							}
 							
 						}
-							
+				
 					}
 				
 
