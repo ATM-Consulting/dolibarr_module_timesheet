@@ -47,7 +47,7 @@ class ActionsTimesheet
 					if(!empty($timesheet->libelleFactureLigne))$label.=' - '.$timesheet->libelleFactureLigne;
 					$label  .=' : <br>'.$description;
 					
-					$idline = $facture->addline($label, $pu_ht, 1, $tx_tva,0,0,0,0,'','',0,0,0,'HT',0,1);
+					$idline = $facture->addline($label, $pu_ht/$devise_taux, 1, $tx_tva,0,0,0,0,'','',0,0,0,'HT',0,1);
 					
 					if($conf->multidevise->enabled){
 						$line = new FactureLigne($db);
@@ -100,7 +100,7 @@ class ActionsTimesheet
 
 	function formAddObjectLine ($parameters, &$object, &$action, $hookmanager) {
 		
-		global $db,$langs,$user;
+		global $db,$langs,$user,$conf;
 
 		if (in_array('invoicecard',explode(':',$parameters['context']))) 
         {
@@ -113,7 +113,7 @@ class ActionsTimesheet
 	        	$sql = "SELECT p.rowid, p.ref, p.title,t.status,t.rowid as 'idTS',t.date_deb,t.date_fin
 	        			FROM ".MAIN_DB_PREFIX."projet as p
 	        				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
-	        			WHERE t.status=1 AND t.rowid NOT IN (SELECT rowid
+	        			WHERE t.status=1 AND t.entity = ".$conf->entity." AND t.rowid NOT IN (SELECT rowid
 	        								  FROM ".MAIN_DB_PREFIX."timesheet
 	        								  WHERE fk_facture>0)";
 
