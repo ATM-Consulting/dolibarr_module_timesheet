@@ -25,3 +25,13 @@ ReadAllTimesheetNDF=Read all expenses from timesheets
 EditTimesheetNDF=Add/Update expenses from timesheets
 ApproveTimesheet=Approve timesheet
 BillingTimesheet=Billing the timesheet
+
+//ODT
+TimeSheetDates=Period : %s to %s
+TimeSheetproject=Project : %s
+TimeSheetService=Service
+TimeSheetApproval=Approval
+TimeSheetApprovalBy=Approved by 
+TimeSheetTotal=Total
+TimeSheetComment=Comment
+TimeSheetConsultant=Consultant
