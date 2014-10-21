@@ -1,4 +1,6 @@
 [onshow;block=begin;when [view.mode]!='new']
+	<span>[THidden.val;block=span;strconv=no]</span>
+
 	<table class="border" style="width:100%;">
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
@@ -49,4 +51,30 @@
 	</div>
 	
 	<div style="clear:both"></div>
+	<script type="text/javascript">
+		$(document).ready(function() {
+		
+			$('#formtime').submit(function() {
+				
+				if($('#serviceid_0').val()>0) {
+					var is_empty=true;
+					$('[id^=temps_0]').each(function(i) {
+						if($(this).val()!='')is_empty=false;
+					});
+					
+					if(is_empty){
+						alert('[view.TimesheetYouCantIsEmpty;strconv=no]');
+						return false;
+					}
+					else{
+						null; // ok
+					}
+				}
+			});
+				
+		});
+	
+	</script>
+	
+	
 [onshow;block=end]

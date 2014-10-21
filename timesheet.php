@@ -13,7 +13,7 @@ if ($user->societe_id > 0)
 }
 
 function _action() {
-	global $user,$langs,$conf;
+	global $user,$langs,$conf,$mysoc;
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
@@ -23,11 +23,63 @@ function _action() {
 	*
 	* Put here all code to do according to value of "action" parameter
 	********************************************************************/
+	
+	$action=GETPOST('action');
+	
+	if($action=='print') {
+		
+		$timesheet->load($PDOdb, GETPOST('id'));
+		
+		$formATM=new TFormCore;
+		$doliform = new Form($db);
+		$TJours = $timesheet->loadTJours(); 
+		
+		//transformation de $TJours pour jolie affichage
+		foreach ($TJours as $key => $value) {
+			$TKey = explode('-', $key);
+			$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
+		}
+		
+		
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$formATM,'print');
+		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+		$nb_second_per_day = $hour_per_day * 3600;
+		
+		foreach($TligneTimesheet as $cle => $val){
+			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
+			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
+		}
+		
+
+		$TBS=new TTemplateTBS;
+		$TBS->render('./tpl/approve.ods'
+			,array(
+				'ligneTimesheet'=>$TligneTimesheet,
+				'joursVisu'=>$TJoursVisu,
+			)
+			,array(
+				'timesheet'=>array(
+					'socname'=>$timesheet->societe->name
+					,'mysocname'=>$mysoc->name
+					,'date_dates'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetDates', dol_print_date($timesheet->date_deb), dol_print_date($timesheet->date_fin) ) )
+					,'project'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetproject', $timesheet->project->title))
+				)
+				,'langs'=>getLangTranslate()
+			)
+			,array()
+		);
+		
+		
+		exit;
+	}
+	
+
 	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	
-	if(isset($_REQUEST['action'])) {
-		switch($_REQUEST['action']) {
+	if($action) {
+		switch($action) {
+			
 			case 'new':
 			case 'add':
 				$timesheet->set_values($_REQUEST);
@@ -111,7 +163,19 @@ function _action() {
 	llxFooter();
 	
 }
-
+function getLangTranslate() {
+	global $langs;
+	
+	$Tab=array();
+	foreach($langs->tab_translate as $k=>$v) {
+		$Tab[$k] = utf8_decode($v);
+	}
+	
+	return $Tab;
+	
+}
+	
+	
 function _liste() {
 	global $langs,$db,$user,$conf;
 
@@ -253,22 +317,22 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	$TJours = $timesheet->loadTJours(); 
 	
+	$form2=new TFormCore($_SERVER['PHP_SELF'],'formtime','POST');
+
 	//transformation de $TJours pour jolie affichage
 	foreach ($TJours as $key => $value) {
 		$TKey = explode('-', $key);
 		$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
 	}
 	
-	$form2=new TFormCore($_SERVER['PHP_SELF'],'formq','POST');
-
 	//Charger les lignes existante dans le timeSheet
-
+	
 	if($mode!='new' && $mode!='edit'){
 			
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
 		
-		list($TligneTimesheet) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
@@ -301,10 +365,6 @@ function _fiche(&$timesheet, $mode='view') {
 		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
 	
-	
-	/*echo '<pre>';
-	print_r($TligneTimesheet);exit;
-	echo '</pre>';*/
 	if($mode!='new' && $mode != "edit"){
 		/*
 		 * Affichage tableau de saisie des temps
@@ -317,6 +377,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'jours'=>$TJours,
 				'joursVisu'=>$TJoursVisu,
 				'formjour'=>$TFormJours
+				,'THidden'=>$THidden
 			)
 			,array(
 				'timesheet'=>array(
@@ -331,7 +392,8 @@ function _fiche(&$timesheet, $mode='view') {
 					,'nbChamps'=>count($asset->TField)
 					,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
-					,'righttoedit'=>$user->rights->timesheet->user->add
+					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
+					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
 				)
 				
 			)
