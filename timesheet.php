@@ -252,7 +252,7 @@ function _fiche(&$timesheet, $mode='view') {
 	echo $form->hidden('entity', $conf->entity);
 
 	$TBS=new TTemplateTBS();
-	$liste=new TListviewTBS('timesheet');PDOdb,$TJours,$doliform,$form2,$mode
+	$liste=new TListviewTBS('timesheet');
 
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;

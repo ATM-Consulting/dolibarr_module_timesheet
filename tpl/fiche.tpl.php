@@ -25,7 +25,9 @@
 						[onshow;block=end]
 						[onshow;block=end]
 						[onshow;block=begin;when [fiche.righttomodify]==1]
+						[onshow;block=begin;when [fiche.statusval]!=2]
 							&nbsp; &nbsp; <a href="?id=[timesheet.id]&action=edit" class="butAction">Modifier</a>
+						[onshow;block=end]	
 						[onshow;block=end]	
 						[onshow;block=begin;when [fiche.righttoapprove]==1]
 							[onshow;block=begin;when [fiche.statusval]==0]
@@ -38,7 +40,7 @@
 						[onshow;block=begin;when [fiche.righttoprint]==1]
 					<!--	 &nbsp; &nbsp; <a href="?id=[timesheet.id]&action=print" class="butAction">Imprimer</a> --> 
 						[onshow;block=end]
-						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='liste.php'" name="retour-liste" value="Retour">
+						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='timesheet.php'" name="retour-liste" value="Retour">
 					[onshow;block=end]
 				</div>
 			[onshow;block=end]
