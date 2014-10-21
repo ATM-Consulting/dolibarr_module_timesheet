@@ -29,10 +29,34 @@ function _action() {
 	if($action=='print') {
 		
 		$timesheet->load($PDOdb, GETPOST('id'));
+		
+		$formATM=new TFormCore;
+		$doliform = new Form($db);
+		$TJours = $timesheet->loadTJours(); 
+		
+		//transformation de $TJours pour jolie affichage
+		foreach ($TJours as $key => $value) {
+			$TKey = explode('-', $key);
+			$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
+		}
+		
+		
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$formATM,'print');
+		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+		$nb_second_per_day = $hour_per_day * 3600;
+		
+		foreach($TligneTimesheet as $cle => $val){
+			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
+			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
+		}
+		
 
 		$TBS=new TTemplateTBS;
-		$TBS->render('./tpl/approve.odt'
-			,array()
+		$TBS->render('./tpl/approve.ods'
+			,array(
+				'ligneTimesheet'=>$TligneTimesheet,
+				'joursVisu'=>$TJoursVisu,
+			)
 			,array(
 				'timesheet'=>array(
 					'socname'=>$timesheet->societe->name

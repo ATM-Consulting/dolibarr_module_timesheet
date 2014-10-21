@@ -38,7 +38,7 @@
 							[onshow;block=end]
 						[onshow;block=end]
 						[onshow;block=begin;when [fiche.righttoprint]==1]
-					<!--	 &nbsp; &nbsp; <a href="?id=[timesheet.id]&action=print" class="butAction">Imprimer</a> --> 
+						 &nbsp; &nbsp; <a href="?id=[timesheet.id]&action=print" class="butAction">Imprimer</a> 
 						[onshow;block=end]
 						&nbsp; &nbsp; <input id="action-retour-liste" class="butAction" type="button" onclick="document.location.href='timesheet.php'" name="retour-liste" value="Retour">
 					[onshow;block=end]

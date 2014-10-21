@@ -267,10 +267,11 @@ class TTimesheet extends TObjetStd {
 				if($task->array_options['options_fk_service']>0) { //et oui, y avait un mind map
 					$productstatic->fetch((int)$task->array_options['options_fk_service']);
 					$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
-					$url_service = $productstatic->getNomUrl(1); 
+					
+					$url_service = ($mode=='print') ? $productstatic->ref : $productstatic->getNomUrl(1); 
 				}
 				else{
-					$url_service = $task->getNomUrl(1).' - '.$task->label;
+					$url_service =($mode=='print') ?  $task->ref.' - '.$task->label : $task->getNomUrl(1).' - '.$task->label;
 				}
 					
 				//$task->TTime = $this->fillWithJour($TJours, $task->TTime);
@@ -285,8 +286,9 @@ class TTimesheet extends TObjetStd {
 							if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id]) ) $TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
 
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = $userstatic->getNomUrl(1);	
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '', 30,255);	
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = ($mode=='print') ? $userstatic->getFullName($langs) : $userstatic->getNomUrl(1);	
+							$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = ($mode=='print') ? $linelabel : $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', $linelabel, 30,255);	
 							
 							//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
@@ -300,7 +302,7 @@ class TTimesheet extends TObjetStd {
 									$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
 								}
 								
-								if($conf->absence->enabled && empty($conf->global->TIMESHEET_RH_NO_CHECK)  ) {
+								if($conf->absence->enabled && empty($conf->global->TIMESHEET_RH_NO_CHECK) && $mode!='print'  ) {
 									
 									dol_include_once('/absence/class/absence.class.php');
 									$absence=new TRH_Absence;
@@ -311,7 +313,7 @@ class TTimesheet extends TObjetStd {
 									
 								}
 								
-								if(!empty($chaine) && $mode!='edittime' && $conf->ndfp->enabled && $user->rights->timesheet->ndf->read) {
+								if(!empty($chaine) && $mode!='edittime' && $mode!='print' && $conf->ndfp->enabled && $user->rights->timesheet->ndf->read ) {
 									
 									//tablelines
 									
@@ -323,16 +325,16 @@ class TTimesheet extends TObjetStd {
 	
 							}
 							
-							if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2) {
+							if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2 && $mode!='print') {
 								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\'Supprimer cette ligne de saisie des temps?\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
 							}
-							else{
+							elseif($mode!='print'){
 								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
 							}
 							
 						}
 						else{
-							if($mode!='view') $THidden[$task->id.'_'.$time->fk_user] = $formATM->hidden('TLineLabel['.$task->id.']['.$time->fk_user.']', !empty($this->TLineLabel[$task->id][$time->fk_user] ) ? $this->TLineLabel[$task->id][$time->fk_user] : '');	
+							if($mode!='view' && $mode!='print') $THidden[$task->id.'_'.$time->fk_user] = $formATM->hidden('TLineLabel['.$task->id.']['.$time->fk_user.']', !empty($this->TLineLabel[$task->id][$time->fk_user] ) ? $this->TLineLabel[$task->id][$time->fk_user] : '');	
 							
 						}
 							
