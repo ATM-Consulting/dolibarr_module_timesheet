@@ -1,10 +1,10 @@
 <?php
-/* <one line to give the program's name and a brief idea of what it does.>
- * Copyright (C) 2013 ATM Consulting <support@atm-consulting.fr>
+/* Copyright (C) 2007-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2007-2014 ATM Consulting <contact@atm-consulting.fr>
  *
- * This program is free software: you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -13,65 +13,123 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
- * 	\file		admin/mymodule.php
- * 	\ingroup	mymodule
- * 	\brief		This file is an example module setup page
- * 				Put some comments here
+ *   	\file       dev/skeletons/skeleton_page.php
+ *		\ingroup    mymodule othermodule1 othermodule2
+ *		\brief      This file is an example of a php page
+ *		\version    $Id: skeleton_page.php,v 1.19 2011/07/31 22:21:57 eldy Exp $
+ *		\author		Put author name here
+ *		\remarks	Put here some comments
  */
-// Dolibarr environment
-$res = @include("../../main.inc.php"); // From htdocs directory
-if (! $res) {
-    $res = @include("../../../main.inc.php"); // From "custom" directory
+// Change this following line to use the correct relative path (../, ../../, etc)
+include '../config.php';
+// Change this following line to use the correct relative path from htdocs (do not remove DOL_DOCUMENT_ROOT)
+
+dol_include_once('/core/lib/admin.lib.php');
+
+// Protection if external user
+if ($user->societe_id > 0)
+{
+	accessforbidden();
 }
 
 
-// Libraries
-require_once DOL_DOCUMENT_ROOT . "/core/lib/admin.lib.php";
-require_once '../lib/mymodule.lib.php';
-//require_once "../class/myclass.class.php";
-// Translations
-$langs->load("mymodule@mymodule");
+$action=__get('action','');
 
-// Access control
-if (! $user->admin) {
-    accessforbidden();
+if($action=='save') {
+	
+	foreach($_REQUEST['TParam'] as $name=>$param) {
+		
+		dolibarr_set_const($db, $name, $param, 'chaine', 0, '', $conf->entity);
+		
+	}
+	
+	setEventMessage("Configuration enregistrée");
 }
 
-// Parameters
-$action = GETPOST('action', 'alpha');
 
-/*
- * Actions
- */
+/***************************************************
+* PAGE
+*
+* Put here all code to build page
+****************************************************/
 
-/*
- * View
- */
-$page_name = "MyModuleSetup";
-llxHeader('', $langs->trans($page_name));
 
-// Subheader
-$linkback = '<a href="' . DOL_URL_ROOT . '/admin/modules.php">'
-    . $langs->trans("BackToModuleList") . '</a>';
-print_fiche_titre($langs->trans($page_name), $linkback);
 
-// Configuration header
-$head = mymoduleAdminPrepareHead();
-dol_fiche_head(
-    $head,
-    'settings',
-    $langs->trans("Module10000Name"),
-    0,
-    "mymodule@mymodule"
-);
+llxHeader('',$langs->trans('TimeSheetConfiguration'),'');
 
-// Setup page goes here
-echo $langs->trans("MyModuleSetupPage");
+$linkback='<a href="'.DOL_URL_ROOT.'/admin/modules.php">'.$langs->trans("BackToModuleList").'</a>';
+print_fiche_titre($langs->trans('TimeSheetConfiguration'),$linkback,'setup');
 
-llxFooter();
+$form=new TFormCore;
 
+showParameters($form);
+
+function showParameters(&$form) {
+	global $db,$conf,$langs;
+	
+	$html=new Form($db);
+
+	?><form action="<?php echo $_SERVER['PHP_SELF'] ?>" name="load-<?php echo $typeDoc ?>" method="POST" enctype="multipart/form-data">
+		<input type="hidden" name="action" value="save" />
+	<table width="100%" class="noborder" style="background-color: #fff;">
+		<tr class="liste_titre">
+			<td colspan="2"><?php echo $langs->trans('Parameters') ?></td>
+		</tr>
+		
+		<tr>
+			<td><?php echo $langs->trans('timesheetTIMESHEET_WORKING_HOUR_PER_DAY') ?></td><td><?php echo $form->texte('', 'TParam[TIMESHEET_WORKING_HOUR_PER_DAY]', $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY,3,3).$langs->trans('days')  ?></td>				
+		</tr>
+		<tr>
+			<td><?php echo $langs->trans('timesheetTIMESHEET_RH_NO_CHECK') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RH_NO_CHECK]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RH_NO_CHECK)  ?></td>				
+		</tr>
+		<tr>
+			<td><?php echo $langs->trans('timesheetTIMESHEET_CREATE_TASK_DOUBLE') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_CREATE_TASK_DOUBLE]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_CREATE_TASK_DOUBLE)  ?></td>				
+		</tr>
+		
+	</table>
+	<p align="right">
+		
+		<input type="submit" name="bt_save" value="<?php echo $langs->trans('Save') ?>" /> 
+		
+	</p>
+	
+	</form>
+	
+	
+	<br /><br />
+	<?php
+}
+?>
+
+<table width="100%" class="noborder">
+	<tr class="liste_titre">
+		<td>A propos</td>
+		<td align="center">&nbsp;</td>
+		</tr>
+		<tr class="impair">
+			<td valign="top">Module développé par </td>
+			<td align="center">
+				<a href="http://www.atm-consulting.fr/" target="_blank">ATM Consulting</a>
+			</td>
+		</td>
+	</tr>
+</table>
+<?php
+
+// Put here content of your page
+// ...
+
+/***************************************************
+* LINKED OBJECT BLOCK
+*
+* Put here code to view linked object
+****************************************************/
+//$somethingshown=$asset->showLinkedObjectBlock();
+
+// End of page
 $db->close();
+llxFooter('$Date: 2011/07/31 22:21:57 $ - $Revision: 1.19 $');

@@ -51,7 +51,7 @@ class modTimesheet extends DolibarrModules
 
         // Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
         // It is used to group modules in module setup page
-        $this->family = "ATM";
+        $this->family = "projects";
         // Module label (no space allowed)
         // used if translation string 'ModuleXXXName' not found
         // (where XXX is value of numeric property 'numero' of module)
@@ -103,7 +103,7 @@ class modTimesheet extends DolibarrModules
 
         // Config pages. Put here list of php pages
         // stored into mymodule/admin directory, used to setup module.
-      //  $this->config_page_url = array("timesheet_setup.php@timesheet");
+        $this->config_page_url = array("timesheet_setup.php@timesheet");
 
         // Dependencies
         // List of modules id that must be enabled if this module is enabled

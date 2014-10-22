@@ -132,7 +132,7 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function savetimevalues(&$PDOdb,$Tab){
-		global $db,$user;
+		global $db,$user,$conf;
 
 		//Parcours des tâches existantes pour MAJ temps
 		foreach($Tab as $cle => $TValue){
@@ -164,7 +164,7 @@ class TTimesheet extends TObjetStd {
 								WHERE t.fk_projet = ".$this->project->id." AND ex.fk_service=".$product->id;
 						$PDOdb->Execute($sql);
 						
-						if($PDOdb->Get_line()){
+						if($PDOdb->Get_line() && !$conf->global->TIMESHEET_CREATE_TASK_DOUBLE){
 						
 							//Une tache associé à ce service existe dans le projet, on ajoute alors le temps de l'utilisateur concerné
 							$rowid = $PDOdb->Get_field('rowid');
