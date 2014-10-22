@@ -87,19 +87,29 @@ class TTimesheet extends TObjetStd {
 		parent::save($PDOdb);
 	}
 	
-	function loadProjectTask(&$PDOdb){
+	function loadProjectTask(&$PDOdb, $fk_user=0){
 		global $db;
 		
-		$this->TTask=array();
+		$this->TTask=$Tid=array();
 		
-		$sql = "SELECT rowid 
-				FROM ".MAIN_DB_PREFIX."projet_task 
-				WHERE fk_projet = ".$this->project->id.'
-					
-				ORDER BY label ASC';
-
-		//echo $sql;exit;
-		$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
+		if($fk_user>0) {
+			$task=new Task($db);
+			
+			$TTask = $task->getTasksArray($fk_user, $fk_user);
+			
+			foreach($TTask as $t)$Tid[] = $t->id;
+			
+		}
+		else{
+			$sql = "SELECT rowid 
+					FROM ".MAIN_DB_PREFIX."projet_task 
+					WHERE fk_projet = ".$this->project->id.'
+						
+					ORDER BY label ASC';
+	
+			//echo $sql;exit;
+			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
+		}
 
 		foreach($Tid as $id){
 
@@ -113,6 +123,7 @@ class TTimesheet extends TObjetStd {
 		}
 		
 	}
+	
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid){
 		global $db;
@@ -253,7 +264,7 @@ class TTimesheet extends TObjetStd {
 		
 	}
 
-	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view'){
+	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$showemptylines=false){
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
@@ -261,9 +272,7 @@ class TTimesheet extends TObjetStd {
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
 			
-			//var_dump($task->TTime);
-
-			if(!empty($task->TTime)){
+			if(!empty($task->TTime) || $showemptylines){
 
 				$productstatic = new Product($db);
 				
@@ -277,7 +286,7 @@ class TTimesheet extends TObjetStd {
 					$url_service =($mode=='print') ?  $task->ref.' - '.$task->label : $task->getNomUrl(1).' - '.$task->label;
 				}
 					
-				//$task->TTime = $this->fillWithJour($TJours, $task->TTime);
+				if($showemptylines) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
 				
 				foreach($task->TTime as $time){
 				
@@ -400,7 +409,7 @@ class TTimesheet extends TObjetStd {
 		
 		$this->loadProjectTask($PDOdb);
 		if(empty($this->TTask)) {
-		/*	
+			/*
 			$project=new Project($db);
 			$project->fetch($this->project->id);
 			$project->delete($user);
