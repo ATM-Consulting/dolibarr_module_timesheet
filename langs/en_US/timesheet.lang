@@ -35,3 +35,9 @@ TimeSheetApprovalBy=Approved by
 TimeSheetTotal=Total
 TimeSheetComment=Comment
 TimeSheetConsultant=Consultant
+
+//conf
+TimeSheetConfiguration=TimeSheet Configuration
+timesheetTIMESHEET_WORKING_HOUR_PER_DAY=Hours Number per working day
+timesheetTIMESHEET_RH_NO_CHECK=Don't check into RHAbsence module
+timesheetTIMESHEET_CREATE_TASK_DOUBLE=Allow to create multiple tasks on same service
