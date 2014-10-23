@@ -158,9 +158,10 @@ class TTimesheet extends TObjetStd {
 					}
 					//echo $idTask;exit;
 					$task = new Task($db);
-					$task->fetch($idTask);
+					
 
 					if($idTask > 0){
+						$task->fetch($idTask);
 						
 						$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$idTask,$idUser);
 
@@ -264,7 +265,7 @@ class TTimesheet extends TObjetStd {
 		
 	}
 
-	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$showemptylines=false){
+	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$freemode=false){
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
@@ -272,7 +273,7 @@ class TTimesheet extends TObjetStd {
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
 			
-			if(!empty($task->TTime) || $showemptylines){
+			if(!empty($task->TTime) || $freemode){
 
 				$productstatic = new Product($db);
 				
@@ -286,7 +287,7 @@ class TTimesheet extends TObjetStd {
 					$url_service =($mode=='print') ?  $task->ref.' - '.$task->label : $task->getNomUrl(1).' - '.$task->label;
 				}
 					
-				if($showemptylines) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
+				if($freemode) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
 				
 				foreach($task->TTime as $time){
 				
@@ -297,10 +298,19 @@ class TTimesheet extends TObjetStd {
 
 							if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id]) ) $TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
 
+							if($freemode) {
+								$project = new Project($db);
+								$project->fetch($task->fk_project);
+								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] = $project->getNomUrl(1);	
+							}
+
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = ($mode=='print') ? $userstatic->getFullName($langs) : $userstatic->getNomUrl(1);	
-							$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = ($mode=='print') ? $linelabel : $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', $linelabel, 30,255);	
+							
+							if(!$freemode) {
+								$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
+								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = ($mode=='print') ? $linelabel : $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', $linelabel, 30,255);	
+							}
 							
 							//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
@@ -333,7 +343,10 @@ class TTimesheet extends TObjetStd {
 	
 								}
 								
-								$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;
+								if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]) || !empty($chaine)) {
+									$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;	
+								}
+								
 	
 							}
 							

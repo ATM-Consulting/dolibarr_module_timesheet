@@ -59,9 +59,18 @@ function timesheetPrepareHead(&$timesheet,$type='timesheet') {
 
 	switch ($type) {
 		case 'timesheet':
-			return array(
-				array(dol_buildpath('/timesheet/timesheet.php?id='.$timesheet->rowid,2), 'Fiche','fiche')
-			);
+			if($timesheet->rowid==0) {
+				return array(
+					array(dol_buildpath('/timesheet/timesheetusertimes.php',2), 'Fiche','fiche')
+				);
+				
+			}
+			else{
+				return array(
+					array(dol_buildpath('/timesheet/timesheet.php?id='.$timesheet->rowid,2), 'Fiche','fiche')
+				);
+				
+			}
 			break;
 	}
 }

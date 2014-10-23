@@ -247,7 +247,7 @@ function _fiche(&$timesheet, $mode='view') {
 		 * Affichage tableau de saisie des temps
 		 */
 		
-		print $TBS->render('tpl/fiche_saisie.tpl.php'
+		print $TBS->render('tpl/fiche_saisie_usertimes.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,
 				'lignejours'=>$TligneJours,
