@@ -19,19 +19,18 @@
 		<tr id="[ligneTimesheet.$;strconv=no;block=tr;sub1]" >
 			<td>[ligneTimesheet_sub1.val;block=td;strconv=no]</td>
 		</tr>
-		
+		<!--
 		[onshow;block=begin;when [view.mode]=='edittime']
-			<!-- Nouvelle ligne de timesheet-->
 			<tr id="[timesheet.rowid;strconv=no]">
 				<td>[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
 				<td>[timesheet.commentaireNewLine;strconv=no]</td>
-				<td><!--  --></td>
+				<td>&nbsp;</td>
 				
 				<td>[formjour.val;block=td;strconv=no]</td>
 				<td></td>
 			</tr>
-		[onshow;block=end]
+		[onshow;block=end]-->
 		</tbody>
 	</table>
 	

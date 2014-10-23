@@ -316,7 +316,7 @@ class TTimesheet extends TObjetStd {
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
 							$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
 							
-							foreach($TJours as $date=>$val){
+							foreach($TJours as $date=>$val){ // TODO C'est moche, ça passe 50 fois la dedans, cela devrait être extrait de la boucle pour un traitement après
 								if($mode == 'edittime'){
 									$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'): '',5);
 								}
@@ -343,7 +343,7 @@ class TTimesheet extends TObjetStd {
 	
 								}
 								
-								if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]) || !empty($chaine)) {
+								if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]) || $TTimeTemp[$task->id.'_'.$userstatic->id][$date]>0) {
 									$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;	
 								}
 								

@@ -46,6 +46,9 @@ function _action() {
 				
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				setEventMessage('TimeSheetSaved');
+				
+				$timesheet->loadProjectTask($PDOdb, $user->id);
+				
 				_fiche($timesheet,'edittime');
 				break;
 				
