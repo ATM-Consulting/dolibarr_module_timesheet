@@ -17,6 +17,9 @@ function _action() {
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
+	$timesheet->date_fin = strtotime('+7day');
+	
+	$timesheet->loadProjectTask($PDOdb, $user->id);
 	
 	/*******************************************************************
 	* ACTIONS
@@ -25,54 +28,6 @@ function _action() {
 	********************************************************************/
 	
 	$action=GETPOST('action');
-	
-	if($action=='print') {
-		
-		$timesheet->load($PDOdb, GETPOST('id'));
-		
-		$formATM=new TFormCore;
-		$doliform = new Form($db);
-		$TJours = $timesheet->loadTJours(); 
-		
-		//transformation de $TJours pour jolie affichage
-		foreach ($TJours as $key => $value) {
-			$TKey = explode('-', $key);
-			$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
-		}
-		
-		
-		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$formATM,'print');
-		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
-		$nb_second_per_day = $hour_per_day * 3600;
-		
-		foreach($TligneTimesheet as $cle => $val){
-			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
-			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
-		}
-		
-
-		$TBS=new TTemplateTBS;
-		$TBS->render('./tpl/approve.ods'
-			,array(
-				'ligneTimesheet'=>$TligneTimesheet,
-				'joursVisu'=>$TJoursVisu,
-			)
-			,array(
-				'timesheet'=>array(
-					'socname'=>$timesheet->societe->name
-					,'mysocname'=>$mysoc->name
-					,'date_dates'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetDates', dol_print_date($timesheet->date_deb), dol_print_date($timesheet->date_fin) ) )
-					,'project'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetproject', $timesheet->project->title))
-				)
-				,'langs'=>getLangTranslate()
-			)
-			,array()
-		);
-		
-		
-		exit;
-	}
-	
 
 	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
@@ -80,62 +35,24 @@ function _action() {
 	if($action) {
 		switch($action) {
 			
-			case 'new':
-			case 'add':
-				$timesheet->set_values($_REQUEST);
-				_fiche($timesheet,'new');
-				break;
-
-			case 'approve':
-				$timesheet->load($PDOdb, GETPOST('id'));
-				$timesheet->status=1;
-				$timesheet->save($PDOdb);
-				
-				_fiche($timesheet);
-
-				break;
+		
 			case 'edit'	:
 			case 'edittime'	:
-				$timesheet->load($PDOdb, GETPOST('id'));
+				
 				_fiche($timesheet,GETPOST('action'));
 				break;
 
-			case 'save':
-				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				$timesheet->set_values($_REQUEST);
-				$timesheet->save($PDOdb);
-				
-				setEventMessage('TimeSheetSaved');
-				
-				_fiche($timesheet);
-				break;
-			
 			case 'savetime':
-				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				$timesheet->set_values($_REQUEST);
-				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				$timesheet->save($PDOdb);
 				
-				$timesheet->load($PDOdb,$timesheet->rowid);
+				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				setEventMessage('TimeSheetSaved');
+				
+				$timesheet->loadProjectTask($PDOdb, $user->id);
+				
 				_fiche($timesheet,'edittime');
 				break;
 				
-			case 'facturer':
-				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				//$timesheet->status = 2;
-				$timesheet->save($PDOdb);
-				$timesheet->createFacture($PDOdb);
-				_fiche($timesheet);
-				break;
-
-			case 'delete':
-				$timesheet->load($PDOdb, $_REQUEST['id']);
-				$timesheet->delete($PDOdb);
-				
-				_liste();
-				
-				break;
+			
 			case 'deleteligne':
 				$timesheet->load($PDOdb, $_REQUEST['id']);
 				
@@ -147,17 +64,16 @@ function _action() {
 				
 			
 				_fiche($timesheet);
-				break;	
-		
+					
+			
 		}
 		
 	}
-	elseif(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
-		$timesheet->load($PDOdb, $_REQUEST['id']);
-		_fiche($timesheet, 'view');
-	}
 	else{
-		_liste();
+				
+		
+		_fiche($timesheet, 'view');
+		
 	}
 
 
@@ -181,6 +97,7 @@ function _liste() {
 	global $langs,$db,$user,$conf;
 
 	$langs->Load('timesheet@timesheet');
+
 
 	$TPDOdb=new TPDOdb;
 	$TTimesheet = new TTimesheet;
@@ -230,6 +147,7 @@ function _liste() {
 		,'title'=>array(
 			'date_deb'=>'Date début période'
 			,'date_fin'=>'Date fin période'
+			
 			,'fk_project'=>'Projet'
 			,'fk_societe'=>'Société'
 			,'rowid'=>'Identifiant'
@@ -255,7 +173,7 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
 
-	$form=new TFormCore($_SERVER['PHP_SELF'],'form','POST');
+	$form=new TFormCore();
 	$doliform = new Form($db);
 	
 	if($mode != "edittime"){
@@ -265,50 +183,12 @@ function _fiche(&$timesheet, $mode='view') {
 		$form->Set_typeaff("view");
 	}
 	
-	echo $form->hidden('id', $timesheet->rowid);
-
-	if ($mode=='new' || $mode=='edit'){
-		echo $form->hidden('action', 'save');
-	}
-	else{
-		echo $form->hidden('action', 'edit');
-	}
 	
-	echo $form->hidden('entity', $conf->entity);
-
 	$TBS=new TTemplateTBS();
-	
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
+	
 
-	/*
-	 * Affichage informations générales
-	 */
-	print $TBS->render('tpl/fiche.tpl.php'
-		,array()
-		,array(
-			'timesheet'=>array(
-				'id'=>$timesheet->rowid
-				,'project'=>_fiche_visu_project($timesheet,$mode)
-				,'societe'=>_fiche_visu_societe($timesheet,$mode)
-				,'status'=>$timesheet->TStatus[$timesheet->status]
-				,'date_deb'=>$form->calendrier('', 'date_deb', $timesheet->date_deb)
-				,'date_fin'=>$form->calendrier('', 'date_fin', $timesheet->date_fin)
-				,'libelleFactureLigne'=>$form->texte('','libelleFactureLigne', $timesheet->libelleFactureLigne, 50,255)
-			)
-			,'fiche'=>array(
-				'mode'=>$mode
-				,'statusval'=>$timesheet->status
-				,'link'=>'' //dol_buildpath('/ndfp/js/functions.js.php',2)
-				,'righttomodify'=>$user->rights->timesheet->user->edit
-				,'righttodelete'=>$user->rights->timesheet->user->delete
-				,'righttoapprove'=>$user->rights->timesheet->user->approve
-				,'righttoprint'=>$conf->abricot->enabled
-			)
-		)
-	);
-
-	echo $form->end_form();
 	
 	//Construction du nombre de colonne correspondant aux jours
 	$TJours = array(); //Tableau des en-tête pour les jours de la période
@@ -332,7 +212,7 @@ function _fiche(&$timesheet, $mode='view') {
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
 		
-		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true);
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
@@ -370,7 +250,7 @@ function _fiche(&$timesheet, $mode='view') {
 		 * Affichage tableau de saisie des temps
 		 */
 		
-		print $TBS->render('tpl/fiche_saisie.tpl.php'
+		print $TBS->render('tpl/fiche_saisie_usertimes.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,
 				'lignejours'=>$TligneJours,
@@ -411,6 +291,7 @@ function _fiche_visu_project(&$timesheet, $mode){
 		ob_start();
 		$html=new FormProjets($db);
 		$html->select_projects($timesheet->fk_societe, $timesheet->fk_project, 'fk_project');
+
 
 		return ob_get_clean();
 
