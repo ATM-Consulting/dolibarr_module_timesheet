@@ -29,7 +29,7 @@ function _action() {
 	
 	$action=GETPOST('action');
 
-	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
+	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	
 	if($action) {
@@ -171,7 +171,7 @@ function _fiche(&$timesheet, $mode='view') {
 	global $langs,$db,$conf,$user;
 	$PDOdb = new TPDOdb;
 	
-	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
+	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('TimeshettUserTimes'));
 
 	$form=new TFormCore();
 	$doliform = new Form($db);
