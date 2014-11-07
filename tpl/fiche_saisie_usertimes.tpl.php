@@ -1,12 +1,29 @@
 [onshow;block=begin;when [view.mode]!='new']
-	<span>[THidden.val;block=span;strconv=no]</span>
 
+	<script type="text/javascript">
+		$(document).ready(function(){
+			[onshow;block=begin;when [view.tous]='false']
+				$('#userid').prepend('<option value="0">Tous</option>');
+			[onshow;block=end]
+			[onshow;block=begin;when [view.tous]='true']
+				$('#userid').prepend('<option value="0" selected="selected">Tous</option>');
+			[onshow;block=end]
+		});
+	</script>
+
+	<span>[THidden.val;block=span;strconv=no]</span>
+	<table class="nobrder" style="width:100%;">
+		<tr>
+			<td>Période du [view.date_deb;strconv=no] au [view.date_fin;strconv=no] Filtrage utilisateur : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="Visualiser"></td>
+		</tr>
+	</table>
+	<br><br>
 	<table class="border" style="width:100%;">
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
 			<tr>
 				<td>Projet</td>
-				<td>Service</td>
+				<td>Tâche/Service</td>
 				<td>Consultant</td>
 				<td>Total</td>
 				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>

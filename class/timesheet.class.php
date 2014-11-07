@@ -97,7 +97,7 @@ class TTimesheet extends TObjetStd {
 		
 		if($fk_user>0) {
 			$task=new Task($db);
-			
+
 			$TTask = $task->getTasksArray($fk_user, $fk_user);
 			
 			foreach($TTask as $t){
@@ -110,14 +110,13 @@ class TTimesheet extends TObjetStd {
 			
 		}
 		else{
-			$sql = "SELECT rowid 
-					FROM ".MAIN_DB_PREFIX."projet_task 
-					WHERE fk_projet = ".$this->project->id.'
-						AND dateo <= "'.$date_fin.'"
-						AND datee >= "'.$date_deb.'"
-					ORDER BY label ASC';
-	
-			//echo $sql;exit;
+			$sql = 'SELECT rowid 
+					FROM '.MAIN_DB_PREFIX.'projet_task 
+					WHERE dateo <= "'.$date_fin.'"
+						AND datee >= "'.$date_deb.'"';
+			if($this->project->id) $sql .= " AND fk_projet = ".$this->project->id;
+			$sql .= ' ORDER BY label ASC';
+			
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
 		
@@ -129,20 +128,21 @@ class TTimesheet extends TObjetStd {
 
 			$this->TTask[$task->id] = $task;
 			
-			$this->loadTimeSpentByTask($PDOdb,$task->id);
+			$this->loadTimeSpentByTask($PDOdb,$task->id,$fk_user);
 		}
 		
 	}
 	
 
-	function loadTimeSpentByTask(&$PDOdb,$taskid){
+	function loadTimeSpentByTask(&$PDOdb,$taskid,$fk_user=0){
 		global $db;
 		
 		$sql = "SELECT t.rowid, t.task_date, t.task_duration, t.fk_user, t.note, u.lastname, u.firstname
 				FROM ".MAIN_DB_PREFIX."projet_task_time as t
 					LEFT JOIN ".MAIN_DB_PREFIX."user as u ON (t.fk_user = u.rowid)
-				WHERE t.fk_task =".$taskid." AND t.task_date BETWEEN '".$this->get_date('date_deb', 'Y-m-d')."' AND '".$this->get_date('date_fin', 'Y-m-d')."' 
-				ORDER BY t.fk_user,t.task_date DESC";
+				WHERE t.fk_task =".$taskid." AND t.task_date BETWEEN '".$this->get_date('date_deb', 'Y-m-d')."' AND '".$this->get_date('date_fin', 'Y-m-d')."'";
+		if($fk_user > 0) $sql .= " AND t.fk_user = ".$fk_user; 
+		$sql .= " ORDER BY t.fk_user,t.task_date DESC";
 
 		$PDOdb->Execute($sql);
 		$this->TTask[$taskid]->TTime=array();
