@@ -25,6 +25,9 @@ function _action() {
 	if($date_deb) $date_deb = date('Y-m-d 00:00:00',dol_stringtotime($date_deb));
 	if($date_fin) $date_fin = date('Y-m-d 00:00:00',dol_stringtotime($date_fin));
 	
+	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
+	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
+	
 	$timesheet->set_date('date_deb', $date_deb);
 	$timesheet->set_date('date_fin', $date_fin);
 
@@ -221,9 +224,9 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 			
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
-		
+
 		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true);
-		
+
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
 		
@@ -232,7 +235,6 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
 		}
 	}
-	
 	$TBS=new TTemplateTBS();
 	
 	if($mode=='edittime'){
