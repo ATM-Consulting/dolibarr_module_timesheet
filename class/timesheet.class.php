@@ -359,6 +359,10 @@ class TTimesheet extends TObjetStd {
 								$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;	
 							}
 							
+							if(!array_key_exists($date, $TLigneTimesheet['total_jour'])){
+								$TLigneTimesheet['total_jour'][$date] = ' ';
+							}
+							
 						}
 						
 						if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2 && $mode!='print') {
