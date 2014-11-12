@@ -385,13 +385,15 @@ class TTimesheet extends TObjetStd {
 		}
 		
 		//Mise en forme du total par colonne
-		ksort($TLigneTimesheet);
-		ksort($TLigneTimesheet['total_jour'],SORT_STRING);
-		$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','Consultant'=>'Total','total'=>''),$TLigneTimesheet['total_jour']);
-		
-		foreach ($TLigneTimesheet['total_jour'] as $key => $value) {
-			if(strpos($key, '-')){
-				$TLigneTimesheet['total_jour'][$key] = convertSecondToTime($value,'allhourmin');
+		if(!empty($TLigneTimesheet)){
+			ksort($TLigneTimesheet);
+			ksort($TLigneTimesheet['total_jour'],SORT_STRING);
+			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','Consultant'=>'Total','total'=>''),$TLigneTimesheet['total_jour']);
+			
+			foreach ($TLigneTimesheet['total_jour'] as $key => $value) {
+				if(strpos($key, '-')){
+					$TLigneTimesheet['total_jour'][$key] = convertSecondToTime($value,'allhourmin');
+				}
 			}
 		}
 		
