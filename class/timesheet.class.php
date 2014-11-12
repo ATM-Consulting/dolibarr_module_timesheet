@@ -90,6 +90,9 @@ class TTimesheet extends TObjetStd {
 	function loadProjectTask(&$PDOdb, $fk_user=0,$date_deb="",$date_fin=""){
 		global $db;
 		
+		$date_deb = date('Y-m-d 00:00:00',$this->date_deb);
+		$date_fin =  date('Y-m-d 00:00:00',$this->date_fin);
+		
 		$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
 		$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
 		
@@ -116,7 +119,7 @@ class TTimesheet extends TObjetStd {
 						AND datee >= "'.$date_deb.'"';
 			if($this->project->id) $sql .= " AND fk_projet = ".$this->project->id;
 			$sql .= ' ORDER BY label ASC';
-			
+
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
 		
