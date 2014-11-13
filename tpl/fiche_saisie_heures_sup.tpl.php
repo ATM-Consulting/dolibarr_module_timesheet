@@ -24,7 +24,8 @@
 			<tr>
 				<td>Consultant</td>
 				<td>Total</td>
-				<td>Total heuires supplémentaires</td>
+				<td>Total heures souhaité</td>
+				<td>Total heures supplémentaires</td>
 				<td>Heures rémunérées</td>
 				<td>Heures rattrapées</td>
 				<td>Actions</td>

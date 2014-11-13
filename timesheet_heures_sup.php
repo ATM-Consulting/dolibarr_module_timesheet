@@ -11,7 +11,7 @@ if ($user->societe_id > 0)
 {
 	accessforbidden();
 }
-var_dump($_REQUEST);
+
 function _action() {
 	global $user,$langs,$conf,$mysoc;
 
@@ -57,11 +57,7 @@ function _action() {
 
 			case 'savetime':
 				
-				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				setEventMessage('TimeSheetSaved');
-				
-				$timesheet->loadProjectTask($PDOdb, $user->id);
-				
+				_saveHeuresSupplementaires();
 				_fiche($timesheet,'edittime',$date_deb,$date_fin);
 				break;
 				
@@ -102,7 +98,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
 	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
 	
-	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('TimeshettUserTimes'));
+	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'hsup') , 'fiche', $langs->trans('TimeshettUserTimes'));
 
 	$form=new TFormCore();
 	$doliform = new Form($db);
@@ -148,16 +144,17 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 		// Pour l'affichage des lignes
 		foreach($TligneTimesheet as $line_tab) {
 			
-			if($line_tab['id_consultant'] > 0)
+			if($line_tab['id_consultant'] > 0) {
+				$total = $TligneTimesheetNew[$line_tab['id_consultant']]['total'] + $line_tab['total'];
 				$TligneTimesheetNew[$line_tab['id_consultant']] = array(
 																	'consultant' => $line_tab['consultant']
-																	,'total' => $TligneTimesheetNew[$line_tab['id_consultant']]['total']
-																				+ $line_tab['total']
-																	,'total_hsup' => 35
-																	,'total_hsup_remunerees' => $form2->texte("", "TTimesUser[".$line_tab['id_consultant']."][total_hsup_remunerees]", 36, $pTaille)
-																	,'total_hsup_rattrapees' => $form2->texte("", "TTimesUser[".$line_tab['id_consultant']."][total_hsup_rattrapees]", 36, $pTaille)
+																	,'total' => $total
+																	,'total_hsup_souhaité' => _retourneTotalHeuresPeriode($timesheet)
+																	,'total_hsup' => _retourneTotalHeuresSupplementaires($timesheet, $total)
+																	,'total_hsup_remunerees' => $form2->texte("", "TTimesUser[".$line_tab['id_consultant']."][total_hsup_remunerees]", "", $pTaille)
+																	,'total_hsup_rattrapees' => $form2->texte("", "TTimesUser[".$line_tab['id_consultant']."][total_hsup_rattrapees]", "", $pTaille)
 																);
-
+			}
 		}
 		
 		// Création des hidden :
@@ -257,6 +254,50 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 	}
 	 
 	echo $form2->end_form();
+}
+
+function _saveHeuresSupplementaires() {
+	
+	global $db,$user;
+	
+	foreach($_REQUEST['TTimesUser'] as $id_user => $TTimesUser) {
+		
+		$u = new User($db);
+		$u->fetch($id_user);
+		$u->fetch_optionals($u->id);
+		
+		foreach ($TTimesUser as $k => $v) {
+			$u->array_options['options_'.$k] += $v;
+		}
+		
+		$u->update($user);
+		
+	}
+	
+	setEventMessage("Heures supplémentaires sauvegardées");
+	
+}
+
+function _retourneTotalHeuresPeriode(&$timesheet) {
+	
+	$TDatesJours = $timesheet->loadTJours();
+	
+	$db = 0;
+	
+	foreach($TDatesJours as $date => $lib_day) {
+		
+		if($lib_day !== "Samedi" && $lib_day !== "Dimanche") $nb++;
+		
+	}
+	
+	return $nb*35;
+	
+}
+
+function _retourneTotalHeuresSupplementaires(&$timesheet, $total_heures_travaillees_user) {
+	
+	$nb_heures_periode = _retourneTotalHeuresPeriode($timesheet);
+	
 }
 
 ?>
