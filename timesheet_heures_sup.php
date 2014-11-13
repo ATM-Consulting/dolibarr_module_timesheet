@@ -57,7 +57,9 @@ function _action() {
 
 			case 'savetime':
 				
-				_saveHeuresSupplementaires();
+				if($_REQUEST['save'] !== "Visualiser")
+					_saveHeuresSupplementaires();
+				
 				_fiche($timesheet,'edittime',$date_deb,$date_fin);
 				break;
 				
@@ -290,13 +292,16 @@ function _retourneTotalHeuresPeriode(&$timesheet) {
 		
 	}
 	
-	return $nb*35;
+	return $nb*7;
 	
 }
 
 function _retourneTotalHeuresSupplementaires(&$timesheet, $total_heures_travaillees_user) {
-	
+
 	$nb_heures_periode = _retourneTotalHeuresPeriode($timesheet);
+	$diff = $total_heures_travaillees_user-$nb_heures_periode*3600;
+	
+	return ($diff > 0) ? $diff / 3600 : 0;
 	
 }
 
