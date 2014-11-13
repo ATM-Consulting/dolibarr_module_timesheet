@@ -57,7 +57,9 @@ function _action() {
 
 			case 'savetime':
 				
-				_saveHeuresSupplementaires();
+				if($_REQUEST['save'] !== "Visualiser")
+					_saveHeuresSupplementaires();
+				
 				_fiche($timesheet,'edittime',$date_deb,$date_fin);
 				break;
 				
