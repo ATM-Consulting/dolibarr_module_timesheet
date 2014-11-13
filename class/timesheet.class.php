@@ -100,8 +100,10 @@ class TTimesheet extends TObjetStd {
 		
 		if($fk_user>0) {
 			$task=new Task($db);
+			$user_temp = new User($db);
+			$user_temp->fetch($fk_user);
 
-			$TTask = $task->getTasksArray($fk_user, $fk_user);
+			$TTask = $task->getTasksArray($user_temp, $user_temp);
 			
 			foreach($TTask as $t){
 				if($t->date_start && $t->date_end){
@@ -110,7 +112,6 @@ class TTimesheet extends TObjetStd {
 					}
 				}
 			}
-			
 		}
 		else{
 			$sql = 'SELECT rowid 
@@ -122,6 +123,8 @@ class TTimesheet extends TObjetStd {
 
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
+		
+		pre($Tid);
 		
 		foreach($Tid as $id){
 
