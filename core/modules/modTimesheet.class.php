@@ -545,6 +545,8 @@ class modTimesheet extends DolibarrModules
      */
     public function init($options = '')
     {
+		global $db;
+		
         $sql = array();
 
         $result = $this->loadTables();
@@ -552,7 +554,12 @@ class modTimesheet extends DolibarrModules
         $url = dol_buildpath('/timesheet/script/create-maj-base.php', 2);
         file_get_contents($url);
 		
-		
+		// Création des extrafields pour la gestion des heures supplémentaires
+		dol_include_once("/core/class/extrafields.class.php");
+		$e = new ExtraFields($db);
+		$e->addExtraField("total_hsup_remunerees", "Total heures supplémentaires rémunérées", "varchar", $pos, 10, "user");
+		$e->addExtraField("total_hsup_rattrapees", "Total heures supplémentaires rattrapées", "varchar", $pos, 10, "user");
+		$e->addExtraField("date_last_hsup", "Date dernier enregistrement d'heures supplémentaires", "date", $pos, $taille, "user");
 
         return $this->_init($sql, $options);
     }
