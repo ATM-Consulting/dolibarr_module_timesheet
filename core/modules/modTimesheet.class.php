@@ -371,8 +371,22 @@ class modTimesheet extends DolibarrModules
              'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
              'perms'=>'1',                                   // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
              'target'=>'',
-	         'user'=>2); 
-        
+	         'user'=>2);  
+        $r++;
+		
+		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
+             'type'=>'left',                                 // This is a Top menu entry
+             'titre'=>'Gestion heures supplémentaires',
+             'mainmenu'=>'project',
+             'leftmenu'=>'timesheet',
+             'url'=>'/timesheet/timesheet_heures_sup.php',
+             'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+             'position'=>178,
+             'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
+             'perms'=>'1',                                   // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
+             'target'=>'',
+	         'user'=>2);
+		
         //$r++;
         //$this->menu[$r]=array(
         //	// Use r=value where r is index key used for the parent menu entry

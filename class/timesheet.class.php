@@ -278,7 +278,7 @@ class TTimesheet extends TObjetStd {
 		
 	}
 
-	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$freemode=false){
+	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$freemode=false, $affiche_id_user_dans_tableau=false){
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
@@ -319,6 +319,8 @@ class TTimesheet extends TObjetStd {
 
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = ($mode=='print') ? $userstatic->getFullName($langs) : $userstatic->getNomUrl(1);	
+						
+						if($affiche_id_user_dans_tableau) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['id_consultant'] = $userstatic->id;
 						
 						if(!$freemode) {
 							$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
