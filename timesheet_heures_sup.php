@@ -272,6 +272,12 @@ function _saveHeuresSupplementaires() {
 			$u->array_options['options_'.$k] += $v;
 		}
 		
+		// Mise à jour de la dernière date enregistrée
+		$last_date_saved = strtotime($u->array_options['options_date_last_hsup']);
+		$datetime_of_request_datefin = strtotime(implode("/",array_reverse(explode("/", $_REQUEST['date_fin']))));
+		
+		if($datetime_of_request_datefin > $last_date_saved) $u->array_options['options_date_last_hsup'] = $datetime_of_request_datefin;
+		
 		$u->update($user);
 		
 	}
