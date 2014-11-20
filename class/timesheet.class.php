@@ -104,12 +104,11 @@ class TTimesheet extends TObjetStd {
 			$user_temp->fetch($fk_user);
 
 			$TTask = $task->getTasksArray($user_temp, $user_temp);
-			
+
 			foreach($TTask as $t){
-				if($t->date_start && $t->date_end){
-					if(date('Y-m-d h:i:s',$t->date_start) <= $date_fin && date('Y-m-d h:i:s',$t->date_end) >= $date_deb){
-						$Tid[] = $t->id;
-					}
+				if(empty($t->date_end)) $t->date_end = time();
+				if((date('Y-m-d h:i:s',$t->date_start) <= $date_fin && date('Y-m-d h:i:s',$t->date_end) >= $date_deb)){
+					$Tid[] = $t->id;
 				}
 			}
 		}
@@ -123,8 +122,6 @@ class TTimesheet extends TObjetStd {
 
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
-		
-		pre($Tid);
 		
 		foreach($Tid as $id){
 

@@ -13,8 +13,11 @@
 
 	<span>[THidden.val;block=span;strconv=no]</span>
 	<table class="nobrder" style="width:100%;">
+		[onshow;block=begin;when [view.mode]='changedate']
+			<input type="hidden" name="action" id="action" value="[view.mode]">
+		[onshow;block=end]
 		<tr>
-			<td>Période du [view.date_deb;strconv=no] au [view.date_fin;strconv=no] Filtrage utilisateur : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="Visualiser"></td>
+			<td> du [view.date_deb;strconv=no] au [view.date_fin;strconv=no] Filtrage utilisateur : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="Visualiser"></td>
 		</tr>
 	</table>
 	<br><br>
@@ -54,7 +57,7 @@
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<a href="?id=[timesheet.id]&action=edittime" class="butAction">Modifier les temps</a>
+		<input type="submit" value="Modifier les temps" onclick="$('#action').val('edittime');" name="save" class="button">
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	

@@ -43,18 +43,21 @@ function _action() {
 
 	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
-	
 	if($action) {
 		switch($action) {
 			
-		
-			case 'edit'	:
-			case 'edittime'	:
+			case 'view' :
 			case 'changedate' :
 				
-				_fiche($timesheet,GETPOST('action'),$date_deb,$date_fin);
+				_fiche($timesheet,'changedate',$date_deb,$date_fin);
 				break;
-
+			
+			case 'edit'	:
+			case 'edittime'	:
+				
+				_fiche($timesheet,'edittime',$date_deb,$date_fin);
+				break;
+				
 			case 'savetime':
 				
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
@@ -62,7 +65,7 @@ function _action() {
 				
 				$timesheet->loadProjectTask($PDOdb, $user->id);
 				
-				_fiche($timesheet,'edittime',$date_deb,$date_fin);
+				_fiche($timesheet,'changedate',$date_deb,$date_fin);
 				break;
 				
 			
@@ -85,7 +88,7 @@ function _action() {
 	else{
 				
 		
-		_fiche($timesheet, 'view',$date_deb,$date_fin);
+		_fiche($timesheet, 'changedate',$date_deb,$date_fin);
 		
 	}
 
@@ -180,7 +183,7 @@ function _liste() {
 
 }
 function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
-	
+
 	global $langs,$db,$conf,$user;
 	$PDOdb = new TPDOdb;
 	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
@@ -224,9 +227,14 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 			
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
-
+		
+		if(GETPOST('userid')){
+			$lastuser = $user;
+			$user->fetch(GETPOST('userid'));
+		}
 		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true);
-
+		if(GETPOST('userid')) $user = $lastuser;
+		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
 		

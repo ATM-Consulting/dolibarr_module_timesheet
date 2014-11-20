@@ -138,8 +138,13 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 			
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
-
+		
+		if(GETPOST('userid')){
+			$lastuser = $user;
+			$user->fetch(GETPOST('userid'));
+		}
 		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true, true);
+		if(GETPOST('userid')) $user = $lastuser;
 		
 		$TligneTimesheetNew = array();
 		
@@ -150,7 +155,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 				$total = $TligneTimesheetNew[$line_tab['id_consultant']]['total'] + $line_tab['total'];
 				$TligneTimesheetNew[$line_tab['id_consultant']] = array(
 																	'consultant' => $line_tab['consultant']
-																	,'total' => $total
+																	,'total' => convertSecondToTime(dol_stringtotime($total),'allhour')
 																	,'total_hsup_souhaité' => _retourneTotalHeuresPeriode($timesheet)
 																	,'total_hsup' => _retourneTotalHeuresSupplementaires($timesheet, $total)
 																	,'total_hsup_remunerees' => $form2->texte("", "TTimesUser[".$line_tab['id_consultant']."][total_hsup_remunerees]", "", $pTaille)
