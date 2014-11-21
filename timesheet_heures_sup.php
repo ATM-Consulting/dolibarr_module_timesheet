@@ -150,12 +150,12 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 		
 		// Pour l'affichage des lignes
 		foreach($TligneTimesheet as $line_tab) {
-			
+
 			if($line_tab['id_consultant'] > 0) {
 				$total = $TligneTimesheetNew[$line_tab['id_consultant']]['total'] + $line_tab['total'];
 				$TligneTimesheetNew[$line_tab['id_consultant']] = array(
 																	'consultant' => $line_tab['consultant']
-																	,'total' => convertSecondToTime(dol_stringtotime($total),'allhour')
+																	,'total' => $total
 																	,'total_hsup_souhaité' => _retourneTotalHeuresPeriode($timesheet)
 																	,'total_hsup' => _retourneTotalHeuresSupplementaires($timesheet, $total)
 																	,'total_hsup_remunerees' => $form2->texte("", "TTimesUser[".$line_tab['id_consultant']."][total_hsup_remunerees]", "", $pTaille)
@@ -185,7 +185,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 		
 		foreach($TligneTimesheet as $cle => $val){
 			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
-			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
+			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'allhour', $nb_second_per_day);
 		}
 	}
 	$TBS=new TTemplateTBS();
