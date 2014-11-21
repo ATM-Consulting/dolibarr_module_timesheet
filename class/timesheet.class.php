@@ -290,7 +290,7 @@ class TTimesheet extends TObjetStd {
 
 				$productstatic = new Product($db);
 				
-				if($task->array_options['options_fk_service']>0) { //et oui, y avait un mind map
+				if($task->array_options['options_fk_service']>0 && !$freemode) { //et oui, y avait un mind map
 					$productstatic->fetch((int)$task->array_options['options_fk_service']);
 					$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
 					

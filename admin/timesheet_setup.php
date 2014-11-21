@@ -89,6 +89,9 @@ function showParameters(&$form) {
 		<tr>
 			<td><?php echo $langs->trans('timesheetTIMESHEET_CREATE_TASK_DOUBLE') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_CREATE_TASK_DOUBLE]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_CREATE_TASK_DOUBLE)  ?></td>				
 		</tr>
+		<tr>
+			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_USE_SERVICES)  ?></td>				
+		</tr>
 		
 	</table>
 	<p align="right">

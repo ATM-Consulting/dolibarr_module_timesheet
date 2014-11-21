@@ -280,7 +280,14 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
-
+	
+	if(!$conf->global->TIMESHEET_USE_SERVICES){
+		$freemode = true;
+	}
+	else{
+		$freemode = false;
+	}
+	
 	/*
 	 * Affichage informations générales
 	 */
@@ -332,7 +339,7 @@ function _fiche(&$timesheet, $mode='view') {
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
 		
-		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode,$freemode);
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
@@ -383,7 +390,7 @@ function _fiche(&$timesheet, $mode='view') {
 				'timesheet'=>array(
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
-					,'services'=>$doliform->select_produits_list('','serviceid_0','1')
+					,'services'=>(!$freemode) ? $doliform->select_produits_list('','serviceid_0','1') : $doliform->
 					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
