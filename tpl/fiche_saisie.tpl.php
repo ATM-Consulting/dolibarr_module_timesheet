@@ -6,8 +6,7 @@
 		<thead style="background-color:#CCCCCC;">
 			<tr>
 				[onshow;block=begin;when [view.freemode]='1']
-					<td>Projet</td>
-					<td>Tâche</td>
+					<td colspan="2">Tâche</td>
 				[onshow;block=end]
 				[onshow;block=begin;when [view.freemode]!='1']
 					<td>Service</td>
@@ -29,12 +28,7 @@
 		[onshow;block=begin;when [view.mode]=='edittime']
 			<!-- Nouvelle ligne de timesheet-->
 			<tr id="[timesheet.rowid;strconv=no]">
-				[onshow;block=begin;when [view.freemode]='1']
-					<td colspan="2">[timesheet.services;strconv=no]</td>
-				[onshow;block=end]
-				[onshow;block=begin;when [view.freemode]!='1']
-					<td>[timesheet.services;strconv=no]</td>
-				[onshow;block=end]
+				<td [onshow;block=begin;when [view.freemode]='1'] colspan="2" [onshow;block=end]>[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
 				<td>[timesheet.commentaireNewLine;strconv=no]</td>
 				<td><!--  --></td>

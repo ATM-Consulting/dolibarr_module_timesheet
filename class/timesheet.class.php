@@ -321,11 +321,11 @@ class TTimesheet extends TObjetStd {
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = ($mode=='print') ? $userstatic->getFullName($langs) : $userstatic->getNomUrl(1);	
 						
 						if($affiche_id_user_dans_tableau) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['id_consultant'] = $userstatic->id;
-						
-						if(!$freemode) {
+
+						//if(!$freemode) {
 							$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = ($mode=='print') ? $linelabel : $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', $linelabel, 30,255);	
-						}
+						//}
 						
 						//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
@@ -393,7 +393,7 @@ class TTimesheet extends TObjetStd {
 		if(!empty($TLigneTimesheet)){
 			ksort($TLigneTimesheet);
 			ksort($TLigneTimesheet['total_jour'],SORT_STRING);
-			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','Consultant'=>'Total','total'=>''),$TLigneTimesheet['total_jour']);
+			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','consultant'=>'','commentaire'=>'Total','total'=>''),$TLigneTimesheet['total_jour']);
 			
 			foreach ($TLigneTimesheet['total_jour'] as $key => $value) {
 				if(strpos($key, '-')){

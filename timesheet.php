@@ -421,7 +421,7 @@ function _fiche(&$timesheet, $mode='view') {
 		<?php
 	}
 	
-	//pre($TFormJours,true);exit;
+	//pre($TligneTimesheet,true);exit;
 	
 	if($mode!='new' && $mode != "edit"){
 		/*
