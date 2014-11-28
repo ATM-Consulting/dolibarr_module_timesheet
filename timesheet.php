@@ -112,6 +112,8 @@ function _action() {
 			
 			case 'savetime':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
+				
+				//pre($_REQUEST,true);exit;
 				$timesheet->set_values($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				$timesheet->save($PDOdb);
@@ -248,9 +250,30 @@ function _liste() {
 	
 
 }
+
+function _selectProjectTasksByMoi(&$PDOdb,&$timehseet)
+{
+	
+	$sql = "SELECT rowid,ref,label FROM ".MAIN_DB_PREFIX."projet_task WHERE fk_projet = ".$timehseet->fk_project;
+	$PDOdb->Execute($sql);
+	
+	$chaine = '<select class="flat" name="serviceid_0">
+				<option value="0"></option>';
+	
+	while($PDOdb->Get_line()){
+		$chaine .= '<option value="'.$PDOdb->Get_field('rowid').'">'.$PDOdb->Get_field('ref').' - '.$PDOdb->Get_field('label').'</option>';
+	}
+	
+	$chaine .= '</select>';
+   return $chaine;
+   
+}
+
+
 function _fiche(&$timesheet, $mode='view') {
 	
 	global $langs,$db,$conf,$user;
+	
 	$PDOdb = new TPDOdb;
 	
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
@@ -372,11 +395,38 @@ function _fiche(&$timesheet, $mode='view') {
 		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
 	
+	if($freemode){
+		?>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$('tr[id=0] select[name^=serviceid_], tr[id=0] select[name^=userid_]').change(function(){
+					
+					tache = $('tr[id=0] select[name^=serviceid_]');
+					user = $('tr[id=0] select[name^=userid_]');
+					
+					$(tache).attr('name','serviceid_'+$(tache).find(':selected').val());
+					$(user).attr('name','userid_'+$(user).find(':selected').val());
+					
+					
+					$('tr[id=0] input[id^=temps_]').each(function(i) {
+						name = $(this).attr('name');
+						temp = name.substr(-12);
+						name = 'temps['+$(tache).find(':selected').val()+'_'+$(user).find(':selected').val()+']'+temp;
+						$(this).attr('name',name);
+					});
+				});
+
+			});
+		</script>
+		<?php
+	}
+	
+	//pre($TFormJours,true);exit;
+	
 	if($mode!='new' && $mode != "edit"){
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
-		
 		print $TBS->render('tpl/fiche_saisie.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,
@@ -390,8 +440,8 @@ function _fiche(&$timesheet, $mode='view') {
 				'timesheet'=>array(
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
-					,'services'=>(!$freemode) ? $doliform->select_produits_list('','serviceid_0','1') : $doliform->
-					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
+					,'services'=>(!$freemode) ? $doliform->select_produits_list('','serviceid_0','1') : _selectProjectTasksByMoi($PDOdb,$timesheet)
+					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0',1) : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
@@ -401,6 +451,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
 					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
+					,'freemode'=>$freemode
 				)
 				
 			)

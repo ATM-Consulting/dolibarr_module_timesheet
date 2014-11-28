@@ -5,7 +5,13 @@
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
 			<tr>
-				<td>Service</td>
+				[onshow;block=begin;when [view.freemode]='1']
+					<td>Projet</td>
+					<td>Tâche</td>
+				[onshow;block=end]
+				[onshow;block=begin;when [view.freemode]!='1']
+					<td>Service</td>
+				[onshow;block=end]
 				<td>Consultant</td>
 				<td>Commentaire</td>
 				<td>Total</td>
@@ -23,7 +29,12 @@
 		[onshow;block=begin;when [view.mode]=='edittime']
 			<!-- Nouvelle ligne de timesheet-->
 			<tr id="[timesheet.rowid;strconv=no]">
-				<td>[timesheet.services;strconv=no]</td>
+				[onshow;block=begin;when [view.freemode]='1']
+					<td colspan="2">[timesheet.services;strconv=no]</td>
+				[onshow;block=end]
+				[onshow;block=begin;when [view.freemode]!='1']
+					<td>[timesheet.services;strconv=no]</td>
+				[onshow;block=end]
 				<td>[timesheet.consultants;strconv=no]</td>
 				<td>[timesheet.commentaireNewLine;strconv=no]</td>
 				<td><!--  --></td>
