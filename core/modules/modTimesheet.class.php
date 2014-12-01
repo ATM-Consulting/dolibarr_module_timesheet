@@ -301,6 +301,13 @@ class modTimesheet extends DolibarrModules
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'edit';
+		
+		$r++;
+		$this->rights[$r][0] = 104251;
+		$this->rights[$r][1] = $langs->trans('AdminHeuresSup');
+		$this->rights[$r][3] = 0;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'heuresup';
        
         // Main menu entries
         $this->menus = array(); // List of menus to add
@@ -362,7 +369,7 @@ class modTimesheet extends DolibarrModules
 		
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
-             'titre'=>'Liste',
+             'titre'=>'Liste feuilles de temps',
              'mainmenu'=>'project',
              'leftmenu'=>'timesheet',
              'url'=>'/timesheet/timesheet.php',
@@ -383,7 +390,7 @@ class modTimesheet extends DolibarrModules
              'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
              'position'=>178,
              'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
-             'perms'=>'1',                                   // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
+             'perms'=>'$user->rights->timesheet->user->heuresup',                                   // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
              'target'=>'',
 	         'user'=>2);
 		

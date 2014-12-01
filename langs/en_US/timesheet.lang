@@ -25,6 +25,7 @@ ReadAllTimesheetNDF=Read all expenses from timesheets
 EditTimesheetNDF=Add/Update expenses from timesheets
 ApproveTimesheet=Approve timesheet
 BillingTimesheet=Billing the timesheet
+AdminHeuresSup=Manage overtime
 
 //ODT
 TimeSheetDates=Period : %s to %s
