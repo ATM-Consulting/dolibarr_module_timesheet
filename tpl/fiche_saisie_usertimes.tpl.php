@@ -94,6 +94,9 @@
 		});
 	
 	</script>
-	
+	<div id="saisie" style="display:none;">
+			<div id="viewlines"></div>
+			<div id="adlines"></div>
+		</div>
 	
 [onshow;block=end]
