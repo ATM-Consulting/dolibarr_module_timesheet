@@ -94,9 +94,16 @@
 		});
 	
 	</script>
+	
+	<style type="text/css">
+		div.bodyline {
+			z-index:1050;
+		}
+	</style>
+	
 	<div id="saisie" style="display:none;">
-			<div id="viewlines"></div>
-			<div id="adlines"></div>
-		</div>
+		<div id="viewlines"></div>
+		<div id="adlines"></div>
+	</div>
 	
 [onshow;block=end]
