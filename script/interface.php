@@ -44,8 +44,7 @@
 			
 			$projet = new Project($db);
 			$projet->fetch($task->fk_project);
-			
-			$fk_soc = $projet->socid;
+			$fk_soc = (int)$projet->socid;
 		}
 		
 		$sql = "SELECT n.rowid as 'rowid'
