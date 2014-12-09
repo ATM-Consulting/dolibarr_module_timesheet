@@ -134,8 +134,17 @@ class TTimesheet extends TObjetStd {
 			$this->loadTimeSpentByTask($PDOdb,$task->id,$fk_user);
 		}
 		
+		
+		
 	}
 	
+	function sortByProject($a, $b) {
+		
+		if($a->fk_project<$b->fk_project) return -1;
+		else if($a->fk_project>$b->fk_project) return 1;
+		else return 0;
+		
+	}
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid,$fk_user=0){
 		global $db;
@@ -282,7 +291,9 @@ class TTimesheet extends TObjetStd {
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
-			
+		
+		usort($this->TTask, array('TTimesheet', 'sortByProject'));
+		$TLigneTimesheet_total_jour=array();
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
 			
@@ -331,7 +342,7 @@ class TTimesheet extends TObjetStd {
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
 						$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
 						
-						$TLigneTimesheet["total_jour"][$time->task_date] += $time->task_duration;
+						$TLigneTimesheet_total_jour[$time->task_date] += $time->task_duration;
 						
 						foreach($TJours as $date=>$val){ // TODO C'est moche, ça passe 50 fois la dedans, cela devrait être extrait de la boucle pour un traitement après
 							if($mode == 'edittime'){
@@ -364,8 +375,8 @@ class TTimesheet extends TObjetStd {
 								$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;	
 							}
 							
-							if(!array_key_exists($date, $TLigneTimesheet['total_jour'])){
-								$TLigneTimesheet['total_jour'][$date] = ' ';
+							if(!array_key_exists($date, $TLigneTimesheet_total_jour)){
+								$TLigneTimesheet_total_jour[$date] = ' ';
 							}
 							
 						}
@@ -388,19 +399,18 @@ class TTimesheet extends TObjetStd {
 			}
 			
 		}
-		
 		//Mise en forme du total par colonne
 		if(!empty($TLigneTimesheet)){
-			ksort($TLigneTimesheet);
-			ksort($TLigneTimesheet['total_jour'],SORT_STRING);
-			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','consultant'=>'','commentaire'=>'Total','total'=>''),$TLigneTimesheet['total_jour']);
 			
-			foreach ($TLigneTimesheet['total_jour'] as $key => $value) {
-				if(strpos($key, '-')){
-					$TLigneTimesheet['total_jour'][$key] = convertSecondToTime($value,'allhourmin');
-				}
+			ksort($TLigneTimesheet_total_jour,SORT_STRING);
+			foreach ($TLigneTimesheet_total_jour as $key => $value) {
+				$TLigneTimesheet_total_jour[$key] = '<strong>'.convertSecondToTime($value,'allhourmin').'</strong>';
+				
 			}
+
+			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','consultant'=>'','commentaire'=>'<strong>Total</strong>'),$TLigneTimesheet_total_jour);
 		}
+		
 		
 		return array($TLigneTimesheet, $THidden);
 	}
