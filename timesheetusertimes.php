@@ -20,7 +20,9 @@ function _action() {
 
 	$date_deb=GETPOST('date_deb');
 	$date_fin=GETPOST('date_fin');
-	$userid=GETPOST('userid');
+	$userid=(int)GETPOST('userid');
+	if(!$userid && !$user->rights->timesheet->all->read)$userid = $user->id;
+
 
 	if($date_deb) $date_deb = date('Y-m-d 00:00:00',dol_stringtotime($date_deb));
 	if($date_fin) $date_fin = date('Y-m-d 00:00:00',dol_stringtotime($date_fin));
@@ -49,13 +51,13 @@ function _action() {
 			case 'view' :
 			case 'changedate' :
 				
-				_fiche($timesheet,'changedate',$date_deb,$date_fin);
+				_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
 				break;
 			
 			case 'edit'	:
 			case 'edittime'	:
 				
-				_fiche($timesheet,'edittime',$date_deb,$date_fin);
+				_fiche($timesheet,'edittime',$date_deb,$date_fin,$userid);
 				break;
 				
 			case 'savetime':
@@ -63,9 +65,9 @@ function _action() {
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				setEventMessage('TimeSheetSaved');
 				
-				$timesheet->loadProjectTask($PDOdb, $userid);
+				$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 				
-				_fiche($timesheet,'changedate',$date_deb,$date_fin);
+				_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
 				break;
 				
 			
@@ -79,7 +81,7 @@ function _action() {
 				$timesheet->load($PDOdb, $_REQUEST['id']);
 				
 			
-				_fiche($timesheet,'view',$date_deb,$date_fin);
+				_fiche($timesheet,'view',$date_deb,$date_fin,$userid);
 				break;
 			
 		}
@@ -182,7 +184,7 @@ function _liste() {
 	
 
 }
-function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
+function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_selected=0) {
 
 	global $langs,$db,$conf,$user;
 	$PDOdb = new TPDOdb;
@@ -277,9 +279,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
-		$disabled = 0;
-		if(!$user->rights->timesheet->all->read) $disabled = true;
-
+		
 		print $TBS->render('tpl/fiche_saisie_usertimes.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,
@@ -306,8 +306,9 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
 					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
 					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
-					,'liste_user'=>$doliform->select_dolusers(((GETPOST('userid')) ? GETPOST('userid') : $user->id),'userid',0,'',$disabled)
+					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers( -1,'userid')
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
+					,'userid_selected'=>$userid_selected
 				)
 				
 			)

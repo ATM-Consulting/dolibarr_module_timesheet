@@ -2,12 +2,10 @@
 
 	<script type="text/javascript">
 		$(document).ready(function(){
-			[onshow;block=begin;when [view.tous]='false']
-				$('#userid').prepend('<option value="0">Tous</option>');
-			[onshow;block=end]
-			[onshow;block=begin;when [view.tous]='true']
-				$('#userid').prepend('<option value="0" selected="selected">Tous</option>');
-			[onshow;block=end]
+			$('#userid').prepend('<option value="0">Tous</option>');
+			
+			$('#userid').val([view.userid_selected]);
+			
 		});
 	</script>
 

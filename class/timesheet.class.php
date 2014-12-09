@@ -88,7 +88,7 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function loadProjectTask(&$PDOdb, $fk_user=0,$date_deb="",$date_fin=""){
-		global $db;
+		global $db,$conf,$user;
 		
 		$date_deb = date('Y-m-d 00:00:00',$this->date_deb);
 		$date_fin =  date('Y-m-d 00:00:00',$this->date_fin);
@@ -133,8 +133,6 @@ class TTimesheet extends TObjetStd {
 			
 			$this->loadTimeSpentByTask($PDOdb,$task->id,$fk_user);
 		}
-		
-		
 		
 	}
 	
