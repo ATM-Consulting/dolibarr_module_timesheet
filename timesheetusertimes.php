@@ -63,7 +63,7 @@ function _action() {
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				setEventMessage('TimeSheetSaved');
 				
-				$timesheet->loadProjectTask($PDOdb, $user->id);
+				$timesheet->loadProjectTask($PDOdb, $userid);
 				
 				_fiche($timesheet,'changedate',$date_deb,$date_fin);
 				break;
