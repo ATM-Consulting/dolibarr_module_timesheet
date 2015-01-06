@@ -1,0 +1,4 @@
+Il erait bien d'avoir la page de configuration du module en administrateur, certains paramètres pouvant être :
+- suppressions des enregistrement de temps lors de suppression de timesheet : OUI/NON
+- masquage des jours dans la grille d'interval : FERIé/CONGéS/Week end
+- limiter l'integration des TS aux clients liés uniquement : OUI/NON
