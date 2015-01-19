@@ -118,8 +118,9 @@ class modTimesheet extends DolibarrModules
         // Constants
         // List of particular constants to add when module is enabled
         // (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
-        // Example:
+        // Example:		
         $this->const = array(
+			array('RH_JOURS_NON_TRAVAILLE','chaine','samedi,saturday,dimanche,sunday', 'Ajouté par RH',1)
             //	0=>array(
             //		'MYMODULE_MYNEWCONST1',
             //		'chaine',

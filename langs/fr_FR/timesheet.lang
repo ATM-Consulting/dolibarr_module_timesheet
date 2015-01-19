@@ -43,6 +43,8 @@ timesheetTIMESHEET_WORKING_HOUR_PER_DAY=Nombre d'heure travaillée par jour
 timesheetTIMESHEET_RH_NO_CHECK=Ne pas corréler RH Absence avec ce module
 timesheetTIMESHEET_CREATE_TASK_DOUBLE=Permettre de créer des tâches de service en double
 timesheetTIMESHEET_USE_SERVICES=Utiliser les services associés aux tâches
+RH_JOURS_NON_TRAVAILLE=Jour non travaillé
+ConstAddedByRH=Ajouté par RH
 
 //TimeshettUserTimes
 TimeshettUserTimes=Saisie des temps

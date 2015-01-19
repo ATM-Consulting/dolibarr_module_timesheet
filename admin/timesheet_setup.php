@@ -42,7 +42,6 @@ $action=__get('action','');
 if($action=='save') {
 	
 	foreach($_REQUEST['TParam'] as $name=>$param) {
-		
 		dolibarr_set_const($db, $name, $param, 'chaine', 0, '', $conf->entity);
 		
 	}
@@ -72,7 +71,10 @@ function showParameters(&$form) {
 	global $db,$conf,$langs;
 	
 	$html=new Form($db);
-
+	$TConst=array(
+		'RH_JOURS_NON_TRAVAILLE'
+	);
+	
 	?><form action="<?php echo $_SERVER['PHP_SELF'] ?>" name="load-<?php echo $typeDoc ?>" method="POST" enctype="multipart/form-data">
 		<input type="hidden" name="action" value="save" />
 	<table width="100%" class="noborder" style="background-color: #fff;">
@@ -92,6 +94,12 @@ function showParameters(&$form) {
 		<tr>
 			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_USE_SERVICES)  ?></td>				
 		</tr>
+		
+		<?php foreach($TConst as $key) { ?>
+			<tr>
+				<td><?php echo $langs->trans($key) ?></td><td><?php echo $form->texte('', 'TParam['.$key.']', $conf->global->$key,50,255)  ?></td>				
+			</tr>
+		<?php } ?>
 		
 	</table>
 	<p align="right">
