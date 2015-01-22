@@ -94,6 +94,9 @@ function showParameters(&$form) {
 		<tr>
 			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_USE_SERVICES)  ?></td>				
 		</tr>
+		<tr>
+			<td>Restreindre l'affichage des TS par tiers</td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RESTRICT_TS_TIERS]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RESTRICT_TS_TIERS)  ?></td>				
+		</tr>
 		
 		<?php foreach($TConst as $key) { ?>
 			<tr>
