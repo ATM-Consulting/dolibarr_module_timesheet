@@ -307,9 +307,6 @@ function _fiche(&$timesheet, $mode='view') {
 	if(!$conf->global->TIMESHEET_USE_SERVICES){
 		$freemode = true;
 	}
-	else{
-		$freemode = false;
-	}
 	
 	/*
 	 * Affichage informations générales

@@ -121,20 +121,7 @@ class modTimesheet extends DolibarrModules
         // Example:		
         $this->const = array(
 			array('RH_JOURS_NON_TRAVAILLE','chaine','samedi,saturday,dimanche,sunday', 'Ajouté par RH',1)
-            //	0=>array(
-            //		'MYMODULE_MYNEWCONST1',
-            //		'chaine',
-            //		'myvalue',
-            //		'This is a constant to add',
-            //		1
-            //	),
-            //	1=>array(
-            //		'MYMODULE_MYNEWCONST2',
-            //		'chaine',
-            //		'myvalue',
-            //		'This is another constant to add',
-            //		0
-            //	)
+            ,array('TIMESHEET_USE_SERVICES','chaine',1,'Utiliser les service pour l\'ajout de temps',1)
         );
 
         // Array to add new pages in new tabs
