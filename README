@@ -1,1 +1,12 @@
 Module de gestion des feuilles de temps.
+
+Ce module s’adresse à toute société de services souhaitant comptabiliser le temps de leur consultant en liaison direct avec la facturation. Ce module est un sous ensemble du module projet, qui doit donc être activé. Avant de pouvoir déclarer le travail effectué, il est important d’avoir créé le(s) service(s) sur lequel vous allez affecter le ou les consultants et définir les prix de vente journalier soit à l’aide des fonctions standard de Dolibarr ou bien en utilisant le module tarif développé par la société ATM Consulting.  
+La déclaration des temps s’effectue en quelques clics seulement. 
+Le processus de feuille de temps terminé, vous pouvez intégrer votre feuille de temps à votre facture, ainsi les lignes de vos consultants seront facturées précisément pour le travail enregistré. 
+
+Consultez le manuel utilisateur pour plus d'information
+
+Pour toute question, besoin de support et formation ou proposition d’amélioration de ce module, veuillez nous contacter via
+info@tqm-insight.com
+ou bien
+http://support.qm-insight.com

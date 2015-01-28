@@ -127,7 +127,7 @@ function showParameters(&$form) {
 		<tr class="impair">
 			<td valign="top">Module développé par </td>
 			<td align="center">
-				<a href="http://www.atm-consulting.fr/" target="_blank">ATM Consulting</a>
+				<a href="http://www.tqm-insight.com/" target="_blank">TQM Insight</a>
 			</td>
 		</td>
 	</tr>
