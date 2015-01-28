@@ -24,14 +24,8 @@ function _action() {
 	if(!$userid && !$user->rights->timesheet->all->read)$userid = $user->id;
 
 
-	if($date_deb) $date_deb = date('Y-m-d 00:00:00',dol_stringtotime($date_deb));
-	if($date_fin) $date_fin = date('Y-m-d 00:00:00',dol_stringtotime($date_fin));
-	
-	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
-	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
-	
-	$timesheet->set_date('date_deb', $date_deb);
-	$timesheet->set_date('date_fin', $date_fin);
+	$timesheet->date_deb = ($date_deb) ? dol_stringtotime($date_deb) : strtotime('last Monday');
+	$timesheet->date_fin = ($date_fin) ? dol_stringtotime($date_fin) : strtotime('next Sunday');
 	
 	$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 	

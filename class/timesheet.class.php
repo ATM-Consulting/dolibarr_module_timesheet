@@ -87,15 +87,12 @@ class TTimesheet extends TObjetStd {
 		parent::save($PDOdb);
 	}
 	
-	function loadProjectTask(&$PDOdb, $fk_user=0,$date_deb="",$date_fin=""){
+	function loadProjectTask(&$PDOdb, $fk_user=0){
 		global $db,$conf,$user;
 		
 		$date_deb = date('Y-m-d 00:00:00',$this->date_deb);
-		$date_fin =  date('Y-m-d 00:00:00',$this->date_fin);
-		
-		$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
-		$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
-		
+		$date_fin =  date('Y-m-d 23:59:59',$this->date_fin);
+
 		$this->TTask=$Tid=array();
 		
 		if($fk_user>0) {
@@ -107,12 +104,14 @@ class TTimesheet extends TObjetStd {
 
 			foreach($TTask as $t){
 				if(empty($t->date_end)) $t->date_end = time();
-				if((date('Y-m-d h:i:s',$t->date_start) <= $date_fin && date('Y-m-d h:i:s',$t->date_end) >= $date_deb)){
+				
+				if($t->date_start <= $this->date_fin && $t->date_end >= $this->date_deb){
 					$Tid[] = $t->id;
 				}
 			}
 		}
 		else{
+			
 			$sql = 'SELECT rowid 
 					FROM '.MAIN_DB_PREFIX.'projet_task 
 					WHERE dateo <= "'.$date_fin.'"
@@ -122,7 +121,7 @@ class TTimesheet extends TObjetStd {
 
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
-		
+	
 		foreach($Tid as $id){
 
 			$task = new Task($db);
@@ -292,6 +291,7 @@ class TTimesheet extends TObjetStd {
 		
 		usort($this->TTask, array('TTimesheet', 'sortByProject'));
 		$TLigneTimesheet_total_jour=array();
+		
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
 			
