@@ -26,7 +26,7 @@ function _action() {
 
 	$timesheet->date_deb = ($date_deb) ? dol_stringtotime($date_deb) : strtotime('last Monday');
 	$timesheet->date_fin = ($date_fin) ? dol_stringtotime($date_fin) : strtotime('next Sunday');
-	
+//	print date('Y-m-d', $timesheet->date_deb);
 	$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 	
 	/*******************************************************************
@@ -298,8 +298,8 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
 					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
-					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
-					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
+					,'date_deb'=>$form->calendrier('', "date_deb", $timesheet->date_deb)
+					,'date_fin'=>$form->calendrier('', "date_fin", $timesheet->date_fin)
 					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers( -1,'userid')
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 					,'userid_selected'=>$userid_selected
