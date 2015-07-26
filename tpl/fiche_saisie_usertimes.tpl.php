@@ -1,12 +1,30 @@
 [onshow;block=begin;when [view.mode]!='new']
-	<span>[THidden.val;block=span;strconv=no]</span>
 
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#userid').prepend('<option value="0">Tous</option>');
+			
+			$('#userid').val([view.userid_selected]);
+			
+		});
+	</script>
+
+	<span>[THidden.val;block=span;strconv=no]</span>
+	<table class="nobrder" style="width:100%;">
+		[onshow;block=begin;when [view.mode]='changedate']
+			<input type="hidden" name="action" id="action" value="[view.mode]">
+		[onshow;block=end]
+		<tr>
+			<td> du [view.date_deb;strconv=no] au [view.date_fin;strconv=no] Filtrage utilisateur : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="Visualiser"></td>
+		</tr>
+	</table>
+	<br><br>
 	<table class="border" style="width:100%;">
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
 			<tr>
 				<td>Projet</td>
-				<td>Service</td>
+				<td>Tâche/Service</td>
 				<td>Consultant</td>
 				<td>Total</td>
 				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>
@@ -37,7 +55,7 @@
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<a href="?id=[timesheet.id]&action=edittime" class="butAction">Modifier les temps</a>
+		<input type="submit" value="Modifier les temps" onclick="$('#action').val('edittime');" name="save" class="button">
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	
@@ -75,5 +93,15 @@
 	
 	</script>
 	
+	<style type="text/css">
+		div.bodyline {
+			z-index:1050;
+		}
+	</style>
+	
+	<div id="saisie" style="display:none;">
+		<div id="viewlines"></div>
+		<div id="adlines"></div>
+	</div>
 	
 [onshow;block=end]

@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2007-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2007-2014 ATM Consulting <contact@atm-consulting.fr>
+ * Copyright (C) 2012-2014 ATM Consulting <contact@atm-consulting.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,6 @@ $action=__get('action','');
 if($action=='save') {
 	
 	foreach($_REQUEST['TParam'] as $name=>$param) {
-		
 		dolibarr_set_const($db, $name, $param, 'chaine', 0, '', $conf->entity);
 		
 	}
@@ -72,7 +71,10 @@ function showParameters(&$form) {
 	global $db,$conf,$langs;
 	
 	$html=new Form($db);
-
+	$TConst=array(
+		'RH_JOURS_NON_TRAVAILLE'
+	);
+	
 	?><form action="<?php echo $_SERVER['PHP_SELF'] ?>" name="load-<?php echo $typeDoc ?>" method="POST" enctype="multipart/form-data">
 		<input type="hidden" name="action" value="save" />
 	<table width="100%" class="noborder" style="background-color: #fff;">
@@ -89,6 +91,18 @@ function showParameters(&$form) {
 		<tr>
 			<td><?php echo $langs->trans('timesheetTIMESHEET_CREATE_TASK_DOUBLE') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_CREATE_TASK_DOUBLE]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_CREATE_TASK_DOUBLE)  ?></td>				
 		</tr>
+		<tr>
+			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_USE_SERVICES)  ?></td>				
+		</tr>
+		<tr>
+			<td>Restreindre l'affichage des TS par tiers</td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RESTRICT_TS_TIERS]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RESTRICT_TS_TIERS)  ?></td>				
+		</tr>
+		
+		<?php foreach($TConst as $key) { ?>
+			<tr>
+				<td><?php echo $langs->trans($key) ?></td><td><?php echo $form->texte('', 'TParam['.$key.']', $conf->global->$key,50,255)  ?></td>				
+			</tr>
+		<?php } ?>
 		
 	</table>
 	<p align="right">
@@ -113,7 +127,7 @@ function showParameters(&$form) {
 		<tr class="impair">
 			<td valign="top">Module développé par </td>
 			<td align="center">
-				<a href="http://www.atm-consulting.fr/" target="_blank">ATM Consulting</a>
+				<a href="http://www.tqm-insight.com/" target="_blank">TQM Insight</a>
 			</td>
 		</td>
 	</tr>

@@ -110,7 +110,7 @@ class ActionsTimesheet
         	
 	        	$langs->load('timesheet@timesheet');
 
-	        	$sql = "SELECT p.rowid, p.ref, p.title,t.status,t.rowid as 'idTS',t.date_deb,t.date_fin
+	        	$sql = "SELECT p.rowid, p.fk_soc, p.ref, p.title,t.status,t.rowid as 'idTS',t.date_deb,t.date_fin
 	        			FROM ".MAIN_DB_PREFIX."projet as p
 	        				LEFT JOIN ".MAIN_DB_PREFIX."timesheet as t ON (t.fk_project = p.rowid)
 	        			WHERE t.status=1 AND t.entity = ".$conf->entity." AND t.rowid NOT IN (SELECT rowid
@@ -121,11 +121,15 @@ class ActionsTimesheet
 				$form = new Form($db);
 				
 				$TTimeSheet = array('0'=>$langs->trans('TimeSheetSelOne'));
-				
+		
 				$resql = $db->query($sql);
 				if($resql){
 					while ($res = $db->fetch_object($resql)) {
-						$TTimeSheet[$res->idTS] = '('.$res->idTS.') '.$res->ref." - ".$res->title.' ('.dol_print_date(strtotime($res->date_deb)).' - '.dol_print_date(strtotime($res->date_fin)).')' /*.' + '.$res->status.' '.$res->idTS*/;
+						if (empty($conf->global->TIMESHEET_RESTRICT_TS_TIERS)) {
+							$TTimeSheet[$res->idTS] = '('.$res->idTS.') '.$res->ref." - ".$res->title.' ('.dol_print_date(strtotime($res->date_deb)).' - '.dol_print_date(strtotime($res->date_fin)).')' /*.' + '.$res->status.' '.$res->idTS*/;
+						} else if ($object->socid == $res->fk_soc){
+							$TTimeSheet[$res->idTS] = '('.$res->idTS.') '.$res->ref." - ".$res->title.' ('.dol_print_date(strtotime($res->date_deb)).' - '.dol_print_date(strtotime($res->date_fin)).')' /*.' + '.$res->status.' '.$res->idTS*/;
+						}
 					}
 				}
 				$select = ' '.$langs->trans('TimeSheetSelectOne').' : ';

@@ -1,20 +1,33 @@
 [onshow;block=begin;when [view.mode]!='new']
-	<span>[THidden.val;block=span;strconv=no]</span>
 
+	<script type="text/javascript">
+		$(document).ready(function(){
+			[onshow;block=begin;when [view.tous]='false']
+				$('#userid').prepend('<option value="0">Tous</option>');
+			[onshow;block=end]
+			[onshow;block=begin;when [view.tous]='true']
+				$('#userid').prepend('<option value="0" selected="selected">Tous</option>');
+			[onshow;block=end]
+		});
+	</script>
+
+	<span>[THidden.val;block=span;strconv=no]</span>
+	<table class="nobrder" style="width:100%;">
+		<tr>
+			<td>Période du [view.date_deb;strconv=no] au [view.date_fin;strconv=no] Filtrage utilisateur : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="Visualiser"></td>
+		</tr>
+	</table>
+	<br><br>
 	<table class="border" style="width:100%;">
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
 			<tr>
-				[onshow;block=begin;when [view.freemode]='1']
-					<td colspan="2">Tâche</td>
-				[onshow;block=end]
-				[onshow;block=begin;when [view.freemode]!='1']
-					<td>Service</td>
-				[onshow;block=end]
 				<td>Consultant</td>
-				<td>Commentaire</td>
 				<td>Total</td>
-				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>
+				<td>Total heures souhaité</td>
+				<td>Total heures supplémentaires</td>
+				<td>Heures rémunérées</td>
+				<td>Heures rattrapées</td>
 				<td>Actions</td>
 			</tr>
 		</thead>
@@ -24,33 +37,31 @@
 		<tr id="[ligneTimesheet.$;strconv=no;block=tr;sub1]" >
 			<td>[ligneTimesheet_sub1.val;block=td;strconv=no]</td>
 		</tr>
-		
+		<!--
 		[onshow;block=begin;when [view.mode]=='edittime']
-			<!-- Nouvelle ligne de timesheet-->
 			<tr id="[timesheet.rowid;strconv=no]">
-				<td [onshow;block=begin;when [view.freemode]='1'] colspan="2" [onshow;block=end]>[timesheet.services;strconv=no]</td>
+				<td>[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
 				<td>[timesheet.commentaireNewLine;strconv=no]</td>
-				<td><!--  --></td>
+				<td>&nbsp;</td>
 				
 				<td>[formjour.val;block=td;strconv=no]</td>
 				<td></td>
 			</tr>
-		[onshow;block=end]
+		[onshow;block=end]-->
 		</tbody>
 	</table>
 	
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<a href="?id=[timesheet.id]&action=edittime" class="butAction">Modifier les temps</a>
+		<a href="?id=[timesheet.id]&action=edittime" class="butAction">Ventiler heures</a>
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	
 	[onshow;block=begin;when [view.mode]=='edittime']
 		<div class="tabsAction" style="text-align:center;">
-		<input type="submit" value="Enregistrer" name="save" class="button"> 
-		&nbsp; &nbsp; <input type="button" value="Annuler" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
+		<input type="submit" value="Ventiler heures" name="save" class="butAction"> 
 	</div>
 	[onshow;block=end]
 	</div>

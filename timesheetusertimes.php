@@ -17,9 +17,17 @@ function _action() {
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
-	$timesheet->date_fin = strtotime('+7day');
+
+	$date_deb=GETPOST('date_deb');
+	$date_fin=GETPOST('date_fin');
+	$userid=(int)GETPOST('userid');
+	if(!$userid && !$user->rights->timesheet->all->read)$userid = $user->id;
+
+
+	$timesheet->date_deb = ($date_deb) ? dol_stringtotime($date_deb) : strtotime('last Monday');
+	$timesheet->date_fin = ($date_fin) ? dol_stringtotime($date_fin) : strtotime('next Sunday');
 	
-	$timesheet->loadProjectTask($PDOdb, $user->id);
+	$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 	
 	/*******************************************************************
 	* ACTIONS
@@ -29,27 +37,31 @@ function _action() {
 	
 	$action=GETPOST('action');
 
-	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
+	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
-	
 	if($action) {
 		switch($action) {
 			
-		
+			case 'view' :
+			case 'changedate' :
+				
+				_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
+				break;
+			
 			case 'edit'	:
 			case 'edittime'	:
 				
-				_fiche($timesheet,GETPOST('action'));
+				_fiche($timesheet,'edittime',$date_deb,$date_fin,$userid);
 				break;
-
+				
 			case 'savetime':
 				
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				setEventMessage('TimeSheetSaved');
 				
-				$timesheet->loadProjectTask($PDOdb, $user->id);
+				$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 				
-				_fiche($timesheet,'edittime');
+				_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
 				break;
 				
 			
@@ -63,8 +75,8 @@ function _action() {
 				$timesheet->load($PDOdb, $_REQUEST['id']);
 				
 			
-				_fiche($timesheet);
-					
+				_fiche($timesheet,'view',$date_deb,$date_fin,$userid);
+				break;
 			
 		}
 		
@@ -72,7 +84,7 @@ function _action() {
 	else{
 				
 		
-		_fiche($timesheet, 'view');
+		_fiche($timesheet, 'changedate',$date_deb,$date_fin);
 		
 	}
 
@@ -166,12 +178,14 @@ function _liste() {
 	
 
 }
-function _fiche(&$timesheet, $mode='view') {
-	
+function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_selected=0) {
+
 	global $langs,$db,$conf,$user;
 	$PDOdb = new TPDOdb;
+	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
+	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
 	
-	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
+	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('TimeshettUserTimes'));
 
 	$form=new TFormCore();
 	$doliform = new Form($db);
@@ -188,15 +202,13 @@ function _fiche(&$timesheet, $mode='view') {
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
 	
-
-	
 	//Construction du nombre de colonne correspondant aux jours
 	$TJours = array(); //Tableau des en-tête pour les jours de la période
 	$TFormJours = array(); //Formulaire de saisis nouvelle ligne de temps
 	$TligneJours = array(); //Tableau des lignes de temps déjà existante
 	
 	$TJours = $timesheet->loadTJours(); 
-	
+
 	$form2=new TFormCore($_SERVER['PHP_SELF'],'formtime','POST');
 
 	//transformation de $TJours pour jolie affichage
@@ -212,7 +224,12 @@ function _fiche(&$timesheet, $mode='view') {
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
 		
+		if(GETPOST('userid')){
+			$lastuser = $user;
+			$user->fetch(GETPOST('userid'));
+		}
 		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true);
+		if(GETPOST('userid')) $user = $lastuser;
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
@@ -222,7 +239,6 @@ function _fiche(&$timesheet, $mode='view') {
 			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
 		}
 	}
-	
 	$TBS=new TTemplateTBS();
 	
 	if($mode=='edittime'){
@@ -244,6 +260,14 @@ function _fiche(&$timesheet, $mode='view') {
 	foreach($TJours as $date=>$jour){
 		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
+	
+	$form->Set_typeaff("edit");
+	
+	$date = date_create(date($date_deb));
+	$date_deb = date_format($date, 'd/m/Y');
+	
+	$date = date_create(date($date_fin));
+	$date_fin = date_format($date, 'd/m/Y');
 	
 	if($mode!='new' && $mode != "edit"){
 		/*
@@ -274,6 +298,11 @@ function _fiche(&$timesheet, $mode='view') {
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
 					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
+					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
+					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
+					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers( -1,'userid')
+					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
+					,'userid_selected'=>$userid_selected
 				)
 				
 			)

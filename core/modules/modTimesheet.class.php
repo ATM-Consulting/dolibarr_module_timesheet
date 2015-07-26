@@ -61,7 +61,7 @@ class modTimesheet extends DolibarrModules
         // (where XXX is value of numeric property 'numero' of module)
         $this->description = "Description of module MyModule";
         // Possible values for version are: 'development', 'experimental' or version
-        $this->version = '1.0';
+        $this->version = '1.1';
         // Key used in llx_const table to save module status enabled/disabled
         // (where MYMODULE is value of property name of module in uppercase)
         $this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
@@ -118,22 +118,10 @@ class modTimesheet extends DolibarrModules
         // Constants
         // List of particular constants to add when module is enabled
         // (key, 'chaine', value, desc, visible, 'current' or 'allentities', deleteonunactive)
-        // Example:
+        // Example:		
         $this->const = array(
-            //	0=>array(
-            //		'MYMODULE_MYNEWCONST1',
-            //		'chaine',
-            //		'myvalue',
-            //		'This is a constant to add',
-            //		1
-            //	),
-            //	1=>array(
-            //		'MYMODULE_MYNEWCONST2',
-            //		'chaine',
-            //		'myvalue',
-            //		'This is another constant to add',
-            //		0
-            //	)
+			array('RH_JOURS_NON_TRAVAILLE','chaine','samedi,saturday,dimanche,sunday', 'Ajouté par RH',1)
+            ,array('TIMESHEET_USE_SERVICES','chaine',1,'Utiliser les service pour l\'ajout de temps',1)
         );
 
         // Array to add new pages in new tabs
@@ -301,6 +289,13 @@ class modTimesheet extends DolibarrModules
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'edit';
+		
+		$r++;
+		$this->rights[$r][0] = 104251;
+		$this->rights[$r][1] = $langs->trans('AdminHeuresSup');
+		$this->rights[$r][3] = 0;
+		$this->rights[$r][4] = 'user';
+		$this->rights[$r][5] = 'heuresup';
        
         // Main menu entries
         $this->menus = array(); // List of menus to add
@@ -337,7 +332,7 @@ class modTimesheet extends DolibarrModules
              'titre'=>'Timesheet',
              'mainmenu'=>'project',
              'leftmenu'=>'timesheet',
-             'url'=>'/timesheet/hebdomadaire.php',
+             'url'=>'/timesheet/timesheetusertimes.php',
              'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
              'position'=>175,
              'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
@@ -351,7 +346,7 @@ class modTimesheet extends DolibarrModules
              'titre'=>'Saisie hebdomadaire',
              'mainmenu'=>'project',
              'leftmenu'=>'timesheet',
-             'url'=>'/timesheet/hebdomadaire.php',
+             'url'=>'/timesheet/timesheetusertimes.php',
              'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
              'position'=>176,
              'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
@@ -362,7 +357,7 @@ class modTimesheet extends DolibarrModules
 		
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
-             'titre'=>'Liste',
+             'titre'=>'Liste feuilles de temps',
              'mainmenu'=>'project',
              'leftmenu'=>'timesheet',
              'url'=>'/timesheet/timesheet.php',
@@ -371,8 +366,22 @@ class modTimesheet extends DolibarrModules
              'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
              'perms'=>'1',                                   // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
              'target'=>'',
-	         'user'=>2); 
-        
+	         'user'=>2);  
+        $r++;
+		
+		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
+             'type'=>'left',                                 // This is a Top menu entry
+             'titre'=>'Gestion heures supplémentaires',
+             'mainmenu'=>'project',
+             'leftmenu'=>'timesheet',
+             'url'=>'/timesheet/timesheet_heures_sup.php',
+             'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+             'position'=>178,
+             'enabled'=>'1',     // Define condition to show or hide menu entry. Use '$conf->report->enabled' if entry must be visible if module is enabled.
+             'perms'=>'$user->rights->timesheet->user->heuresup',                                   // Use 'perms'=>'$user->rights->report->level1->level2' if you want your menu with a permission rules
+             'target'=>'',
+	         'user'=>2);
+		
         //$r++;
         //$this->menu[$r]=array(
         //	// Use r=value where r is index key used for the parent menu entry
@@ -531,6 +540,8 @@ class modTimesheet extends DolibarrModules
      */
     public function init($options = '')
     {
+		global $db;
+		
         $sql = array();
 
         $result = $this->loadTables();
@@ -538,7 +549,12 @@ class modTimesheet extends DolibarrModules
         $url = dol_buildpath('/timesheet/script/create-maj-base.php', 2);
         file_get_contents($url);
 		
-		
+		// Création des extrafields pour la gestion des heures supplémentaires
+		dol_include_once("/core/class/extrafields.class.php");
+		$e = new ExtraFields($db);
+		$e->addExtraField("total_hsup_remunerees", "Total heures supplémentaires rémunérées", "varchar", $pos, 10, "user");
+		$e->addExtraField("total_hsup_rattrapees", "Total heures supplémentaires rattrapées", "varchar", $pos, 10, "user");
+		$e->addExtraField("date_last_hsup", "Date dernier enregistrement d'heures supplémentaires", "date", $pos, $taille, "user");
 
         return $this->_init($sql, $options);
     }

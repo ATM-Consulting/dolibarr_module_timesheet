@@ -112,6 +112,8 @@ function _action() {
 			
 			case 'savetime':
 				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
+				
+				//pre($_REQUEST,true);exit;
 				$timesheet->set_values($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
 				$timesheet->save($PDOdb);
@@ -206,9 +208,9 @@ function _liste() {
 		)
 		,'subQuery'=>array()
 		,'link'=>array(
-			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@',2).'">'.img_picto('','object_company.png','',0).' @nom@</a>'
-			,'fk_project'=>'<a href="'.dol_buildpath('/projet/fiche.php?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
-			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/timesheet.php?id=@rowid@',2).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
+			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@',1).'">'.img_picto('','object_company.png','',0).' @nom@</a>'
+			,'fk_project'=>'<a href="'.dol_buildpath('/projet/fiche.php?id=@fk_project@',1).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
+			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/timesheet.php?id=@rowid@',1).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
 		)
 		,'translate'=>array(
 			'status'=>$TTimesheet->TStatus		
@@ -248,9 +250,30 @@ function _liste() {
 	
 
 }
+
+function _selectProjectTasksByMoi(&$PDOdb,&$timehseet)
+{
+	
+	$sql = "SELECT rowid,ref,label FROM ".MAIN_DB_PREFIX."projet_task WHERE fk_projet = ".$timehseet->fk_project;
+	$PDOdb->Execute($sql);
+	
+	$chaine = '<select class="flat" name="serviceid_0">
+				<option value="0"></option>';
+	
+	while($PDOdb->Get_line()){
+		$chaine .= '<option value="'.$PDOdb->Get_field('rowid').'">'.$PDOdb->Get_field('ref').' - '.$PDOdb->Get_field('label').'</option>';
+	}
+	
+	$chaine .= '</select>';
+   return $chaine;
+   
+}
+
+
 function _fiche(&$timesheet, $mode='view') {
 	
 	global $langs,$db,$conf,$user;
+	
 	$PDOdb = new TPDOdb;
 	
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
@@ -280,7 +303,11 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	$TBS->TBS->protect=false;
 	$TBS->TBS->noerr=true;
-
+	
+	if(!$conf->global->TIMESHEET_USE_SERVICES){
+		$freemode = true;
+	}
+	
 	/*
 	 * Affichage informations générales
 	 */
@@ -332,7 +359,7 @@ function _fiche(&$timesheet, $mode='view') {
 		if($mode=='edittime')$form2->Set_typeaff('edit');
 		else $form2->Set_typeaff('view');
 		
-		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode);
+		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode,$freemode);
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
 		$nb_second_per_day = $hour_per_day * 3600;
@@ -365,11 +392,38 @@ function _fiche(&$timesheet, $mode='view') {
 		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
 	
+	if($freemode){
+		?>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$('tr[id=0] select[name^=serviceid_], tr[id=0] select[name^=userid_]').change(function(){
+					
+					tache = $('tr[id=0] select[name^=serviceid_]');
+					user = $('tr[id=0] select[name^=userid_]');
+					
+					$(tache).attr('name','serviceid_'+$(tache).find(':selected').val());
+					$(user).attr('name','userid_'+$(user).find(':selected').val());
+					
+					
+					$('tr[id=0] input[id^=temps_]').each(function(i) {
+						name = $(this).attr('name');
+						temp = name.substr(-12);
+						name = 'temps['+$(tache).find(':selected').val()+'_'+$(user).find(':selected').val()+']'+temp;
+						$(this).attr('name',name);
+					});
+				});
+
+			});
+		</script>
+		<?php
+	}
+	
+	//pre($TligneTimesheet,true);exit;
+	
 	if($mode!='new' && $mode != "edit"){
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
-		
 		print $TBS->render('tpl/fiche_saisie.tpl.php'
 			,array(
 				'ligneTimesheet'=>$TligneTimesheet,
@@ -383,8 +437,8 @@ function _fiche(&$timesheet, $mode='view') {
 				'timesheet'=>array(
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
-					,'services'=>$doliform->select_produits_list('','serviceid_0','1')
-					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
+					,'services'=>(!$freemode) ? $doliform->select_produits_list('','serviceid_0','1') : _selectProjectTasksByMoi($PDOdb,$timesheet)
+					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0',1) : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
@@ -394,6 +448,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
 					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
+					,'freemode'=>$freemode
 				)
 				
 			)

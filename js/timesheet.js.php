@@ -7,14 +7,19 @@ function get_ndfp(fk_user, fk_task, fk_timesheet, date) {
 	$.get('<?php echo dol_buildpath('/timesheet/script/interface.php',2); ?>?get=get_ndfp&fk_user='+fk_user+'&fk_task='+fk_task+'&fk_timesheet='+fk_timesheet,function(ndfp){
 		ndfp=$.parseJSON(ndfp);
 		console.log(ndfp);
-		pop_ndfp(ndfp, date);
-	});
-	
-	$('#saisie').show().dialog({
-		modal:true
-		,minWidth:1250
-		,minHeight:200
-		,title:'Note de frais'
+		
+		if(ndfp.id==null) alert('Impossible de charger la note de frais, contrôlez vos droits.'); 
+		else {
+			pop_ndfp(ndfp, date);
+			$('#saisie').show().dialog({
+				modal:true
+				,minWidth:1250
+				,minHeight:200
+				,title:'Note de frais'
+			});
+			
+			
+		}
 	});
 	
 }

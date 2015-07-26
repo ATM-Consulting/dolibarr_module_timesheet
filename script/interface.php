@@ -27,24 +27,42 @@
 		global $db;
 
 		dol_include_once('/ndfp/class/ndfp.class.php');
+		dol_include_once('/projet/class/project.class.php');
+		dol_include_once('/projet/class/task.class.php');
 		dol_include_once('/core/class/html.form.class.php');
 		
-		$timesheet = new TTimesheet;
-		$timesheet->load($PDOdb,$fk_timesheet);
-	
-		$sql = "SELECT n.rowid as 'rowid'
-				FROM ".MAIN_DB_PREFIX."ndfp as n
-				WHERE n.fk_user = ".$fk_user." AND n.fk_soc = ".$timesheet->societe->id." AND n.statut = 0";
+		if($fk_timesheet > 0){ //on est sur une vrai feuille de temps
+			$timesheet = new TTimesheet;
+			$timesheet->load($PDOdb,$fk_timesheet);
+			
+			$fk_soc = $timesheet->societe->id;
+		}
+		else{ //On est sur de la saisie à la volé hebdomadaire donc pas dez timesheet
 
+			$task = new Task($db);
+			$task->fetch($fk_task);
+			
+			$projet = new Project($db);
+			$projet->fetch($task->fk_project);
+			$fk_soc = (int)$projet->socid;
+		}
+		
+		$sql = "SELECT n.rowid as 'rowid'
+					FROM ".MAIN_DB_PREFIX."ndfp as n
+					WHERE n.fk_user = ".$fk_user." AND n.fk_soc = ".$fk_soc." AND n.statut = 0";
+		
 		$PDOdb->Execute($sql);
 		
 		if($PDOdb->Get_line()){
 			$fk_ndfp = $PDOdb->Get_field('rowid');
 		}
 		else{
-			
-			$fk_ndfp = _createNdfp($PDOdb,$timesheet,$fk_user);
-
+			if($fk_timesheet > 0){
+				$fk_ndfp = _createNdfp($PDOdb,$fk_soc,$fk_user,$timesheet->date_deb,$timesheet->date_fin);
+			}
+			else {
+				$fk_ndfp = _createNdfp($PDOdb,$fk_soc,$fk_user);
+			}
 		}
 		
 		$ndfp=new Ndfp($db);
@@ -212,9 +230,12 @@
 		return $chaine;
 	}
 
-	function _createNdfp(&$PDOdb,&$timesheet,$fk_user){
+	function _createNdfp(&$PDOdb,$fk_soc,$fk_user,$date_deb="",$date_fin=""){
 		global $db,$conf,$user;
-
+		
+		if(empty($date_deb)) $date_deb = dol_now();
+		if(empty($date_fin)) $date_fin = dol_now();
+		
 		$userNdfp = new User($db);
 		$userNdfp->fetch($fk_user);
 
@@ -222,7 +243,7 @@
 		$html = new Form($db);
 
 		$fk_user = $fk_user;
-        $fk_soc = $timesheet->societe->id;
+        $fk_soc = $fk_soc;
         $fk_cat = 6; //TODO Mis en dur pour le moment = 5 CV, prévoir un paramétrage fiche user
         $fk_project = 0; //0 puisqu'une note de frais peux être lié à plusieurs projets d'un client
 
@@ -239,8 +260,8 @@
             return -1;
         }
 
-        $start_date = $timesheet->date_deb;
-        $end_date = $timesheet->date_fin;
+        $start_date = $date_deb;
+        $end_date = $date_fin;
 
         $ndfp->ref            = '(PROV)';
         $ndfp->cur_iso        = $currency;
@@ -268,6 +289,6 @@
         $ndfp->statut      		= 0;
 
 		$idNdfp = $ndfp->create($user);
-
+		
 		return $idNdfp;
 	}

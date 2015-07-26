@@ -72,5 +72,10 @@ function timesheetPrepareHead(&$timesheet,$type='timesheet') {
 				
 			}
 			break;
+		case 'hsup':
+				return array(
+					array(dol_buildpath('/timesheet/timesheet_heures_sup.php',2), 'Fiche','fiche')
+				);
+			break;
 	}
 }

@@ -88,29 +88,40 @@ class TTimesheet extends TObjetStd {
 	}
 	
 	function loadProjectTask(&$PDOdb, $fk_user=0){
-		global $db;
+		global $db,$conf,$user;
 		
+		$date_deb = date('Y-m-d 00:00:00',$this->date_deb);
+		$date_fin =  date('Y-m-d 23:59:59',$this->date_fin);
+
 		$this->TTask=$Tid=array();
 		
 		if($fk_user>0) {
 			$task=new Task($db);
-			
-			$TTask = $task->getTasksArray($fk_user, $fk_user);
-			
-			foreach($TTask as $t)$Tid[] = $t->id;
-			
+			$user_temp = new User($db);
+			$user_temp->fetch($fk_user);
+
+			$TTask = $task->getTasksArray($user_temp, $user_temp);
+
+			foreach($TTask as $t){
+				if(empty($t->date_end)) $t->date_end = time();
+				
+				if($t->date_start <= $this->date_fin && $t->date_end >= $this->date_deb){
+					$Tid[] = $t->id;
+				}
+			}
 		}
 		else{
-			$sql = "SELECT rowid 
-					FROM ".MAIN_DB_PREFIX."projet_task 
-					WHERE fk_projet = ".$this->project->id.'
-						
-					ORDER BY label ASC';
-	
-			//echo $sql;exit;
+			
+			$sql = 'SELECT rowid 
+					FROM '.MAIN_DB_PREFIX.'projet_task 
+					WHERE dateo <= "'.$date_fin.'"
+						AND datee >= "'.$date_deb.'"';
+			if($this->project->id) $sql .= " AND fk_projet = ".$this->project->id;
+			$sql .= ' ORDER BY label ASC';
+
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
-
+	
 		foreach($Tid as $id){
 
 			$task = new Task($db);
@@ -119,20 +130,28 @@ class TTimesheet extends TObjetStd {
 
 			$this->TTask[$task->id] = $task;
 			
-			$this->loadTimeSpentByTask($PDOdb,$task->id);
+			$this->loadTimeSpentByTask($PDOdb,$task->id,$fk_user);
 		}
 		
 	}
 	
+	function sortByProject($a, $b) {
+		
+		if($a->fk_project<$b->fk_project) return -1;
+		else if($a->fk_project>$b->fk_project) return 1;
+		else return 0;
+		
+	}
 
-	function loadTimeSpentByTask(&$PDOdb,$taskid){
+	function loadTimeSpentByTask(&$PDOdb,$taskid,$fk_user=0){
 		global $db;
 		
 		$sql = "SELECT t.rowid, t.task_date, t.task_duration, t.fk_user, t.note, u.lastname, u.firstname
 				FROM ".MAIN_DB_PREFIX."projet_task_time as t
 					LEFT JOIN ".MAIN_DB_PREFIX."user as u ON (t.fk_user = u.rowid)
-				WHERE t.fk_task =".$taskid." AND t.task_date BETWEEN '".$this->get_date('date_deb', 'Y-m-d')."' AND '".$this->get_date('date_fin', 'Y-m-d')."' 
-				ORDER BY t.fk_user,t.task_date DESC";
+				WHERE t.fk_task =".$taskid." AND t.task_date BETWEEN '".$this->get_date('date_deb', 'Y-m-d')."' AND '".$this->get_date('date_fin', 'Y-m-d')."'";
+		if($fk_user > 0) $sql .= " AND t.fk_user = ".$fk_user; 
+		$sql .= " ORDER BY t.fk_user,t.task_date DESC";
 
 		$PDOdb->Execute($sql);
 		$this->TTask[$taskid]->TTime=array();
@@ -265,11 +284,14 @@ class TTimesheet extends TObjetStd {
 		
 	}
 
-	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$freemode=false){
+	function loadLines(&$PDOdb,&$TJours,&$doliform,&$formATM,$mode='view',$freemode=false, $affiche_id_user_dans_tableau=false){
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
-			
+		
+		usort($this->TTask, array('TTimesheet', 'sortByProject'));
+		$TLigneTimesheet_total_jour=array();
+		
 		foreach($this->TTask as $task){
 			//Comptabilisation des temps + peuplage de $TligneJours
 			
@@ -277,7 +299,7 @@ class TTimesheet extends TObjetStd {
 
 				$productstatic = new Product($db);
 				
-				if($task->array_options['options_fk_service']>0) { //et oui, y avait un mind map
+				if($task->array_options['options_fk_service']>0 && !$freemode) { //et oui, y avait un mind map
 					$productstatic->fetch((int)$task->array_options['options_fk_service']);
 					$productstatic->ref = $productstatic->ref." - ".$productstatic->label;
 					
@@ -291,86 +313,102 @@ class TTimesheet extends TObjetStd {
 				
 				foreach($task->TTime as $time){
 				
-						if($user->rights->timesheet->all->read || $user->id == $time->fk_user) {
-	
-							$userstatic = new User($db);
-							$userstatic->fetch($time->fk_user);
+					if($user->rights->timesheet->all->read || $user->id == $time->fk_user) {
 
-							if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id]) ) $TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
+						$userstatic = new User($db);
+						$userstatic->fetch($time->fk_user);
 
-							if($freemode) {
-								$project = new Project($db);
-								$project->fetch($task->fk_project);
-								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] = $project->getNomUrl(1);	
-							}
+						if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id]) ) $TLigneTimesheet[$task->id.'_'.$userstatic->id]=array();
 
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = ($mode=='print') ? $userstatic->getFullName($langs) : $userstatic->getNomUrl(1);	
-							
-							if(!$freemode) {
-								$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
-								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = ($mode=='print') ? $linelabel : $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', $linelabel, 30,255);	
+						if($freemode) {
+							$project = new Project($db);
+							$project->fetch($task->fk_project);
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] = $project->getNomUrl(1);	
+						}
+
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['consultant'] = ($mode=='print') ? $userstatic->getFullName($langs) : $userstatic->getNomUrl(1);	
+						
+						if($affiche_id_user_dans_tableau) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['id_consultant'] = $userstatic->id;
+						
+						if(!strpos($_SERVER['PHP_SELF'], 'timesheetusertimes.php')) {
+							$linelabel = !empty($this->TLineLabel[$task->id][$userstatic->id] ) ? $this->TLineLabel[$task->id][$userstatic->id] : '';
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['TLineLabel'] = ($mode=='print') ? $linelabel : $formATM->texte('', 'TLineLabel['.$task->id.']['.$userstatic->id.']', $linelabel, 30,255);	
+						}
+						
+						//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
+						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
+						$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
+						
+						$TLigneTimesheet_total_jour[$time->task_date] += $time->task_duration;
+						
+						foreach($TJours as $date=>$val){ // TODO C'est moche, ça passe 50 fois la dedans, cela devrait être extrait de la boucle pour un traitement après
+							if($mode == 'edittime'){
+								$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'): '',5);
+							}
+							else{
+								$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
 							}
 							
-							//$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total_jours'] += $time->task_duration;
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['total'] += $time->task_duration; // TODO mais c'est la même chose ?!
-							$TTimeTemp[$task->id.'_'.$time->fk_user][$time->task_date] = $time->task_duration;
-							
-							foreach($TJours as $date=>$val){ // TODO C'est moche, ça passe 50 fois la dedans, cela devrait être extrait de la boucle pour un traitement après
-								if($mode == 'edittime'){
-									$chaine = $formATM->timepicker('', 'temps['.$task->id.'_'.$userstatic->id.']['.$date.']', ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin'): '',5);
-								}
-								else{
-									$chaine = ($TTimeTemp[$task->id.'_'.$userstatic->id][$date]) ? convertSecondToTime($TTimeTemp[$task->id.'_'.$userstatic->id][$date],'allhourmin') : '';
+							if($conf->absence->enabled && empty($conf->global->TIMESHEET_RH_NO_CHECK) && $mode!='print'  ) {
+								
+								dol_include_once('/absence/class/absence.class.php');
+								$absence=new TRH_Absence;
+								$absence->fk_user = $userstatic->id;
+								if(!$absence->isWorkingDay($PDOdb, $date)){
+									$chaine.=img_picto($langs->trans('TimeSheetShoulNotWorkThisDay'), 'warning');
 								}
 								
-								if($conf->absence->enabled && empty($conf->global->TIMESHEET_RH_NO_CHECK) && $mode!='print'  ) {
-									
-									dol_include_once('/absence/class/absence.class.php');
-									$absence=new TRH_Absence;
-									$absence->fk_user = $userstatic->id;
-									if(!$absence->isWorkingDay($PDOdb, $date)){
-										$chaine.=img_picto($langs->trans('TimeSheetShoulNotWorkThisDay'), 'warning');
-									}
-									
-								}
-								
-								if(!empty($chaine) && $mode!='edittime' && $mode!='print' && $conf->ndfp->enabled && $user->rights->timesheet->ndf->read ) {
-									
-									//tablelines
-									
-									$chaine.=' <a title="'.$langs->trans('TimeSheetaddNdfExpense').'" href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.', \''.dol_print_date(strtotime($date), 'day').'\');">+</a>';
-	
-								}
-								
-								if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]) || $TTimeTemp[$task->id.'_'.$userstatic->id][$date]>0) {
-									$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;	
-								}
-								
-	
 							}
 							
-							if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2 && $mode!='print') {
-								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\'Supprimer cette ligne de saisie des temps?\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
+							if(!empty($chaine) && $mode!='edittime' && $mode!='print' && $conf->ndfp->enabled && $user->rights->timesheet->ndf->read ) {
+								
+								//tablelines
+								
+								$chaine.=' <a title="'.$langs->trans('TimeSheetaddNdfExpense').'" href="javascript:get_ndfp('.$userstatic->id.','.$task->id.','.$this->rowid.', \''.dol_print_date(strtotime($date), 'day').'\');">+</a>';
+
 							}
-							elseif($mode!='print'){
-								$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
+							
+							if(empty($TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]) || $TTimeTemp[$task->id.'_'.$userstatic->id][$date]>0) {
+								$TLigneTimesheet[$task->id.'_'.$userstatic->id][$date]= $chaine ;	
+							}
+							
+							if(!array_key_exists($date, $TLigneTimesheet_total_jour)){
+								$TLigneTimesheet_total_jour[$date] = ' ';
 							}
 							
 						}
-						else{
-							if($mode!='view' && $mode!='print') $THidden[$task->id.'_'.$time->fk_user] = $formATM->hidden('TLineLabel['.$task->id.']['.$time->fk_user.']', !empty($this->TLineLabel[$task->id][$time->fk_user] ) ? $this->TLineLabel[$task->id][$time->fk_user] : '');	
-							
+						
+						if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2 && $mode!='print') {
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\'Supprimer cette ligne de saisie des temps?\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
 						}
-							
-
+						elseif($mode!='print'){
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
+						}
+						
 					}
-				
+					else{
+						if($mode!='view' && $mode!='print') $THidden[$task->id.'_'.$time->fk_user] = $formATM->hidden('TLineLabel['.$task->id.']['.$time->fk_user.']', !empty($this->TLineLabel[$task->id][$time->fk_user] ) ? $this->TLineLabel[$task->id][$time->fk_user] : '');	
+						
+					}
+						
+				}
 
-				
 			}
 			
 		}
+		//Mise en forme du total par colonne
+		if(!empty($TLigneTimesheet)){
+			
+			ksort($TLigneTimesheet_total_jour,SORT_STRING);
+			foreach ($TLigneTimesheet_total_jour as $key => $value) {
+				$TLigneTimesheet_total_jour[$key] = '<strong>'.convertSecondToTime($value,'allhourmin').'</strong>';
+				
+			}
+
+			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','consultant'=>'','commentaire'=>'<strong>Total</strong>'),$TLigneTimesheet_total_jour);
+		}
+		
 		
 		return array($TLigneTimesheet, $THidden);
 	}
