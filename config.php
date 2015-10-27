@@ -1,6 +1,6 @@
 <?php
 
-	require('config.default.php');
+	require(__DIR__.'/config.default.php');
 
 	$langs->load('timesheet@timesheet');
 	

@@ -263,11 +263,11 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	
 	$form->Set_typeaff("edit");
 	
-	$date = date_create(date($date_deb));
-	$date_deb = date_format($date, 'd/m/Y');
+	$time = Tools::get_time($date_deb);
+	$date_deb = date('d/m/Y', $time);
 	
-	$date = date_create(date($date_fin));
-	$date_fin = date_format($date, 'd/m/Y');
+	$time = Tools::get_time($date_fin);
+	$date_fin = date('d/m/Y', $time);
 	
 	if($mode!='new' && $mode != "edit"){
 		/*
