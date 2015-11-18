@@ -344,8 +344,8 @@ class modTimesheet extends DolibarrModules
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
              'titre'=>'Saisie hebdomadaire',
-             'mainmenu'=>'project',
-             'leftmenu'=>'timesheet',
+             'mainmenu'=>'timesheet',
+             'leftmenu'=>'timesheet_usertime',
              'url'=>'/timesheet/timesheetusertimes.php',
              'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
              'position'=>176,
@@ -358,8 +358,8 @@ class modTimesheet extends DolibarrModules
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
              'titre'=>'Liste feuilles de temps',
-             'mainmenu'=>'project',
-             'leftmenu'=>'timesheet',
+             'mainmenu'=>'timesheet',
+             'leftmenu'=>'timesheet_base',
              'url'=>'/timesheet/timesheet.php',
              'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
              'position'=>177,
@@ -372,8 +372,8 @@ class modTimesheet extends DolibarrModules
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
              'titre'=>'Gestion heures supplémentaires',
-             'mainmenu'=>'project',
-             'leftmenu'=>'timesheet',
+             'mainmenu'=>'timesheet',
+             'leftmenu'=>'timesheet_heuresup',
              'url'=>'/timesheet/timesheet_heures_sup.php',
              'langs'=>'timesheet@timesheet',               // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
              'position'=>178,
