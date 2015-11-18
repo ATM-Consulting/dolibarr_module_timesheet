@@ -5,8 +5,8 @@
 				<tr><td >Identifiant</td><td>[timesheet.id;strconv=no]</td></tr>
 				[onshow;block=end]
 				<tr><td width="20%">Société</td><td>[timesheet.societe;strconv=no]</td></tr>
-				<tr><td>Project</td><td id="timesheet-project-list">[timesheet.project;strconv=no]</td></tr>
-				<tr><td>Status</td><td>[timesheet.status;strconv=no]</td></tr>
+				<tr><td>Projet</td><td id="timesheet-project-list">[timesheet.project;strconv=no]</td></tr>
+				<tr><td>Statut</td><td>[timesheet.status;strconv=no]</td></tr>
 				<tr><td>Date début période</td><td>[timesheet.date_deb;strconv=no]</td></tr>
 				<tr><td>Date fin période</td><td>[timesheet.date_fin;strconv=no]</td></tr>
 				<tr><td>Libellé de facturation</td><td>[timesheet.libelleFactureLigne;strconv=no]</td></tr>
