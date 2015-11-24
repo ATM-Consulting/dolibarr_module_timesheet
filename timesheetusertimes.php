@@ -24,9 +24,15 @@ function _action() {
 	if(!$userid && !$user->rights->timesheet->all->read)$userid = $user->id;
 
 
-	$timesheet->date_deb = ($date_deb) ? dol_stringtotime($date_deb) : strtotime('last Monday');
-	$timesheet->date_fin = ($date_fin) ? dol_stringtotime($date_fin) : strtotime('next Sunday');
-//	print date('Y-m-d', $timesheet->date_deb);
+	if($date_deb) $date_deb = date('Y-m-d 00:00:00',dol_stringtotime($date_deb));
+	if($date_fin) $date_fin = date('Y-m-d 00:00:00',dol_stringtotime($date_fin));
+	
+	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
+	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
+	
+	$timesheet->set_date('date_deb', $date_deb);
+	$timesheet->set_date('date_fin', $date_fin);
+	
 	$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 	
 	/*******************************************************************
@@ -229,14 +235,15 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 			$user->fetch(GETPOST('userid'));
 		}
 		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true);
+		
 		if(GETPOST('userid')) $user = $lastuser;
 		
 		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
-		$nb_second_per_day = $hour_per_day * 3600;
+		$nb_second_per_day = $hour_per_day * 3600 * 3600;
 		
 		foreach($TligneTimesheet as $cle => $val){
 			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
-			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
+			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'allhourmin', $nb_second_per_day);
 		}
 	}
 	$TBS=new TTemplateTBS();
@@ -263,11 +270,14 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	
 	$form->Set_typeaff("edit");
 	
-	$time = Tools::get_time($date_deb);
-	$date_deb = date('d/m/Y', $time);
+	$date = date_create(date($date_deb));
+	$date_deb = date_format($date, 'd/m/Y');
 	
-	$time = Tools::get_time($date_fin);
-	$date_fin = date('d/m/Y', $time);
+	$date = date_create(date($date_fin));
+	$date_fin = date_format($date, 'd/m/Y');
+	
+	//pre($TligneTimesheet,true);
+	
 	
 	if($mode!='new' && $mode != "edit"){
 		/*
@@ -298,8 +308,8 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
 					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
-					,'date_deb'=>$form->calendrier('', "date_deb", $timesheet->date_deb)
-					,'date_fin'=>$form->calendrier('', "date_fin", $timesheet->date_fin)
+					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
+					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
 					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers( -1,'userid')
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 					,'userid_selected'=>$userid_selected
