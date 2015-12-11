@@ -1,4 +1,4 @@
-Module104240Name = Timesheet
+Module104240Name = Timesheet/BillTime
 Module104240Desc = Managing timesheets
 
 ListTimesheet=Time sheets list
@@ -43,3 +43,16 @@ timesheetTIMESHEET_WORKING_HOUR_PER_DAY=Hours Number per working day
 timesheetTIMESHEET_RH_NO_CHECK=Don't check into RHAbsence module
 timesheetTIMESHEET_CREATE_TASK_DOUBLE=Allow to create multiple tasks on same service
 ConstAddedByRH=Added by RH
+RH_JOURS_NON_TRAVAILLE=No working Day
+
+TimeshettUserTimes=Times input
+Timesheet=TimeSheet
+WeekTimes=Times for week
+Overtime=Overtime
+BillLabel=Label for bill
+DeleteConfirmation=Delete this sheet ?
+Back=Back
+AddBillTime=Add Timesheet
+OvertimeSaved=Overtime Saved
+UserFilter=User filter
+TaskOrService=Task or service

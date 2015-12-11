@@ -314,7 +314,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 					,'userid_selected'=>$userid_selected
 				)
-				
+				,'langs'=>$langs
 			)
 			
 		);
@@ -377,7 +377,7 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 		</script>
 		
 		
-		<?
+		<?php
 
 		return ob_get_clean();
 

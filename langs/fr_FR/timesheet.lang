@@ -1,4 +1,4 @@
-Module104240Name = TimeSheet
+Module104240Name = TimeSheet/BillTime
 Module104240Desc = Gestion des feuilles de temps
 
 Timesheet = Feuille de temps
@@ -48,3 +48,13 @@ ConstAddedByRH=Ajouté par RH
 
 //TimeshettUserTimes
 TimeshettUserTimes=Saisie des temps
+
+Timesheet=Feuille de temps
+WeekTimes=Temps pour la semaine
+Overtime=Temps supplémentaire
+BillLabel=Libellé de facturation
+DeleteConfirmation=Supprimer cette feuille de temps ?
+AddBillTime=Ajouter une ligne de feuille de temps
+OvertimeSaved=Heures supplémentaires sauvegardées
+UserFilter=Filtre utilisateur
+TaskOrService=Tâche ou service

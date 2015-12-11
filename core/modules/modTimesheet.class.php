@@ -343,7 +343,7 @@ class modTimesheet extends DolibarrModules
 		
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
-             'titre'=>'Saisie hebdomadaire',
+             'titre'=>'WeekTimes',
              'mainmenu'=>'timesheet',
              'leftmenu'=>'timesheet_usertime',
              'url'=>'/timesheet/timesheetusertimes.php',
@@ -357,7 +357,7 @@ class modTimesheet extends DolibarrModules
 		
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
-             'titre'=>'Liste feuilles de temps',
+             'titre'=>'List',
              'mainmenu'=>'timesheet',
              'leftmenu'=>'timesheet_base',
              'url'=>'/timesheet/timesheet.php',
@@ -371,7 +371,7 @@ class modTimesheet extends DolibarrModules
 		
 		$this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project,fk_leftmenu=timesheet',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
-             'titre'=>'Gestion heures supplémentaires',
+             'titre'=>'Overtime',
              'mainmenu'=>'timesheet',
              'leftmenu'=>'timesheet_heuresup',
              'url'=>'/timesheet/timesheet_heures_sup.php',

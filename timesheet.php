@@ -230,11 +230,11 @@ function _liste() {
 			,'picto_search'=>img_picto('','search.png', '', 0)
 		)
 		,'title'=>array(
-			'date_deb'=>'Date début période'
-			,'date_fin'=>'Date fin période'
-			,'fk_project'=>'Projet'
-			,'fk_societe'=>'Société'
-			,'rowid'=>'Identifiant'
+			'date_deb'=>$langs->trans('DateStart')
+			,'date_fin'=>$langs->trans('DateEnd')
+			,'fk_project'=>$langs->trans('Project')
+			,'fk_societe'=>$langs->trans('Company')
+			,'rowid'=>'Id.'
 			,'status'=>$langs->trans('Status')
 		)
 	));
@@ -276,7 +276,7 @@ function _fiche(&$timesheet, $mode='view') {
 	
 	$PDOdb = new TPDOdb;
 	
-	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('FicheTimesheet'));
+	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , $langs->trans('Card'), $langs->trans('FicheTimesheet'));
 
 	$form=new TFormCore($_SERVER['PHP_SELF'],'form','POST');
 	$doliform = new Form($db);
@@ -332,6 +332,7 @@ function _fiche(&$timesheet, $mode='view') {
 				,'righttoapprove'=>$user->rights->timesheet->user->approve
 				,'righttoprint'=>$conf->abricot->enabled
 			)
+			,'langs'=>$langs
 		)
 	);
 
@@ -450,7 +451,7 @@ function _fiche(&$timesheet, $mode='view') {
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
 					,'freemode'=>$freemode
 				)
-				
+				,'langs'=>$langs
 			)
 			
 		);
@@ -512,7 +513,7 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 		</script>
 		
 		
-		<?
+		<?php
 
 		return ob_get_clean();
 

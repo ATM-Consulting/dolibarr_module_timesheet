@@ -63,7 +63,7 @@ function _action() {
 				
 				$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
 			
-				setEventMessage("Ligne de temps supprimée");
+				setEventMessage($langs->trans('TimeLineDeleted'));
 			
 				$timesheet->load($PDOdb, $_REQUEST['id']);
 				
@@ -94,7 +94,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
 	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
 	
-	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'hsup') , 'fiche', $langs->trans('TimeshettUserTimes'));
+	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'hsup') , $langs->trans('Card'), $langs->trans('TimeshettUserTimes'));
 
 	$form=new TFormCore();
 	$doliform = new Form($db);
@@ -248,7 +248,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 					,'liste_user'=>$doliform->select_dolusers(((GETPOST('userid')) ? GETPOST('userid') : $user->id),'userid',0,'',$disabled)
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 				)
-				
+				,'langs'=>$langs
 			)
 			
 		);
@@ -259,7 +259,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="") {
 
 function _saveHeuresSupplementaires() {
 	
-	global $db,$user;
+	global $db,$user,$langs;
 	
 	foreach($_REQUEST['TTimesUser'] as $id_user => $TTimesUser) {
 		
@@ -281,7 +281,7 @@ function _saveHeuresSupplementaires() {
 		
 	}
 	
-	setEventMessage("Heures supplémentaires sauvegardées");
+	setEventMessage($langs->trans('OvertimeSaved'));
 	
 }
 

@@ -6,16 +6,16 @@
 		<thead style="background-color:#CCCCCC;">
 			<tr>
 				[onshow;block=begin;when [view.freemode]='1']
-					<td colspan="2">Tâche</td>
+					<td colspan="2">[langs.transnoentities(Task)]</td>
 				[onshow;block=end]
 				[onshow;block=begin;when [view.freemode]!='1']
-					<td>Service</td>
+					<td>[langs.transnoentities(Service)]</td>
 				[onshow;block=end]
-				<td>Consultant</td>
-				<td>Commentaire</td>
-				<td>Total</td>
+				<td>[langs.transnoentities(User)]</td>
+				<td>[langs.transnoentities(Comment)]</td>
+				<td>[langs.transnoentities(Total)]</td>
 				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>
-				<td>Actions</td>
+				<td>.</td>
 			</tr>
 		</thead>
 		
@@ -43,14 +43,14 @@
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<a href="?id=[timesheet.id]&action=edittime" class="butAction">Modifier les temps</a>
+		<a href="?id=[timesheet.id]&action=edittime" class="butAction">[langs.transnoentities(Modify)]</a>
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	
 	[onshow;block=begin;when [view.mode]=='edittime']
 		<div class="tabsAction" style="text-align:center;">
-		<input type="submit" value="Enregistrer" name="save" class="button"> 
-		&nbsp; &nbsp; <input type="button" value="Annuler" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
+		<input type="submit" value="[langs.transnoentities(Save)]" name="save" class="button"> 
+		&nbsp; &nbsp; <input type="button" value="[langs.transnoentities(Cancel)]" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
 	</div>
 	[onshow;block=end]
 	</div>

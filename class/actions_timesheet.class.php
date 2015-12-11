@@ -137,13 +137,13 @@ class ActionsTimesheet
 				
 				?>
 				<tr class="liste_titre nodrag nodrop">
-					<td colspan="9">Ajouter une ligne de feuille de temps</td>
+					<td colspan="9"><?php echo $langs->trans('AddBillTime') ?></td>
 					<td></td>
 				</tr>
 				<tr class="pair">
 					<td colspan="7"><?php echo $select; ?></td>
 					<td valign="middle" align="center">
-						<input id="addline_timesheet" class="button" type="button" name="addline_timesheet" value="Ajouter">
+						<input id="addline_timesheet" class="button" type="button" name="addline_timesheet" value="<?php echo $langs->trans('Add') ?>">
 					</td>
 				</tr>
 				<script type="text/javascript">

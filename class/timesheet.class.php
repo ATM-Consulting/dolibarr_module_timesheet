@@ -16,9 +16,9 @@ class TTimesheet extends TObjetStd {
 		$this->libelleFactureLigne = "Temps de réalisation";
 
 		$this->TStatus = array(
-			0=>'Brouillon',
-			1=>'Validée',
-			2=>'Facturée'
+			0=>$langs->trans('Draft'),
+			1=>$langs->trans('Valid'),
+			2=>$langs->trans('Billed')
 		);
 		
 		
