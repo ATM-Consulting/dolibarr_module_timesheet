@@ -115,7 +115,7 @@ class TTimesheet extends TObjetStd {
 			$sql = 'SELECT rowid 
 					FROM '.MAIN_DB_PREFIX.'projet_task 
 					WHERE dateo <= "'.$date_fin.'"
-						AND datee >= "'.$date_deb.'"';
+						AND (datee >= "'.$date_deb.'" OR datee IS NULL)';
 			if($this->project->id) $sql .= " AND fk_projet = ".$this->project->id;
 			$sql .= ' ORDER BY label ASC';
 
