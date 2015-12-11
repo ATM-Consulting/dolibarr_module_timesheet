@@ -14,7 +14,7 @@
 	<span>[THidden.val;block=span;strconv=no]</span>
 	<table class="nobrder" style="width:100%;">
 		<tr>
-			<td>[langs.trans(Period)] [view.date_deb;strconv=no] [langs.trans(to)] [view.date_fin;strconv=no] [langs.trans(UserFilter)] : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="[langs.trans(Display)]"></td>
+			<td>[langs.transnoentities(Period)] [view.date_deb;strconv=no] [langs.transnoentities(to)] [view.date_fin;strconv=no] [langs.transnoentities(UserFilter)] : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="[langs.transnoentities(Display)]"></td>
 		</tr>
 	</table>
 	<br><br>
@@ -22,12 +22,12 @@
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
 			<tr>
-				<td>[langs.trans(User)]</td>
-				<td>[langs.trans(Total)]</td>
-				<td>[langs.trans(TotalDesired)]</td>
-				<td>[langs.trans(TotalOvertime)]</td>
-				<td>[langs.trans(paidHours)]</td>
-				<td>[langs.trans(overtakenHours)]</td>
+				<td>[langs.transnoentities(User)]</td>
+				<td>[langs.transnoentities(Total)]</td>
+				<td>[langs.transnoentities(TotalDesired)]</td>
+				<td>[langs.transnoentities(TotalOvertime)]</td>
+				<td>[langs.transnoentities(paidHours)]</td>
+				<td>[langs.transnoentities(overtakenHours)]</td>
 			</tr>
 		</thead>
 		
@@ -42,13 +42,13 @@
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<a href="?id=[timesheet.id]&action=edittime" class="butAction">[langs.trans(DispatchHours)]</a>
+		<a href="?id=[timesheet.id]&action=edittime" class="butAction">[langs.transnoentities(DispatchHours)]</a>
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	
 	[onshow;block=begin;when [view.mode]=='edittime']
 		<div class="tabsAction" style="text-align:center;">
-		<input type="submit" value="[langs.trans(DispatchHours)]" name="save" class="butAction"> 
+		<input type="submit" value="[langs.transnoentities(DispatchHours)]" name="save" class="butAction"> 
 	</div>
 	[onshow;block=end]
 	</div>

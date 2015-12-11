@@ -4,7 +4,7 @@
 				[onshow;block=begin; when [timesheet.id]!=0 ]
 				<tr><td >Id.</td><td>[timesheet.id;strconv=no]</td></tr>
 				[onshow;block=end]
-				<tr><td width="20%">[langs.transnoentities(Thirdparty)]</td><td>[timesheet.societe;strconv=no]</td></tr>
+				<tr><td width="20%">[langs.transnoentities(Company)]</td><td>[timesheet.societe;strconv=no]</td></tr>
 				<tr><td>[langs.transnoentities(Project)]</td><td id="timesheet-project-list">[timesheet.project;strconv=no]</td></tr>
 				<tr><td>[langs.transnoentities(Status)]</td><td>[timesheet.status;strconv=no]</td></tr>
 				<tr><td>[langs.transnoentities(DateStart)]</td><td>[timesheet.date_deb;strconv=no]</td></tr>

@@ -2,7 +2,7 @@
 
 	<script type="text/javascript">
 		$(document).ready(function(){
-			$('#userid').prepend('<option value="0">[langs.trans(All)]</option>');
+			$('#userid').prepend('<option value="0">[langs.transnoentities(All)]</option>');
 			
 			$('#userid').val([view.userid_selected]);
 			
@@ -15,7 +15,7 @@
 			<input type="hidden" name="action" id="action" value="[view.mode]">
 		[onshow;block=end]
 		<tr>
-			<td> [langs.trans(Period)] [view.date_deb;strconv=no] [langs.trans(to)] [view.date_fin;strconv=no] [langs.trans(UserFilter)] : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="[langs.trans(Display)]"></td>
+			<td> [langs.transnoentities(Period)] [view.date_deb;strconv=no] [langs.transnoentities(to)] [view.date_fin;strconv=no] [langs.transnoentities(UserFilter)] : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="[langs.transnoentities(Display)]"></td>
 		</tr>
 	</table>
 	<br><br>
@@ -23,10 +23,10 @@
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
 			<tr>
-				<td>[langs.trans(Project)]</td>
-				<td>[langs.trans(TaskOrService)]</td>
-				<td>[langs.trans(User)]</td>
-				<td>[langs.trans(Total)]</td>
+				<td>[langs.transnoentities(Project)]</td>
+				<td>[langs.transnoentities(TaskOrService)]</td>
+				<td>[langs.transnoentities(User)]</td>
+				<td>[langs.transnoentities(Total)]</td>
 				<td>[joursVisu.key;block=td]<br>[joursVisu.val]</td>
 				<td>.</td>
 			</tr>
@@ -43,14 +43,14 @@
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<input type="submit" value="[langs.trans(Modify)]" onclick="$('#action').val('edittime');" name="save" class="button">
+		<input type="submit" value="[langs.transnoentities(Modify)]" onclick="$('#action').val('edittime');" name="save" class="button">
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]	
 	[onshow;block=begin;when [view.mode]=='edittime']
 		<div class="tabsAction" style="text-align:center;">
-		<input type="submit" value="[langs.trans(Save)]" name="save" class="button"> 
-		&nbsp; &nbsp; <input type="button" value="[langs.trans(Cancel)]" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
+		<input type="submit" value="[langs.transnoentities(Save)]" name="save" class="button"> 
+		&nbsp; &nbsp; <input type="button" value="[langs.transnoentities(Cancel)]" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
 	</div>
 	[onshow;block=end]
 	</div>

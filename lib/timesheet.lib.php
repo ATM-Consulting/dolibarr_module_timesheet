@@ -55,26 +55,26 @@ function timesheetAdminPrepareHead()
 }
 
 function timesheetPrepareHead(&$timesheet,$type='timesheet') {
-	global $user;
+	global $user,$langs;
 
 	switch ($type) {
 		case 'timesheet':
 			if($timesheet->rowid==0) {
 				return array(
-					array(dol_buildpath('/timesheet/timesheetusertimes.php',2), 'Fiche','fiche')
+					array(dol_buildpath('/timesheet/timesheetusertimes.php',2), $langs->trans('Card'),'fiche')
 				);
 				
 			}
 			else{
 				return array(
-					array(dol_buildpath('/timesheet/timesheet.php?id='.$timesheet->rowid,2), 'Fiche','fiche')
+					array(dol_buildpath('/timesheet/timesheet.php?id='.$timesheet->rowid,2), $langs->trans('Card'),'fiche')
 				);
 				
 			}
 			break;
 		case 'hsup':
 				return array(
-					array(dol_buildpath('/timesheet/timesheet_heures_sup.php',2), 'Fiche','fiche')
+					array(dol_buildpath('/timesheet/timesheet_heures_sup.php',2), $langs->trans('Card'),'fiche')
 				);
 			break;
 	}
