@@ -8,7 +8,7 @@ function get_ndfp(fk_user, fk_task, fk_timesheet, date) {
 		ndfp=$.parseJSON(ndfp);
 		console.log(ndfp);
 		
-		if(ndfp.id==null) alert('Impossible de charger la note de frais, contrôlez vos droits.'); 
+		if(ndfp.id==null) alert('<?php echo addslashes($langs->transnoentities('CantLoadNDFcheckrights')) ?>'); 
 		else {
 			pop_ndfp(ndfp, date);
 			$('#saisie').show().dialog({

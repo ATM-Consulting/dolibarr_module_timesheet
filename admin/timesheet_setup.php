@@ -46,7 +46,7 @@ if($action=='save') {
 		
 	}
 	
-	setEventMessage("Configuration enregistrée");
+	setEventMessage($langs->trans('configurationSaved'));
 }
 
 
@@ -95,7 +95,7 @@ function showParameters(&$form) {
 			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_USE_SERVICES)  ?></td>				
 		</tr>
 		<tr>
-			<td>Restreindre l'affichage des TS par tiers</td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RESTRICT_TS_TIERS]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RESTRICT_TS_TIERS)  ?></td>				
+			<td><?php echo $langs->trans('timesheetTIMESHEET_RESTRICT_TS_TIERS') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RESTRICT_TS_TIERS]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RESTRICT_TS_TIERS)  ?></td>				
 		</tr>
 		
 		<?php foreach($TConst as $key) { ?>
@@ -127,23 +127,12 @@ function showParameters(&$form) {
 		<tr class="impair">
 			<td valign="top">Module développé par </td>
 			<td align="center">
-				<a href="http://www.tqm-insight.com/" target="_blank">TQM Insight</a>
+				<a href="http://www.atm-consulting.fr/" target="_blank">ATM Consuling</a>
 			</td>
 		</td>
 	</tr>
 </table>
 <?php
 
-// Put here content of your page
-// ...
-
-/***************************************************
-* LINKED OBJECT BLOCK
-*
-* Put here code to view linked object
-****************************************************/
-//$somethingshown=$asset->showLinkedObjectBlock();
-
-// End of page
 $db->close();
-llxFooter('$Date: 2011/07/31 22:21:57 $ - $Revision: 1.19 $');
+llxFooter();

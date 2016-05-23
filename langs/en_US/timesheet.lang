@@ -61,3 +61,13 @@ TotalOvertime=Overtime total
 paidHours=Paid hours
 overtakenHours=Overtaken hours
 DispatchHours=Dispatch hours
+
+timesheetTIMESHEET_USE_SERVICES=Use service associated to tasks
+LineDeleted=Time line deleted
+NotDefined=Not defined
+timesheetTIMESHEET_RESTRICT_TS_TIERS=Restrict timesheet to thirdparty
+configurationSaved=Settings saved
+
+CantLoadNDFcheckrights=Can't load expense note. Can you check your rights ?
+TimeConsumme=Time consumed
+ConfirmDeleteTimeline=Delete this time line ?

@@ -143,7 +143,7 @@ function _action() {
 				
 				$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
 			
-				setEventMessage("Ligne de temps supprimée");
+				setEventMessage($langs->trans('LineDeleted'));
 			
 				$timesheet->load($PDOdb, $_REQUEST['id']);
 				
@@ -233,7 +233,7 @@ function _liste() {
 			'date_deb'=>$langs->trans('DateStart')
 			,'date_fin'=>$langs->trans('DateEnd')
 			,'fk_project'=>$langs->trans('Project')
-			,'fk_societe'=>$langs->trans('Company')
+			,'fk_societe'=>$langs->trans('Thirdparty')
 			,'rowid'=>'Id.'
 			,'status'=>$langs->trans('Status')
 		)
@@ -527,7 +527,7 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 
 			return '<a href="'.DOL_URL_ROOT.'/societe/soc.php?socid='.$timesheet->fk_societe.'" style="font-weight:bold;">'.img_picto('','object_company.png', '', 0).' '.$soc->nom.'</a>';
 		} else {
-			return 'Non défini';
+			return $langs->trans('NotDefined');
 		}
 	}
 }

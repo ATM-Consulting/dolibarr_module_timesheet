@@ -64,3 +64,12 @@ TotalOvertime=Total supplémentaire
 paidHours=Heures payées
 overtakenHours=Heures supplémentaires
 DispatchHours=Répartir les heures
+
+LineDeleted=Ligne de temps supprimée
+NotDefined=Non défini
+timesheetTIMESHEET_RESTRICT_TS_TIERS=Restreindre l'affichage des TS par tiers
+configurationSaved=Configuration enregistrée
+
+CantLoadNDFcheckrights=Impossible de charger la note de frais, contrôlez vos droits.
+TimeConsumme=Temps de réalisation
+ConfirmDeleteTimeline=Supprimer cette ligne de saisie des temps ?

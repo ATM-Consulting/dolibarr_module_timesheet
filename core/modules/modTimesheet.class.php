@@ -219,42 +219,42 @@ class modTimesheet extends DolibarrModules
 
 		$r++;
 		$this->rights[$r][0] = 104241;
-		$this->rights[$r][1] = $langs->trans('ReadTimesheet');
+		$this->rights[$r][1] = 'ReadTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104242;
-		$this->rights[$r][1] = $langs->trans('ReadAllTimesheet');
+		$this->rights[$r][1] = 'ReadAllTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'all';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104243;
-		$this->rights[$r][1] = $langs->trans('EditTimesheet');
+		$this->rights[$r][1] = 'EditTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'edit';
 		
 		$r++;
 		$this->rights[$r][0] = 104244;
-		$this->rights[$r][1] = $langs->trans('AddTimesheet');
+		$this->rights[$r][1] = 'AddTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'add';
 		
 		$r++;
 		$this->rights[$r][0] = 104245;
-		$this->rights[$r][1] = $langs->trans('DelTimesheet');
+		$this->rights[$r][1] = 'DelTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'delete';
 		
 		$r++;
 		$this->rights[$r][0] = 104246;
-		$this->rights[$r][1] = $langs->trans('ApproveTimesheet');
+		$this->rights[$r][1] = 'ApproveTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'approve';
@@ -262,7 +262,7 @@ class modTimesheet extends DolibarrModules
 		
 		$r++;
 		$this->rights[$r][0] = 104250;
-		$this->rights[$r][1] = $langs->trans('BillingTimesheet');
+		$this->rights[$r][1] = 'BillingTimesheet';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'bill';
@@ -271,28 +271,28 @@ class modTimesheet extends DolibarrModules
 		
 		$r++;
 		$this->rights[$r][0] = 104247;
-		$this->rights[$r][1] = $langs->trans('ReadTimesheetNDF');
+		$this->rights[$r][1] = 'ReadTimesheetNDF';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104248;
-		$this->rights[$r][1] = $langs->trans('ReadAllTimesheetNDF');
+		$this->rights[$r][1] = 'ReadAllTimesheetNDF';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'allndf';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104249;
-		$this->rights[$r][1] = $langs->trans('EditTimesheetNDF');
+		$this->rights[$r][1] = 'EditTimesheetNDF';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'edit';
 		
 		$r++;
 		$this->rights[$r][0] = 104251;
-		$this->rights[$r][1] = $langs->trans('AdminHeuresSup');
+		$this->rights[$r][1] = 'AdminHeuresSup';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'heuresup';
@@ -301,31 +301,6 @@ class modTimesheet extends DolibarrModules
         $this->menus = array(); // List of menus to add
         $r = 0;
 
-        // Add here entries to declare new menus
-        //
-        // Example to declare a new Top Menu entry and its Left menu entry:
-        /*$this->menu[$r]=array(
-        //	// Put 0 if this is a top menu
-        	'fk_menu'=>0,
-        //	// This is a Top menu entry
-        	'type'=>'top',
-        	'titre'=>'Time Sheet',
-        	'mainmenu'=>'timesheet',
-        	'leftmenu'=>'timesheet',
-        	'url'=>'/timesheet/timesheet.php',
-        //	// Lang file to use (without .lang) by module.
-        //	// File must be in langs/code_CODE/ directory.
-        	'position'=>100,
-        //	// Define condition to show or hide menu entry.
-        //	// Use '$conf->mymodule->enabled' if entry must be visible if module is enabled.
-        	'enabled'=>'$conf->timesheet->enabled',
-        //	// Use 'perms'=>'$user->rights->mymodule->level1->level2'
-        //	// if you want your menu with a permission rules
-        	'perms'=>'1',
-        	'target'=>'',
-        //	// 0=Menu for internal users, 1=external users, 2=both
-        	'user'=>0
-        );*/
         
          $this->menu[$r]=array(  'fk_menu'=>'fk_mainmenu=project',                                       // Put 0 if this is a top menu
              'type'=>'left',                                 // This is a Top menu entry
@@ -545,10 +520,10 @@ class modTimesheet extends DolibarrModules
         $sql = array();
 
         $result = $this->loadTables();
-
-        $url = dol_buildpath('/timesheet/script/create-maj-base.php', 2);
-        file_get_contents($url);
 		
+		define('INC_FROM_DOLIBARR',1);
+        dol_include_once('/timesheet/script/create-maj-base.php', 2);
+        
 		// Création des extrafields pour la gestion des heures supplémentaires
 		dol_include_once("/core/class/extrafields.class.php");
 		$e = new ExtraFields($db);

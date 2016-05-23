@@ -13,7 +13,7 @@ class TTimesheet extends TObjetStd {
 		parent::_init_vars();
 		parent::start();
 
-		$this->libelleFactureLigne = "Temps de réalisation";
+		$this->libelleFactureLigne = $langs->trans('TimeConsumme');
 
 		$this->TStatus = array(
 			0=>$langs->trans('Draft'),
@@ -381,7 +381,7 @@ class TTimesheet extends TObjetStd {
 						}
 						
 						if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2 && $mode!='print') {
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\'Supprimer cette ligne de saisie des temps?\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\''.addslashes($langs->transnoentities('ConfirmDeleteTimeline')).'\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
 						}
 						elseif($mode!='print'){
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
@@ -407,7 +407,7 @@ class TTimesheet extends TObjetStd {
 				
 			}
 
-			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','consultant'=>'','commentaire'=>'<strong>Total</strong>'),$TLigneTimesheet_total_jour);
+			$TLigneTimesheet['total_jour'] = array_merge(array('project'=>'','service'=>'','consultant'=>'','commentaire'=>'<strong>'.$langs->transnoentities('Total').'</strong>'),$TLigneTimesheet_total_jour);
 		}
 		
 		

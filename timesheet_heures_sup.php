@@ -292,8 +292,8 @@ function _retourneTotalHeuresPeriode(&$timesheet) {
 	$db = 0;
 	
 	foreach($TDatesJours as $date => $lib_day) {
-		
-		if($lib_day !== "Samedi" && $lib_day !== "Dimanche") $nb++;
+		// TODO AA virer ces tests moisis
+		if($lib_day !== "Samedi" && $lib_day !== "Dimanche" &&  $lib_day !== "Sunday" && $lib_day !== "Saturday" ) $nb++;
 		
 	}
 	
@@ -309,5 +309,3 @@ function _retourneTotalHeuresSupplementaires(&$timesheet, $total_heures_travaill
 	return ($diff > 0) ? $diff / 3600 : 0;
 	
 }
-
-?>
