@@ -61,7 +61,7 @@ class modTimesheet extends DolibarrModules
         // (where XXX is value of numeric property 'numero' of module)
         $this->description = "Description of module MyModule";
         // Possible values for version are: 'development', 'experimental' or version
-        $this->version = '1.3';
+        $this->version = '1.3.1';
         // Key used in llx_const table to save module status enabled/disabled
         // (where MYMODULE is value of property name of module in uppercase)
         $this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
@@ -522,7 +522,8 @@ class modTimesheet extends DolibarrModules
         $result = $this->loadTables();
 		
 		define('INC_FROM_DOLIBARR',1);
-        dol_include_once('/timesheet/script/create-maj-base.php', 2);
+		
+        dol_include_once('/timesheet/script/create-maj-base.php', 1);
         
 		// Création des extrafields pour la gestion des heures supplémentaires
 		dol_include_once("/core/class/extrafields.class.php");
