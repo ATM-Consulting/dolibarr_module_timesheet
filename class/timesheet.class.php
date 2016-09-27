@@ -116,7 +116,10 @@ class TTimesheet extends TObjetStd {
 					FROM '.MAIN_DB_PREFIX.'projet_task 
 					WHERE dateo <= "'.$date_fin.'"
 						AND (datee >= "'.$date_deb.'" OR datee IS NULL)';
-			if($this->project->id) $sql .= " AND fk_projet = ".$this->project->id;
+			
+			if(!empty($this->project->id)) $sql .= " AND fk_projet = ".$this->project->id;
+			else $sql.=" AND entity=".$conf->entity;
+			
 			$sql .= ' ORDER BY label ASC';
 
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
@@ -237,7 +240,8 @@ class TTimesheet extends TObjetStd {
 							
 			if($temps != ''){
 				
-				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time WHERE fk_task = ".$idTask." AND fk_user = ".$idUser." AND task_date = '".$date."' LIMIT 1";
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."projet_task_time 
+				WHERE fk_task = ".$idTask." AND fk_user = ".$idUser." AND task_date = '".$date."' LIMIT 1";
 				$PDOdb->Execute($sql);
 
 				$timespent_duration_temp = explode(':',$temps);
