@@ -142,7 +142,7 @@ function _liste() {
 		,'subQuery'=>array()
 		,'link'=>array(
 			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@',2).'">'.img_picto('','object_company.png','',0).' @nom@</a>'
-			,'fk_project'=>'<a href="'.dol_buildpath('/projet/fiche.php?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
+			,'fk_project'=>'<a href="'.dol_buildpath('/projet/'.((float) DOL_VERSION >= 3.7 ? 'card.php' : 'fiche.php').'?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
 			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/timesheet.php?id=@rowid@',2).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
 		)
 		,'translate'=>array(
