@@ -14,6 +14,9 @@
 		case 'get_line_ndfp':
 			print _get_line_ndfp($PDOdb,$_REQUEST['fk_ndfp']);
 			break;
+		case 'get_emploi_du_temps':
+			print __out(_get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user']), 'json');
+			break;
 	}
 	
 	switch ($put) {
@@ -291,4 +294,37 @@
 		$idNdfp = $ndfp->create($user);
 		
 		return $idNdfp;
+	}
+
+
+	function _get_emploi_du_temps(&$PDOdb, $fk_timesheet, $fk_user) {
+
+		dol_include_once('/rh/absence/class/absence.class.php');
+
+		$edt = new TRH_EmploiTemps;
+		$edt->load_by_fkuser($PDOdb, $fk_user);
+
+		$timesheet = new TTimesheet;
+		$timesheet->load($PDOdb, $fk_timesheet);
+		$TJours = $timesheet->loadTJours(); // Chargement de la liste des jours de la feuille de temps
+
+		$TEDT = array();
+
+		foreach($TJours as $date => $jour) {
+			$timestamp = dol_stringtotime($date, false);
+
+			$duration = 0;
+			$indiceJour = (int) date('N', $timestamp) - 1; // O => lundi, 1 => mardi, etc.
+			$jour = $edt->TJour[$indiceJour]; // renvoie 'lundi', 'mardi', etc.
+
+			if($edt->{$jour . 'am'} == 1) $duration += 3600 * $edt->getHeurePeriode($jour, 'am'); // $edt->getHeurePeriode() renvoie des heures, on met en secondes
+			if($edt->{$jour . 'pm'} == 1) $duration += 3600 * $edt->getHeurePeriode($jour, 'pm');
+
+			$TEDT[] = array(
+				'date' => $date
+				, 'time' => dol_print_date($duration, '%H:%M', 'gmt')
+			);
+		}
+
+		return $TEDT;
 	}
