@@ -306,7 +306,7 @@
 
 		$timesheet = new TTimesheet;
 		$timesheet->load($PDOdb, $fk_timesheet);
-		$TJours = $timesheet->loadTJours();
+		$TJours = $timesheet->loadTJours(); // Chargement de la liste des jours de la feuille de temps
 
 		$TEDT = array();
 
@@ -314,12 +314,16 @@
 			$timestamp = dol_stringtotime($date, false);
 
 			$duration = 0;
-			$jour = $edt->TJour[(int) date('N', $timestamp) - 1];
+			$indiceJour = (int) date('N', $timestamp) - 1; // O => lundi, 1 => mardi, etc.
+			$jour = $edt->TJour[$indiceJour]; // renvoie 'lundi', 'mardi', etc.
 
-			if($edt->{$jour . 'am'} == 1) $duration += $edt->getHeurePeriode($jour, 'am');
-			if($edt->{$jour . 'pm'} == 1) $duration += $edt->getHeurePeriode($jour, 'pm');
+			if($edt->{$jour . 'am'} == 1) $duration += 3600 * $edt->getHeurePeriode($jour, 'am'); // $edt->getHeurePeriode() renvoie des heures, on met en secondes
+			if($edt->{$jour . 'pm'} == 1) $duration += 3600 * $edt->getHeurePeriode($jour, 'pm');
 
-			$TEDT[] = array('date' => $date, 'time' => dol_print_date($duration * 3600, '%H:%M', 'gmt'));
+			$TEDT[] = array(
+				'date' => $date
+				, 'time' => dol_print_date($duration, '%H:%M', 'gmt')
+			);
 		}
 
 		return $TEDT;
