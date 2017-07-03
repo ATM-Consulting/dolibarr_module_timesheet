@@ -15,7 +15,7 @@
 			print _get_line_ndfp($PDOdb,$_REQUEST['fk_ndfp']);
 			break;
 		case 'get_emploi_du_temps':
-			print _get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user']);
+			print __out(_get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user']), 'json');
 			break;
 	}
 	
@@ -322,5 +322,5 @@
 			$TEDT[] = array('date' => $date, 'time' => dol_print_date($duration * 3600, '%H:%M', 'gmt'));
 		}
 
-		return json_encode($TEDT);
+		return $TEDT;
 	}
