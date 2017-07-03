@@ -14,6 +14,9 @@
 		case 'get_line_ndfp':
 			print _get_line_ndfp($PDOdb,$_REQUEST['fk_ndfp']);
 			break;
+		case 'get_emploi_du_temps':
+			print _get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user']);
+			break;
 	}
 	
 	switch ($put) {
@@ -291,4 +294,33 @@
 		$idNdfp = $ndfp->create($user);
 		
 		return $idNdfp;
+	}
+
+
+	function _get_emploi_du_temps(&$PDOdb, $fk_timesheet, $fk_user) {
+
+		dol_include_once('/rh/absence/class/absence.class.php');
+
+		$edt = new TRH_EmploiTemps;
+		$edt->load_by_fkuser($PDOdb, $fk_user);
+
+		$timesheet = new TTimesheet;
+		$timesheet->load($PDOdb, $fk_timesheet);
+		$TJours = $timesheet->loadTJours();
+
+		$TEDT = array();
+
+		foreach($TJours as $date => $jour) {
+			$timestamp = dol_stringtotime($date, false);
+
+			$duration = 0;
+			$jour = $edt->TJour[(int) date('N', $timestamp) - 1];
+
+			if($edt->{$jour . 'am'} == 1) $duration += $edt->getHeurePeriode($jour, 'am');
+			if($edt->{$jour . 'pm'} == 1) $duration += $edt->getHeurePeriode($jour, 'pm');
+
+			$TEDT[] = array('date' => $date, 'time' => dol_print_date($duration * 3600, '%H:%M', 'gmt'));
+		}
+
+		return json_encode($TEDT);
 	}

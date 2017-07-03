@@ -458,6 +458,41 @@ function _fiche(&$timesheet, $mode='view') {
 	}
 	 
 	echo $form2->end_form();
+
+	if($mode == 'edittime' && ! empty($conf->absence->enabled) && empty($conf->global->TIMESHEET_RH_NO_CHECK)) {
+		?>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$('#userid_0').change(function() {
+				var userid = parseInt($(this).val());
+				var timesheetid = parseInt($('input#id').val());
+
+				if(timesheetid > 0 && userid > 0) {
+					$.ajax({
+						method: 'GET'
+						, url: '<?php echo dol_buildpath('/timesheet/script/interface.php', 1); ?>'
+						, data: {
+							get: 'get_emploi_du_temps'
+							, fk_timesheet: timesheetid
+							, fk_user: userid
+						}
+						, dataType: 'json'
+						, success: function(data) {
+							for(var i = 0; i < data.length; i++) {
+								var elem = $('input#temps_0__' + data[i].date + '_');
+								if(elem.length > 0) {
+									elem.val(data[i].time);
+								}
+							}
+						}
+					});
+				}
+			});
+		});
+	</script>
+
+<?php
+	}
 }
 
 function _fiche_visu_project(&$timesheet, $mode){
