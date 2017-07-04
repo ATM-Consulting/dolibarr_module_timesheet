@@ -4,8 +4,6 @@ require('config.php');
 
 if(!$user->rights->timesheet->user->read) accessforbidden();
 
-dol_include_once('/core/class/hookmanager.class.php');
-
 $hookmanager = new HookManager($db);
 $hookmanager->initHooks('timesheetcard');
 
@@ -38,8 +36,138 @@ function _action() {
 
 	$parameters = array();
 	$reshook = $hookmanager->executeHooks('doActions', $parameters, $timesheet, $action);
+	if($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
-	if($reshook > 0) { // Si on passe dans le hook, on zappe les autres actions
+	if(empty($reshook)) {
+	
+		if($action=='print') {
+			
+			$formATM=new TFormCore;
+			$doliform = new Form($db);
+			$TJours = $timesheet->loadTJours(); 
+			
+			//transformation de $TJours pour jolie affichage
+			foreach ($TJours as $key => $value) {
+				$TKey = explode('-', $key);
+				$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
+			}
+			
+			
+			list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$formATM,'print');
+			$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+			$nb_second_per_day = $hour_per_day * 3600;
+			
+			foreach($TligneTimesheet as $cle => $val){
+				//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
+				$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
+			}
+			
+	
+			$TBS=new TTemplateTBS;
+			$TBS->render('./tpl/approve.ods'
+				,array(
+					'ligneTimesheet'=>$TligneTimesheet,
+					'joursVisu'=>$TJoursVisu,
+				)
+				,array(
+					'timesheet'=>array(
+						'socname'=>$timesheet->societe->name
+						,'mysocname'=>$mysoc->name
+						,'date_dates'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetDates', dol_print_date($timesheet->date_deb), dol_print_date($timesheet->date_fin) ) )
+						,'project'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetproject', $timesheet->project->title))
+					)
+					,'langs'=>getLangTranslate()
+				)
+				,array()
+			);
+			
+			
+			exit;
+		}
+		
+	
+		llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
+	
+		
+		if($action) {
+			switch($action) {
+				
+				case 'new':
+				case 'add':
+					$timesheet->set_values($_REQUEST);
+					_fiche($timesheet,'new');
+					break;
+	
+				case 'approve':
+					$timesheet->status=1;
+					$timesheet->save($PDOdb);
+					
+					_fiche($timesheet);
+	
+					break;
+				case 'edit'	:
+				case 'edittime'	:
+					_fiche($timesheet,GETPOST('action'));
+					break;
+	
+				case 'save':
+					$timesheet->set_values($_REQUEST);
+					$timesheet->save($PDOdb);
+					
+					setEventMessage('TimeSheetSaved');
+					
+					_fiche($timesheet);
+					break;
+				
+				case 'savetime':
+					//pre($_REQUEST,true);exit;
+					$timesheet->set_values($_REQUEST);
+					$timesheet->savetimevalues($PDOdb,$_REQUEST);
+					$timesheet->save($PDOdb);
+					
+					$timesheet->load($PDOdb,$timesheet->rowid);
+					setEventMessage('TimeSheetSaved');
+					_fiche($timesheet,'edittime');
+					break;
+					
+				case 'facturer':
+					//$timesheet->status = 2;
+					$timesheet->save($PDOdb);
+					$timesheet->createFacture($PDOdb);
+					_fiche($timesheet);
+					break;
+	
+				case 'delete':
+					$timesheet->delete($PDOdb);
+					
+					_liste();
+					
+					break;
+				case 'deleteligne':
+					
+					$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
+				
+					setEventMessage($langs->trans('LineDeleted'));
+				
+					$timesheet->load($PDOdb, $idTimesheet);
+					
+				
+					_fiche($timesheet);
+					break;	
+			
+			}
+			
+		}
+		elseif(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
+			_fiche($timesheet, 'view');
+		}
+		else{
+			_liste();
+		}
+
+
+		llxFooter();
+	} else {
 		llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 		if(! empty($idTimesheet)) {
@@ -49,137 +177,7 @@ function _action() {
 		}
 
 		llxFooter();
-
-		exit;
 	}
-	
-	if($action=='print') {
-		
-		$formATM=new TFormCore;
-		$doliform = new Form($db);
-		$TJours = $timesheet->loadTJours(); 
-		
-		//transformation de $TJours pour jolie affichage
-		foreach ($TJours as $key => $value) {
-			$TKey = explode('-', $key);
-			$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
-		}
-		
-		
-		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$formATM,'print');
-		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
-		$nb_second_per_day = $hour_per_day * 3600;
-		
-		foreach($TligneTimesheet as $cle => $val){
-			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
-			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'all', $nb_second_per_day);
-		}
-		
-
-		$TBS=new TTemplateTBS;
-		$TBS->render('./tpl/approve.ods'
-			,array(
-				'ligneTimesheet'=>$TligneTimesheet,
-				'joursVisu'=>$TJoursVisu,
-			)
-			,array(
-				'timesheet'=>array(
-					'socname'=>$timesheet->societe->name
-					,'mysocname'=>$mysoc->name
-					,'date_dates'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetDates', dol_print_date($timesheet->date_deb), dol_print_date($timesheet->date_fin) ) )
-					,'project'=>utf8_decode( $langs->transnoentitiesnoconv('TimeSheetproject', $timesheet->project->title))
-				)
-				,'langs'=>getLangTranslate()
-			)
-			,array()
-		);
-		
-		
-		exit;
-	}
-	
-
-	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
-
-	
-	if($action) {
-		switch($action) {
-			
-			case 'new':
-			case 'add':
-				$timesheet->set_values($_REQUEST);
-				_fiche($timesheet,'new');
-				break;
-
-			case 'approve':
-				$timesheet->status=1;
-				$timesheet->save($PDOdb);
-				
-				_fiche($timesheet);
-
-				break;
-			case 'edit'	:
-			case 'edittime'	:
-				_fiche($timesheet,GETPOST('action'));
-				break;
-
-			case 'save':
-				$timesheet->set_values($_REQUEST);
-				$timesheet->save($PDOdb);
-				
-				setEventMessage('TimeSheetSaved');
-				
-				_fiche($timesheet);
-				break;
-			
-			case 'savetime':
-				//pre($_REQUEST,true);exit;
-				$timesheet->set_values($_REQUEST);
-				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				$timesheet->save($PDOdb);
-				
-				$timesheet->load($PDOdb,$timesheet->rowid);
-				setEventMessage('TimeSheetSaved');
-				_fiche($timesheet,'edittime');
-				break;
-				
-			case 'facturer':
-				//$timesheet->status = 2;
-				$timesheet->save($PDOdb);
-				$timesheet->createFacture($PDOdb);
-				_fiche($timesheet);
-				break;
-
-			case 'delete':
-				$timesheet->delete($PDOdb);
-				
-				_liste();
-				
-				break;
-			case 'deleteligne':
-				
-				$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
-			
-				setEventMessage($langs->trans('LineDeleted'));
-			
-				$timesheet->load($PDOdb, $idTimesheet);
-				
-			
-				_fiche($timesheet);
-				break;	
-		
-		}
-		
-	}
-	elseif(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
-		_fiche($timesheet, 'view');
-	}
-	else{
-		_liste();
-	}
-
-
-	llxFooter();
 	
 }
 function getLangTranslate() {
