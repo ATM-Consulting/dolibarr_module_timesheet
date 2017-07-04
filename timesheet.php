@@ -4,6 +4,11 @@ require('config.php');
 
 if(!$user->rights->timesheet->user->read) accessforbidden();
 
+dol_include_once('/core/class/hookmanager.class.php');
+
+$hookmanager = new HookManager($db);
+$hookmanager->initHooks('timesheetcard');
+
 _action();
 
 // Protection if external user
@@ -13,7 +18,7 @@ if ($user->societe_id > 0)
 }
 
 function _action() {
-	global $user,$langs,$conf,$mysoc;
+	global $user,$langs,$conf,$mysoc,$hookmanager;
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
@@ -25,10 +30,30 @@ function _action() {
 	********************************************************************/
 	
 	$action=GETPOST('action');
+	$idTimesheet = GETPOST('id', 'int');
+
+	if(! empty($idTimesheet)) { // load() remonté et factorisé pour être effectué avant le hook
+		$timesheet->load($PDOdb, $idTimesheet);
+	}
+
+	$parameters = array();
+	$reshook = $hookmanager->executeHooks('doActions', $parameters, $timesheet, $action);
+
+	if($reshook > 0) { // Si on passe dans le hook, on zappe les autres actions
+		llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
+
+		if(! empty($idTimesheet)) {
+			_fiche($timesheet);
+		} else {
+			_liste();
+		}
+
+		llxFooter();
+
+		exit;
+	}
 	
 	if($action=='print') {
-		
-		$timesheet->load($PDOdb, GETPOST('id'));
 		
 		$formATM=new TFormCore;
 		$doliform = new Form($db);
@@ -87,7 +112,6 @@ function _action() {
 				break;
 
 			case 'approve':
-				$timesheet->load($PDOdb, GETPOST('id'));
 				$timesheet->status=1;
 				$timesheet->save($PDOdb);
 				
@@ -96,12 +120,10 @@ function _action() {
 				break;
 			case 'edit'	:
 			case 'edittime'	:
-				$timesheet->load($PDOdb, GETPOST('id'));
 				_fiche($timesheet,GETPOST('action'));
 				break;
 
 			case 'save':
-				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				$timesheet->set_values($_REQUEST);
 				$timesheet->save($PDOdb);
 				
@@ -111,8 +133,6 @@ function _action() {
 				break;
 			
 			case 'savetime':
-				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
-				
 				//pre($_REQUEST,true);exit;
 				$timesheet->set_values($_REQUEST);
 				$timesheet->savetimevalues($PDOdb,$_REQUEST);
@@ -124,7 +144,6 @@ function _action() {
 				break;
 				
 			case 'facturer':
-				if(!empty($_REQUEST['id'])) $timesheet->load($PDOdb, $_REQUEST['id']);
 				//$timesheet->status = 2;
 				$timesheet->save($PDOdb);
 				$timesheet->createFacture($PDOdb);
@@ -132,20 +151,18 @@ function _action() {
 				break;
 
 			case 'delete':
-				$timesheet->load($PDOdb, $_REQUEST['id']);
 				$timesheet->delete($PDOdb);
 				
 				_liste();
 				
 				break;
 			case 'deleteligne':
-				$timesheet->load($PDOdb, $_REQUEST['id']);
 				
 				$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
 			
 				setEventMessage($langs->trans('LineDeleted'));
 			
-				$timesheet->load($PDOdb, $_REQUEST['id']);
+				$timesheet->load($PDOdb, $idTimesheet);
 				
 			
 				_fiche($timesheet);
@@ -155,7 +172,6 @@ function _action() {
 		
 	}
 	elseif(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
-		$timesheet->load($PDOdb, $_REQUEST['id']);
 		_fiche($timesheet, 'view');
 	}
 	else{
@@ -272,7 +288,7 @@ function _selectProjectTasksByMoi(&$PDOdb,&$timehseet)
 
 function _fiche(&$timesheet, $mode='view') {
 	
-	global $langs,$db,$conf,$user;
+	global $langs,$db,$conf,$user,$hookmanager;
 	
 	$PDOdb = new TPDOdb;
 	
@@ -493,6 +509,9 @@ function _fiche(&$timesheet, $mode='view') {
 
 <?php
 	}
+
+	$parameters = array();
+	$hookmanager->executeHooks('afterCard', $parameters, $timesheet, $mode); // pas 'addMoreActionsButtons' car boutons ajoutés plus haut via TBS
 }
 
 function _fiche_visu_project(&$timesheet, $mode){
