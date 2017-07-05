@@ -107,7 +107,7 @@ function _action() {
 					break;
 				case 'edit'	:
 				case 'edittime'	:
-					_fiche($timesheet,GETPOST('action'));
+					_fiche($timesheet, $action);
 					break;
 	
 				case 'save':
