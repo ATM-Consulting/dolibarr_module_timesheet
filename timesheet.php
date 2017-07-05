@@ -84,9 +84,6 @@ function _action() {
 			
 			exit;
 		}
-		
-	
-		llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 	
 		
 		if($action) {
@@ -164,19 +161,12 @@ function _action() {
 		else{
 			_liste();
 		}
-
-
-		llxFooter();
 	} else {
-		llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
-
 		if(! empty($idTimesheet)) {
 			_fiche($timesheet);
 		} else {
 			_liste();
 		}
-
-		llxFooter();
 	}
 	
 }
@@ -197,6 +187,8 @@ function _liste() {
 	global $langs,$db,$user,$conf;
 
 	$langs->Load('timesheet@timesheet');
+
+	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	$TPDOdb=new TPDOdb;
 	$TTimesheet = new TTimesheet;
@@ -261,8 +253,8 @@ function _liste() {
 	
 	$TPDOdb->close();
 
-	
 
+	llxFooter();
 }
 
 function _selectProjectTasksByMoi(&$PDOdb,&$timehseet)
@@ -289,6 +281,8 @@ function _fiche(&$timesheet, $mode='view') {
 	global $langs,$db,$conf,$user,$hookmanager;
 	
 	$PDOdb = new TPDOdb;
+
+	llxHeader('',$langs->trans('Timesheet'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 	
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , $langs->trans('Card'), $langs->trans('FicheTimesheet'));
 
@@ -510,6 +504,9 @@ function _fiche(&$timesheet, $mode='view') {
 
 	$parameters = array();
 	$hookmanager->executeHooks('afterCard', $parameters, $timesheet, $mode); // pas 'addMoreActionsButtons' car boutons ajoutés plus haut via TBS
+
+
+	llxFooter();
 }
 
 function _fiche_visu_project(&$timesheet, $mode){
