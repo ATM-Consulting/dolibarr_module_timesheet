@@ -4,6 +4,9 @@ require('config.php');
 
 if(!$user->rights->timesheet->user->read) accessforbidden();
 
+$hookmanager = new HookManager($db);
+$hookmanager->initHooks('timesheetusertimescard');
+
 _action();
 
 // Protection if external user
@@ -13,7 +16,7 @@ if ($user->societe_id > 0)
 }
 
 function _action() {
-	global $user,$langs,$conf,$mysoc;
+	global $user,$langs,$conf,$mysoc,$hookmanager;
 
 	$PDOdb=new TPDOdb;
 	$timesheet = new TTimesheet;
@@ -42,62 +45,68 @@ function _action() {
 	********************************************************************/
 	
 	$action=GETPOST('action');
+	$idTimesheet = GETPOST('id', 'int');
 
-	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
+	if(! empty($idTimesheet)) { // load() remonté pour être effectué avant le hook
+		$timesheet->load($PDOdb, $idTimesheet);
+	}
 
-	if($action) {
-		switch($action) {
-			
-			case 'view' :
-			case 'changedate' :
+	$parameters = array();
+	$reshook = $hookmanager->executeHooks('doActions', $parameters, $timesheet, $action);
+	if($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
+
+	if(empty($reshook)) {
+
+		if($action) {
+			switch($action) {
 				
-				_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
-				break;
-			
-			case 'edit'	:
-			case 'edittime'	:
+				case 'view' :
+				case 'changedate' :
+
+					_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
+					break;
 				
-				_fiche($timesheet,'edittime',$date_deb,$date_fin,$userid);
-				break;
+				case 'edit'	:
+				case 'edittime'	:
+
+					_fiche($timesheet,'edittime',$date_deb,$date_fin,$userid);
+					break;
+
+				case 'savetime':
+
+					$timesheet->savetimevalues($PDOdb,$_REQUEST);
+					setEventMessage('TimeSheetSaved');
+
+					$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
+
+					_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
+					break;
+
 				
-			case 'savetime':
+				case 'deleteligne':
+					$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
 				
-				$timesheet->savetimevalues($PDOdb,$_REQUEST);
-				setEventMessage('TimeSheetSaved');
+					setEventMessage($langs->trans('LineDeleted'));
 				
-				$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
+					$timesheet->load($PDOdb, $idTimesheet);
 				
-				_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
-				break;
+					_fiche($timesheet,'view',$date_deb,$date_fin,$userid);
+					break;
 				
-			
-			case 'deleteligne':
-				$timesheet->load($PDOdb, $_REQUEST['id']);
-				
-				$timesheet->deleteAllTimeForTaskUser($PDOdb, GETPOST('fk_task'), GETPOST('fk_user'));
-			
-				setEventMessage($langs->trans('LineDeleted'));
-			
-				$timesheet->load($PDOdb, $_REQUEST['id']);
-				
-			
-				_fiche($timesheet,'view',$date_deb,$date_fin,$userid);
-				break;
+			}
 			
 		}
-		
+		else{
+			
+			_fiche($timesheet, 'changedate',$date_deb,$date_fin);
+			
+		}
+	} else {
+		_fiche($timesheet, 'changedate',$date_deb, $date_fin);
 	}
-	else{
-				
-		
-		_fiche($timesheet, 'changedate',$date_deb,$date_fin);
-		
-	}
-
-
-	llxFooter();
 	
 }
+
 function getLangTranslate() {
 	global $langs;
 	
@@ -116,6 +125,7 @@ function _liste() {
 
 	$langs->Load('timesheet@timesheet');
 
+	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	$TPDOdb=new TPDOdb;
 	$TTimesheet = new TTimesheet;
@@ -181,16 +191,18 @@ function _liste() {
 	
 	$TPDOdb->close();
 
-	
+	llxFooter();
 
 }
 function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_selected=0) {
 
-	global $langs,$db,$conf,$user;
+	global $langs,$db,$conf,$user,$hookmanager;
 	$PDOdb = new TPDOdb;
 	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
 	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
 	
+	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
+
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('TimeshettUserTimes'));
 
 	$form=new TFormCore();
@@ -321,6 +333,11 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	}
 	 
 	echo $form2->end_form();
+
+	$parameters = array();
+	$hookmanager->executeHooks('afterCard', $parameters, $timesheet, $mode); // pas 'addMoreActionsButtons' car boutons ajoutés plus haut via TBS
+
+	llxFooter();
 }
 
 function _fiche_visu_project(&$timesheet, $mode){
