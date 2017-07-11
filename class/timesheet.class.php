@@ -362,7 +362,7 @@ class TTimesheet extends TObjetStd {
 							$project = new Project($db);
 							$project->fetch($task->fk_project);
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] = $project->getNomUrl(1);	
-							if($freemode) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] .= $project->title;
+							if($freemode) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] .= ' - ' . $project->title;
 						}
 
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
