@@ -143,7 +143,40 @@ class TTimesheet extends TObjetStd {
 		if($a->fk_project<$b->fk_project) return -1;
 		else if($a->fk_project>$b->fk_project) return 1;
 		else return 0;
-		
+	}
+
+	function sortById($a, $b) {
+		if($a->id < $b->id) return -1;
+		if($a->id > $b->id) return 1;
+		return 0;
+	}
+
+	function sortTasksByParentChild($TTaches, $level = 0, $fk_parent = 0) {
+		if($level == 0) {
+			$this->TTask = array();
+		}
+
+		$TTachesCourantes = array();
+
+		foreach($TTaches as $task) {
+			if($task->fk_task_parent == $fk_parent) { // Si correspond
+				$TTachesCourantes[$task->id] = $task;
+			}
+		}
+
+		if(! empty($TTachesCourantes)) {
+			if($level == 0) {
+				uasort($TTachesCourantes, array('TTimesheet', 'sortByProject'));
+			} else {
+				uasort($TTachesCourantes, array('TTimesheet', 'sortById'));
+			}
+
+			foreach($TTachesCourantes as &$task) {
+				$task->_level = $level;
+				$this->TTask[$task->id] = $task;
+				$this->sortTasksByParentChild($TTaches, $level + 1, $task->id);
+			}
+		}
 	}
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid,$fk_user=0){
@@ -292,8 +325,9 @@ class TTimesheet extends TObjetStd {
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
+
+		$this->sortTasksByParentChild($this->TTask);
 		
-		usort($this->TTask, array('TTimesheet', 'sortByProject'));
 		$TLigneTimesheet_total_jour=array();
 		
 		foreach($this->TTask as $task){
@@ -788,7 +822,6 @@ class TTimesheet extends TObjetStd {
 		return round($qty,1);
 
 	}
-
 }
 
 
