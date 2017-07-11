@@ -142,7 +142,7 @@ class TTimesheet extends TObjetStd {
 		
 		if($a->fk_project<$b->fk_project) return -1;
 		else if($a->fk_project>$b->fk_project) return 1;
-		else return 0;
+		else return $this->sortById($a, $b);
 	}
 
 	function sortById($a, $b) {
