@@ -344,7 +344,7 @@ class TTimesheet extends TObjetStd {
 					$url_service = ($mode=='print') ? $productstatic->ref : $productstatic->getNomUrl(1); 
 				}
 				else{
-					$url_service =($mode=='print') ?  $task->ref.' - '.$task->label : $task->getNomUrl(1).' - '.$task->label;
+					$url_service = ($mode=='print') ? str_repeat('&nbsp;', 5 * $task->_level) . $task->ref.' - '.$task->label : str_repeat('&nbsp;', 5 * $task->_level) . $task->getNomUrl(1).' - '.$task->label;
 				}
 					
 				if($freemode) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
