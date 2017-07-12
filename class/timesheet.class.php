@@ -142,8 +142,41 @@ class TTimesheet extends TObjetStd {
 		
 		if($a->fk_project<$b->fk_project) return -1;
 		else if($a->fk_project>$b->fk_project) return 1;
-		else return 0;
-		
+		else return $this->sortById($a, $b);
+	}
+
+	function sortById($a, $b) {
+		if($a->id < $b->id) return -1;
+		if($a->id > $b->id) return 1;
+		return 0;
+	}
+
+	function sortTasksByParentChild($TTaches, $level = 0, $fk_parent = 0) {
+		if($level == 0) {
+			$this->TTask = array();
+		}
+
+		$TTachesCourantes = array();
+
+		foreach($TTaches as $task) {
+			if($task->fk_task_parent == $fk_parent) { // Si correspond
+				$TTachesCourantes[$task->id] = $task;
+			}
+		}
+
+		if(! empty($TTachesCourantes)) {
+			if($level == 0) {
+				uasort($TTachesCourantes, array('TTimesheet', 'sortByProject'));
+			} else {
+				uasort($TTachesCourantes, array('TTimesheet', 'sortById'));
+			}
+
+			foreach($TTachesCourantes as &$task) {
+				$task->_level = $level;
+				$this->TTask[$task->id] = $task;
+				$this->sortTasksByParentChild($TTaches, $level + 1, $task->id);
+			}
+		}
 	}
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid,$fk_user=0){
@@ -292,8 +325,9 @@ class TTimesheet extends TObjetStd {
 		global $db, $user, $conf, $langs;
 		
 		$TLigneTimesheet=$THidden=array();
+
+		$this->sortTasksByParentChild($this->TTask);
 		
-		usort($this->TTask, array('TTimesheet', 'sortByProject'));
 		$TLigneTimesheet_total_jour=array();
 		
 		foreach($this->TTask as $task){
@@ -310,7 +344,7 @@ class TTimesheet extends TObjetStd {
 					$url_service = ($mode=='print') ? $productstatic->ref : $productstatic->getNomUrl(1); 
 				}
 				else{
-					$url_service =($mode=='print') ?  $task->ref.' - '.$task->label : $task->getNomUrl(1).' - '.$task->label;
+					$url_service = ($mode=='print') ? str_repeat('&nbsp;', 5 * $task->_level) . $task->ref.' - '.$task->label : str_repeat('&nbsp;', 5 * $task->_level) . $task->getNomUrl(1).' - '.$task->label;
 				}
 					
 				if($freemode) $task->TTime = $this->fillWithJour($TJours, $task->TTime);
@@ -328,7 +362,7 @@ class TTimesheet extends TObjetStd {
 							$project = new Project($db);
 							$project->fetch($task->fk_project);
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] = $project->getNomUrl(1);	
-							if($freemode) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] .= $project->title;
+							if($freemode) $TLigneTimesheet[$task->id.'_'.$userstatic->id]['project'] .= ' - ' . $project->title;
 						}
 
 						$TLigneTimesheet[$task->id.'_'.$userstatic->id]['service'] = $url_service;
@@ -788,7 +822,6 @@ class TTimesheet extends TObjetStd {
 		return round($qty,1);
 
 	}
-
 }
 
 
