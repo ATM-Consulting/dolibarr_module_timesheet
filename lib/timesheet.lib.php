@@ -79,3 +79,30 @@ function timesheetPrepareHead(&$timesheet,$type='timesheet') {
 			break;
 	}
 }
+
+function getEmploiDuTemps(&$PDOdb, $timesheet, $fk_user) {
+
+	dol_include_once('/rh/absence/class/absence.class.php');
+
+	$edt = new TRH_EmploiTemps;
+	$edt->load_by_fkuser($PDOdb, $fk_user);
+
+	$TJours = $timesheet->loadTJours(); // Chargement de la liste des jours de la feuille de temps
+
+	$TEDT = array();
+
+	foreach($TJours as $date => $jour) {
+		$timestamp = dol_stringtotime($date, false);
+
+		$duration = 0;
+		$indiceJour = (int) date('N', $timestamp) - 1; // O => lundi, 1 => mardi, etc.
+		$jour = $edt->TJour[$indiceJour]; // renvoie 'lundi', 'mardi', etc.
+
+		if($edt->{$jour . 'am'} == 1) $duration += 3600 * $edt->getHeurePeriode($jour, 'am'); // $edt->getHeurePeriode() renvoie des heures, on met en secondes
+		if($edt->{$jour . 'pm'} == 1) $duration += 3600 * $edt->getHeurePeriode($jour, 'pm');
+
+		$TEDT[$date] = $duration;
+	}
+
+	return $TEDT;
+}
