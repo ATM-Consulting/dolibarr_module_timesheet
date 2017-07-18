@@ -293,6 +293,7 @@ class TTimesheet extends TObjetStd {
 				else{
 					
 					$task->timespent_date = $date;
+					$task->timespent_datehour = $date . ' 00:00:00';
 					$task->timespent_duration = $timespent_duration_temp;
 					$task->timespent_fk_user = $idUser;
 
