@@ -280,18 +280,24 @@ class TTimesheet extends TObjetStd {
 				$timespent_duration_temp = explode(':',$temps);
 				$timespent_duration_temp = convertTime2Seconds((int)$timespent_duration_temp[0],(int)$timespent_duration_temp[1]);
 
-				//Un temps a déjà été saisi pour ce projet, cette tache et cet utilisateur
+				// Un temps a déjà été saisi pour ce projet, cette tache et cet utilisateur à cette date
 				if($PDOdb->Get_line()){
 					$task->fetchTimeSpent($PDOdb->Get_field('rowid'));
 
-					$task->timespent_duration = $timespent_duration_temp;
-					$task->timespent_fk_user = $idUser;
+					// Si le temps passé a été renseigné, on met à jour
+					if(! empty($timespent_duration_temp)) {
+						$task->timespent_duration = $timespent_duration_temp;
+						$task->timespent_fk_user = $idUser;
 
-					$task->updateTimeSpent($user);
+						$task->updateTimeSpent($user);
+					}
+					// Sinon on supprime les temps qui étaient enregistrés à cette date
+					else {
+						$task->delTimeSpent($user);
+					}
 				}
-				//Un temps pour ce projet, cette tache et cet utilisateur n'existe pas encore, il faut l'ajouter
-				else{
-					
+				// Un temps pour ce projet, cette tache et cet utilisateur n'existe pas encore à cette date, il faut l'ajouter s'il est renseigné
+				elseif(! empty($timespent_duration_temp)){
 					$task->timespent_date = $date;
 					$task->timespent_datehour = $date . ' 00:00:00';
 					$task->timespent_duration = $timespent_duration_temp;
