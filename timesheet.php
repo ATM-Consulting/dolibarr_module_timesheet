@@ -447,7 +447,7 @@ function _fiche(&$timesheet, $mode='view') {
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
 					,'services'=>(!$freemode) ? $doliform->select_produits_list('','serviceid_0','1') : _selectProjectTasksByMoi($PDOdb,$timesheet)
-					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0',1) : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
+					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0',1) : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
