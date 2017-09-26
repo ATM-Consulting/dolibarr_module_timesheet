@@ -536,7 +536,7 @@ function _fiche_visu_project(&$timesheet, $mode){
 }
 
 function _fiche_visu_societe(&$timesheet, $mode) {
-	global $db;
+	global $db, $langs;
 
 	if($mode=='edit' || $mode=='new') {
 		ob_start();
