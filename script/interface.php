@@ -300,7 +300,7 @@
 	function _get_emploi_du_temps(&$PDOdb, $fk_timesheet, $fk_user) {
 
 		$timesheet = new TTimesheet;
-		$timesheet->load($fk_timesheet);
+		$timesheet->load($PDOdb, $fk_timesheet);
 
 		$TEDTforJSON = array();
 		$TEDT = getEmploiDuTemps($PDOdb, $timesheet, $fk_user);
