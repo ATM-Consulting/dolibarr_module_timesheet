@@ -149,7 +149,7 @@ function _action() {
 					$timesheet->load($PDOdb, $idTimesheet);
 					
 				
-					_fiche($timesheet);
+					_fiche($timesheet, GETPOST('mode'));
 					break;	
 			
 			}
@@ -288,6 +288,8 @@ function _fiche(&$timesheet, $mode='view') {
 
 	$form=new TFormCore($_SERVER['PHP_SELF'],'form','POST');
 	$doliform = new Form($db);
+
+	$form->hidden('mode', $mode);
 	
 	if($mode != "edittime"){
 		$form->Set_typeaff($mode);

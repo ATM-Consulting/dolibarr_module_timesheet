@@ -440,7 +440,7 @@ class TTimesheet extends TObjetStd {
 						}
 						
 						if($user->rights->timesheet->user->delete && $user->rights->timesheet->user->add && $this->status<2 && $mode!='print') {
-							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\''.addslashes($langs->transnoentities('ConfirmDeleteTimeline')).'\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne\'; ">'.img_delete().'</a>';
+							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '<a href="#" onclick="if(confirm(\''.addslashes($langs->transnoentities('ConfirmDeleteTimeline')).'\')) document.location.href=\'?id='.$this->getId().'&fk_task='.$task->id.'&fk_user='.$userstatic->id.'&action=deleteligne&mode='.$mode.'\'; ">'.img_delete().'</a>';
 						}
 						elseif($mode!='print'){
 							$TLigneTimesheet[$task->id.'_'.$userstatic->id]['action'] = '';
