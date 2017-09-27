@@ -370,8 +370,8 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$('#userid_0').change(function() {
-				var date_deb = '<?php echo $_REQUEST['date_deb']; ?>';
-				var date_fin = '<?php echo $_REQUEST['date_fin']; ?>';
+				var date_deb = '<?php echo $timesheet->get_date('date_deb', 'd/m/Y'); ?>';
+				var date_fin = '<?php echo $timesheet->get_date('date_fin', 'd/m/Y'); ?>';
 				var userid = parseInt($(this).val());
 
 				if(userid > 0) {
