@@ -214,7 +214,6 @@ class TTimesheet extends TObjetStd {
 					//echo $idTask;exit;
 					$task = new Task($db);
 					
-
 					if($idTask > 0){
 						$task->fetch($idTask);
 						

@@ -79,7 +79,7 @@ function _action() {
 
 					$timesheet->loadProjectTask($PDOdb, $userid,$date_deb,$date_fin);
 
-					_fiche($timesheet,'changedate',$date_deb,$date_fin,$userid);
+					_fiche($timesheet,'edittime',$date_deb,$date_fin,$userid);
 					break;
 
 				
@@ -289,9 +289,37 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	$date_fin = date_format($date, 'd/m/Y');
 	
 	//pre($TligneTimesheet,true);
-	
+
+	$freemode = empty($conf->global->TIMESHEET_USE_SERVICES);
+	$TTasks = _getTasks($PDOdb);
+
+	if($freemode){
+		?>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				$('tr[id=0] select[name^=serviceid_], tr[id=0] select[name^=userid_]').change(function(){
+
+					tache = $('tr[id=0] select[name^=serviceid_]');
+					user = $('tr[id=0] select[name^=userid_]');
+
+					$(tache).attr('name','serviceid_'+$(tache).find(':selected').val());
+					$(user).attr('name','userid_'+$(user).find(':selected').val());
+
+					$('tr[id=0] input[id^=temps_]').each(function(i) {
+						name = $(this).attr('name');
+						temp = name.substr(-12);
+						name = 'temps['+$(tache).find(':selected').val()+'_'+$(user).find(':selected').val()+']'+temp;
+						$(this).attr('name',name);
+					});
+				});
+
+			});
+		</script>
+		<?php
+	}
 	
 	if($mode!='new' && $mode != "edit"){
+		$formProjets = new FormProjets($db);
 		/*
 		 * Affichage tableau de saisie des temps
 		 */
@@ -309,8 +337,8 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 				'timesheet'=>array(
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
-					,'services'=>$doliform->select_produits_list('','serviceid_0','1')
-					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers('','userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
+					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', $TTasks, '') : $doliform->select_produits_list('','serviceid_0','1')
+					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
@@ -325,6 +353,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers( -1,'userid')
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 					,'userid_selected'=>$userid_selected
+					,'freemode'=>$freemode
 				)
 				,'langs'=>$langs
 			)
@@ -333,6 +362,43 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	}
 	 
 	echo $form2->end_form();
+
+	if($mode == 'edittime' && ! empty($conf->absence->enabled) && empty($conf->global->TIMESHEET_RH_NO_CHECK)) {
+		?>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$('#userid_0').change(function() {
+				var date_deb = '<?php echo $_REQUEST['date_deb']; ?>';
+				var date_fin = '<?php echo $_REQUEST['date_fin']; ?>';
+				var userid = parseInt($(this).val());
+
+				if(userid > 0) {
+					$.ajax({
+						method: 'GET'
+						, url: '<?php echo dol_buildpath('/timesheet/script/interface.php', 1); ?>'
+						, data: {
+							get: 'get_emploi_du_temps'
+							, fk_user: userid
+							, date_deb: date_deb
+							, date_fin: date_fin
+						}
+						, dataType: 'json'
+						, success: function(data) {console.log(data);
+							for(var i = 0; i < data.length; i++) {
+								var elem = $('input#temps_0__' + data[i].date + '_');
+								if(elem.length > 0) {
+									elem.val(data[i].time);
+								}
+							}
+						}
+					});
+				}
+			});
+		});
+	</script>
+
+<?php
+	}
 
 	$parameters = array();
 	$hookmanager->executeHooks('afterCard', $parameters, $timesheet, $mode); // pas 'addMoreActionsButtons' car boutons ajoutés plus haut via TBS
@@ -411,6 +477,24 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 			return $langs->trans('NotDefined');
 		}
 	}
+}
+
+function _getTasks(&$PDOdb)
+{
+	$TRes = array(0 => '');
+
+	$sql = "SELECT t.rowid, t.ref, t.label, p.ref as ref_projet, p.title as title_projet";
+	$sql.= " FROM ".MAIN_DB_PREFIX."projet_task t";
+	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet p on (t.fk_projet = p.rowid)";
+	$sql.= " WHERE p.fk_statut = 1";
+
+	$TTasks = $PDOdb->ExecuteAsArray($sql);
+
+	foreach($TTasks as $task) {
+		$TRes[$task->rowid]  = $task->ref_projet . ' - ' . $task->title_projet . ' - ' . $task->ref . ' - ' . $task->label;
+	}
+
+	return $TRes;
 }
 
 ?>

@@ -15,7 +15,7 @@
 			print _get_line_ndfp($PDOdb,$_REQUEST['fk_ndfp']);
 			break;
 		case 'get_emploi_du_temps':
-			print __out(_get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user']), 'json');
+			print __out(_get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user'], $_REQUEST['date_deb'], $_REQUEST['date_fin']), 'json');
 			break;
 	}
 	
@@ -297,10 +297,15 @@
 	}
 
 
-	function _get_emploi_du_temps(&$PDOdb, $fk_timesheet, $fk_user) {
+	function _get_emploi_du_temps(&$PDOdb, $fk_timesheet, $fk_user, $date_deb = '', $date_fin = '') {
 
 		$timesheet = new TTimesheet;
-		$timesheet->load($PDOdb, $fk_timesheet);
+		if(! empty($fk_timesheet)) {
+			$timesheet->load($PDOdb, $fk_timesheet);
+		} else {
+			$timesheet->set_date('date_deb', $date_deb);
+			$timesheet->set_date('date_fin', $date_fin);
+		}
 
 		$TEDTforJSON = array();
 		$TEDT = getEmploiDuTemps($PDOdb, $timesheet, $fk_user);
