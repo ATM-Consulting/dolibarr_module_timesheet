@@ -112,15 +112,18 @@ class TTimesheet extends TObjetStd {
 		}
 		else{
 			
-			$sql = 'SELECT rowid 
-					FROM '.MAIN_DB_PREFIX.'projet_task 
-					WHERE dateo <= "'.$date_fin.'"
-						AND (datee >= "'.$date_deb.'" OR datee IS NULL)';
-			
-			if(!empty($this->project->id)) $sql .= " AND fk_projet = ".$this->project->id;
-			else $sql.=" AND entity=".$conf->entity;
-			
-			$sql .= ' ORDER BY label ASC';
+			$sql = 'SELECT t.rowid,  SUM(tt.task_duration) AS tps 
+					FROM '.MAIN_DB_PREFIX.'projet_task t
+					INNER JOIN '.MAIN_DB_PREFIX.'projet p ON (p.rowid = t.fk_projet)
+					INNER JOIN '.MAIN_DB_PREFIX.'projet_task_time tt ON (tt.fk_task = t.rowid)
+					WHERE p.fk_statut = 1
+					AND tt.task_date BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
+
+			if(!empty($this->project->id)) $sql .= " AND t.fk_projet = ".$this->project->id;
+			else $sql.=" AND t.entity=".$conf->entity;
+
+			$sql.= ' GROUP BY t.rowid HAVING SUM(tt.task_duration) > 0
+					ORDER BY t.label ASC';
 
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
