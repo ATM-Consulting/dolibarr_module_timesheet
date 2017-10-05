@@ -395,7 +395,8 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 						}
 					});
 				}
-			});
+			})
+			.trigger('change'); // Permet de remplir à l'init de la page avec l'utilisateur pré-sélectionné
 		});
 	</script>
 
