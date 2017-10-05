@@ -312,10 +312,10 @@ class TTimesheet extends TObjetStd {
 
 	}
 
-	private function fillWithJour($PDOdb, $TJours, $TTime) {
+	private function fillWithJour($PDOdb, $TJours, $TTime, $mode = 'view') {
 		global $user, $conf;
 
-		$useAbsenceEDT = ! empty($conf->absence->enabled) && empty($conf->global->TIMESHEET_RH_NO_CHECK) && ($_REQUEST['action'] == 'edittime');
+		$useAbsenceEDT = ! empty($conf->absence->enabled) && empty($conf->global->TIMESHEET_RH_NO_CHECK) && $mode == 'edittime';
 
 		if($useAbsenceEDT) {
 			$TEDT = getEmploiDuTemps($PDOdb, $this, $user->id);
@@ -371,7 +371,7 @@ class TTimesheet extends TObjetStd {
 					$url_service = ($mode=='print') ? str_repeat('&nbsp;', 5 * $task->_level) . $task->ref.' - '.$task->label : str_repeat('&nbsp;', 5 * $task->_level) . $task->getNomUrl(1).' - '.$task->label;
 				}
 
-				if($freemode) $task->TTime = $this->fillWithJour($PDOdb, $TJours, $task->TTime);
+				if($freemode) $task->TTime = $this->fillWithJour($PDOdb, $TJours, $task->TTime, $mode);
 				
 				foreach($task->TTime as $time){
 				
