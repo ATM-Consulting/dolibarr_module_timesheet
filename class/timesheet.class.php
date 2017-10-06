@@ -162,7 +162,7 @@ class TTimesheet extends TObjetStd {
 		$TTachesCourantes = array();
 
 		foreach($TTaches as $task) {
-			if($task->fk_task_parent == $fk_parent) { // Si correspond
+			if(($level == 0 && ! empty($task->fk_task_parent) && empty($TTaches[$task->fk_task_parent])) || $task->fk_task_parent == $fk_parent) { // Si correspond
 				$TTachesCourantes[$task->id] = $task;
 			}
 		}
@@ -180,6 +180,7 @@ class TTimesheet extends TObjetStd {
 				$this->sortTasksByParentChild($TTaches, $level + 1, $task->id);
 			}
 		}
+
 	}
 
 	function loadTimeSpentByTask(&$PDOdb,$taskid,$fk_user=0){
