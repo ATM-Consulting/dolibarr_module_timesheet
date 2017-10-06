@@ -41,7 +41,8 @@
 		[onshow;block=begin;when [view.mode]=='edittime']
 			<!-- Nouvelle ligne de timesheet-->
 			<tr id="[timesheet.rowid;strconv=no]">
-				<td colspan="2">[timesheet.services;strconv=no]</td>
+				<td>[timesheet.projets;strconv=no]</td>
+				<td id="project_td0">[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
 				<td><!--  --></td>
 
