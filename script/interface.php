@@ -17,6 +17,9 @@
 		case 'get_emploi_du_temps':
 			print __out(_get_emploi_du_temps($PDOdb, $_REQUEST['fk_timesheet'], $_REQUEST['fk_user'], $_REQUEST['date_deb'], $_REQUEST['date_fin']), 'json');
 			break;
+		case 'get_project_tasks':
+			print __out(_get_project_tasks($PDOdb, $_REQUEST['projectid']), 'json');
+			break;
 	}
 	
 	switch ($put) {
@@ -320,5 +323,30 @@
 		}
 
 		return $TEDTforJSON;
+	}
+
+
+	function _get_project_tasks(&$PDOdb, $idProject)
+	{
+		$TRes = array(0 => '');
+		$formCore = new TFormCore;
+
+		if(! empty($idProject)) {
+
+			$sql = "SELECT t.rowid, t.ref, t.label, p.ref as ref_projet, p.title as title_projet";
+			$sql.= " FROM ".MAIN_DB_PREFIX."projet_task t";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet p on (t.fk_projet = p.rowid)";
+			$sql.= " WHERE p.fk_statut < 2";
+
+			if(! empty($idProject)) $sql.= " AND p.rowid = ".$idProject;
+
+			$TTasks = $PDOdb->ExecuteAsArray($sql);
+
+			foreach($TTasks as $task) {
+				$TRes[$task->rowid] = $task->ref . ' - ' . $task->label;
+			}
+		}
+
+		return $formCore->combo_sexy('', 'serviceid_0', $TRes, 0);
 	}
 

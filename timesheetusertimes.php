@@ -293,21 +293,20 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	//pre($TligneTimesheet,true);
 
 	$freemode = empty($conf->global->TIMESHEET_USE_SERVICES);
-	$TTasks = _getTasks($PDOdb);
 
 	if($freemode){
 		?>
 		<script type="text/javascript">
 			$(document).ready(function(){
-				$('tr[id=0] select[name^=serviceid_], tr[id=0] select[name^=userid_]').change(function(){
+				$('tr#0').on('change', 'select[name^=serviceid_], select[name^=userid_]', function(){
 
-					tache = $('tr[id=0] select[name^=serviceid_]');
-					user = $('tr[id=0] select[name^=userid_]');
+					tache = $('tr#0 select[name^=serviceid_]');
+					user = $('tr#0 select[name^=userid_]');
 
 					$(tache).attr('name','serviceid_'+$(tache).find(':selected').val());
 					$(user).attr('name','userid_'+$(user).find(':selected').val());
 
-					$('tr[id=0] input[id^=temps_]').each(function(i) {
+					$('tr#0 input[id^=temps_]').each(function(i) {
 						name = $(this).attr('name');
 						temp = name.substr(-12);
 						name = 'temps['+$(tache).find(':selected').val()+'_'+$(user).find(':selected').val()+']'+temp;
@@ -315,6 +314,23 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					});
 				});
 
+				$('#projectid_0').change(function() {
+					var projectid = parseInt($(this).val());
+					if(projectid > 0) {
+						$.ajax({
+							method: 'GET'
+							, url: '<?php echo dol_buildpath('/timesheet/script/interface.php', 1); ?>'
+							, data: {
+								get: 'get_project_tasks'
+								, projectid: projectid
+							}
+							, dataType: 'json'
+							, success: function(data) {
+								$('tr#0 td#project_td0').html(data);
+							}
+						});
+					}
+				});
 			});
 		</script>
 		<?php
@@ -339,7 +355,8 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 				'timesheet'=>array(
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
-					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', $TTasks, '') : $doliform->select_produits_list('','serviceid_0','1')
+					,'projets' => $formProjets->select_projects(0, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
+					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', array(str_repeat('&nbsp;', 42)), 0) : $doliform->select_produits_list('','serviceid_0','1')
 					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
@@ -385,7 +402,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 							, date_fin: date_fin
 						}
 						, dataType: 'json'
-						, success: function(data) {console.log(data);
+						, success: function(data) {
 							for(var i = 0; i < data.length; i++) {
 								var elem = $('input#temps_0__' + data[i].date + '_');
 								if(elem.length > 0) {
@@ -482,22 +499,3 @@ function _fiche_visu_societe(&$timesheet, $mode) {
 	}
 }
 
-function _getTasks(&$PDOdb)
-{
-	$TRes = array(0 => '');
-
-	$sql = "SELECT t.rowid, t.ref, t.label, p.ref as ref_projet, p.title as title_projet";
-	$sql.= " FROM ".MAIN_DB_PREFIX."projet_task t";
-	$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet p on (t.fk_projet = p.rowid)";
-	$sql.= " WHERE p.fk_statut = 1";
-
-	$TTasks = $PDOdb->ExecuteAsArray($sql);
-
-	foreach($TTasks as $task) {
-		$TRes[$task->rowid]  = $task->ref_projet . ' - ' . $task->title_projet . ' - ' . $task->ref . ' - ' . $task->label;
-	}
-
-	return $TRes;
-}
-
-?>
