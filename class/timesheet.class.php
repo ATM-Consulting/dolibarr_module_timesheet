@@ -116,7 +116,7 @@ class TTimesheet extends TObjetStd {
 					FROM '.MAIN_DB_PREFIX.'projet_task t
 					INNER JOIN '.MAIN_DB_PREFIX.'projet p ON (p.rowid = t.fk_projet)
 					INNER JOIN '.MAIN_DB_PREFIX.'projet_task_time tt ON (tt.fk_task = t.rowid)
-					WHERE p.fk_statut = 1
+					WHERE p.fk_statut < 2
 					AND tt.task_date BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
 
 			if(!empty($this->project->id)) $sql .= " AND t.fk_projet = ".$this->project->id;
