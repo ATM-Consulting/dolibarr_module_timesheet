@@ -355,7 +355,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 				'timesheet'=>array(
 					'rowid'=>0
 					,'id'=>$timesheet->rowid
-					,'projets' => $formProjets->select_projects(0, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
+					,'projets' => $formProjets->select_projects(-1, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
 					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', array(str_repeat('&nbsp;', 42)), 0) : $doliform->select_produits_list('','serviceid_0','1')
 					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
 					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
