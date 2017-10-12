@@ -196,8 +196,6 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	
 	$date = date_create(date($date_fin));
 	$date_fin = date_format($date, 'd/m/Y');
-	
-	//pre($TligneTimesheet,true);
 
 	$freemode = empty($conf->global->TIMESHEET_USE_SERVICES);
 
@@ -260,23 +258,17 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 			)
 			,array(
 				'timesheet'=>array(
-					'rowid'=>0
-					,'projets' => $formProjets->select_projects(-1, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
+					'projets' => $formProjets->select_projects(-1, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
 					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', array(str_repeat('&nbsp;', 42)), 0) : $doliform->select_produits_list('','serviceid_0','1')
 					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
-					,'commentaireNewLine'=>$form2->texte('', 'lineLabel_0', '', 30,255)
 				)
 				,'view'=>array(
 					'mode'=>$mode
-					,'nbChamps'=>count($asset->TField)
-					,'head'=>dol_get_fiche_head(timesheetPrepareHead($asset)  , 'field', $langs->trans('AssetType'))
-					,'onglet'=>dol_get_fiche_head(array()  , '', $langs->trans('AssetType'))
-					,'righttoedit'=>($user->rights->timesheet->user->add && $timesheet->status<2)
+					,'righttoedit'=>($user->rights->timesheet->user->add)
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
 					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
 					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
 					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers($userid_selected, 'userid', 1)
-					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 					,'userid_selected'=>$userid_selected
 					,'freemode'=>$freemode
 				)

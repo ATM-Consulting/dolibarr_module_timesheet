@@ -1,12 +1,3 @@
-	<script type="text/javascript">
-		$(document).ready(function(){
-			$('#userid').prepend('<option value="0">[langs.transnoentities(All)]</option>');
-			
-			$('#userid').val([view.userid_selected]);
-			
-		});
-	</script>
-
 	<span>[THidden.val;block=span;strconv=no]</span>
 	<table class="nobrder" style="width:100%;">
 		[onshow;block=begin;when [view.mode]='changedate']
@@ -38,7 +29,7 @@
 
 		[onshow;block=begin;when [view.mode]=='edittime']
 			<!-- Nouvelle ligne de timesheet-->
-			<tr id="[timesheet.rowid;strconv=no]">
+			<tr id="0">
 				<td>[timesheet.projets;strconv=no]</td>
 				<td id="project_td0">[timesheet.services;strconv=no]</td>
 				<td>[timesheet.consultants;strconv=no]</td>
@@ -61,7 +52,7 @@
 	[onshow;block=begin;when [view.mode]=='edittime']
 		<div class="tabsAction" style="text-align:center;">
 		<input type="submit" value="[langs.transnoentities(Save)]" name="save" class="button"> 
-		&nbsp; &nbsp; <input type="button" value="[langs.transnoentities(Cancel)]" name="cancel" class="button" onclick="document.location.href='?id=[timesheet.id]'">
+		&nbsp; &nbsp; <input type="button" value="[langs.transnoentities(Cancel)]" name="cancel" class="button" onclick="document.location.href=''">
 	</div>
 	[onshow;block=end]
 	</div>
