@@ -45,11 +45,6 @@ function _action() {
 	********************************************************************/
 	
 	$action=GETPOST('action');
-	$idTimesheet = GETPOST('id', 'int');
-
-	if(! empty($idTimesheet)) { // load() remonté pour être effectué avant le hook
-		$timesheet->load($PDOdb, $idTimesheet);
-	}
 
 	$parameters = array();
 	$reshook = $hookmanager->executeHooks('doActions', $parameters, $timesheet, $action);
@@ -107,93 +102,7 @@ function _action() {
 	
 }
 
-function getLangTranslate() {
-	global $langs;
-	
-	$Tab=array();
-	foreach($langs->tab_translate as $k=>$v) {
-		$Tab[$k] = utf8_decode($v);
-	}
-	
-	return $Tab;
-	
-}
-	
-	
-function _liste() {
-	global $langs,$db,$user,$conf;
 
-	$langs->Load('timesheet@timesheet');
-
-	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
-
-	$TPDOdb=new TPDOdb;
-	$TTimesheet = new TTimesheet;
-
-	$sql = "SELECT DISTINCT t.rowid, p.ref, s.nom, t.fk_project, t.fk_societe, t.status, t.date_deb, t.date_fin
-			FROM ".MAIN_DB_PREFIX."timesheet as t
-				LEFT JOIN ".MAIN_DB_PREFIX."projet as p ON (p.rowid = t.fk_project)
-				LEFT JOIN ".MAIN_DB_PREFIX."projet_task as pt ON (pt.fk_projet = p.rowid)
-				LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON (s.rowid = t.fk_societe)
-			WHERE t.entity = ".$conf->entity."
-			ORDER BY t.date_cre DESC";
-
-	$THide = array(
-			'ref',
-			'nom'
-		);
-
-	$r = new TSSRenderControler($TTimesheet);
-	
-	$r->liste($TPDOdb, $sql, array(
-		'limit'=>array(
-			'nbLine'=>'30'
-		)
-		,'subQuery'=>array()
-		,'link'=>array(
-			'fk_societe'=>'<a href="'.dol_buildpath('/societe/soc.php?socid=@fk_societe@',2).'">'.img_picto('','object_company.png','',0).' @nom@</a>'
-			,'fk_project'=>'<a href="'.dol_buildpath('/projet/'.((float) DOL_VERSION >= 3.7 ? 'card.php' : 'fiche.php').'?id=@fk_project@',2).'">'.img_picto('','object_project.png','',0).' @ref@</a>'
-			,'rowid'=>'<a href="'.dol_buildpath('/timesheet/timesheet.php?id=@rowid@',2).'">'.img_picto('','object_calendar.png','',0).' @rowid@</a>'
-		)
-		,'translate'=>array(
-			'status'=>$TTimesheet->TStatus		
-		)
-		,'hide'=>$THide
-		,'type'=>array(
-			'date_deb'=>'date'
-			,'date_fin'=>'date'
-		)
-		,'liste'=>array(
-			'titre'=>$langs->trans('ListTimesheet')
-			,'image'=>img_picto('','title.png', '', 0)
-			,'picto_precedent'=>img_picto('','previous.png', '', 0)
-			,'picto_suivant'=>img_picto('','next.png', '', 0)
-			,'noheader'=> 0
-			,'messageNothing'=>$langs->trans('AnyTimesheet')
-			,'picto_search'=>img_picto('','search.png', '', 0)
-		)
-		,'title'=>array(
-			'date_deb'=>'Date début période'
-			,'date_fin'=>'Date fin période'
-			
-			,'fk_project'=>'Projet'
-			,'fk_societe'=>'Société'
-			,'rowid'=>'Identifiant'
-			,'status'=>$langs->trans('Status')
-		)
-	));
-
-	if($user->rights->timesheet->user->edit){
-		echo '<div class="tabsAction">';
-		echo '<a class="butAction" href="?action=new">'.$langs->trans('CreateTimesheet').'</a>';
-		echo '</div>';
-	}
-	
-	$TPDOdb->close();
-
-	llxFooter();
-
-}
 function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_selected=0) {
 
 	global $langs,$db,$conf,$user,$hookmanager;
@@ -268,8 +177,6 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	else{
 		$form->Set_typeaff("view");
 	}
-	
-	echo $form2->hidden('id', $timesheet->rowid);
 	
 	if ($mode=='edittime'){
 		echo $form2->hidden('action', 'savetime');
@@ -354,7 +261,6 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 			,array(
 				'timesheet'=>array(
 					'rowid'=>0
-					,'id'=>$timesheet->rowid
 					,'projets' => $formProjets->select_projects(-1, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
 					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', array(str_repeat('&nbsp;', 42)), 0) : $doliform->select_produits_list('','serviceid_0','1')
 					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
@@ -426,76 +332,4 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	llxFooter();
 }
 
-function _fiche_visu_project(&$timesheet, $mode){
-	global $db;
-
-	if($mode=='edit' || $mode=='new') {
-		ob_start();
-		$html=new FormProjets($db);
-		$html->select_projects($timesheet->fk_societe, $timesheet->fk_project, 'fk_project');
-
-
-		return ob_get_clean();
-
-	}
-	else {
-		if($timesheet->fk_project > 0) {
-			require_once(DOL_DOCUMENT_ROOT.'/projet/class/project.class.php');
-
-			$project = new Project($db);
-			$project->fetch($timesheet->fk_project);
-			
-			return $project->getNomUrl(1);
-			
-		} else {
-			return $langs->trans('NotDefined');
-		}
-	}
-}
-
-function _fiche_visu_societe(&$timesheet, $mode) {
-	global $db;
-
-	if($mode=='edit' || $mode=='new') {
-		ob_start();
-
-		$html=new Form($db);
-		echo $html->select_company($timesheet->fk_societe,'fk_societe','',1,0,1);
-
-		?>
-		<script type="text/javascript">
-			
-			$('#fk_societe').change(function() {
-				
-				_select_other_project();
-				
-			});
-			
-			function _select_other_project() {
-				
-				$('#timesheet-project-list').load('<?php echo $_SERVER['PHP_SELF'] ?>?action=new&fk_societe='+$('#fk_societe').val()+' #timesheet-project-list');
-				
-			}
-			
-		</script>
-		
-		
-		<?php
-
-		return ob_get_clean();
-
-	}
-	else {
-		if($timesheet->fk_societe > 0) {
-			require_once(DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php');
-
-			$soc = new Societe($db);
-			$soc->fetch($timesheet->fk_societe);
-
-			return '<a href="'.DOL_URL_ROOT.'/societe/soc.php?socid='.$timesheet->fk_societe.'" style="font-weight:bold;">'.img_picto('','object_company.png', '', 0).' '.$soc->nom.'</a>';
-		} else {
-			return $langs->trans('NotDefined');
-		}
-	}
-}
 

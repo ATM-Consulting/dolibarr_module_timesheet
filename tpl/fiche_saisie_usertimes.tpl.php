@@ -1,5 +1,3 @@
-[onshow;block=begin;when [view.mode]!='new']
-
 	<script type="text/javascript">
 		$(document).ready(function(){
 			$('#userid').prepend('<option value="0">[langs.transnoentities(All)]</option>');
@@ -104,5 +102,3 @@
 		<div id="viewlines"></div>
 		<div id="adlines"></div>
 	</div>
-	
-[onshow;block=end]
