@@ -93,11 +93,11 @@ function _action() {
 		}
 		else{
 			
-			_fiche($timesheet, 'changedate',$date_deb,$date_fin);
+			_fiche($timesheet, 'changedate',$date_deb,$date_fin, $userid);
 			
 		}
 	} else {
-		_fiche($timesheet, 'changedate',$date_deb, $date_fin);
+		_fiche($timesheet, 'changedate',$date_deb, $date_fin, $userid);
 	}
 	
 }
@@ -275,7 +275,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
 					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
 					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
-					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers( -1,'userid')
+					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers($userid_selected, 'userid', 1)
 					,'tous'=>(GETPOST('userid') == 0) ? 'true' : 'false'
 					,'userid_selected'=>$userid_selected
 					,'freemode'=>$freemode
