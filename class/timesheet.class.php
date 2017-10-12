@@ -307,10 +307,33 @@ class TTimesheet extends TObjetStd {
 					$task->timespent_fk_user = $idUser;
 
 					$task->addTimeSpent($user);
+					$this->_addProjectContact($PDOdb, $task->fk_project, $idUser);
 				}
 			}
 		}
 
+	}
+
+	function _addProjectContact(&$PDOdb, $idProject, $idUser) {
+		global $db;
+
+		if(! empty($idProject) && ! empty($idUser)) {
+			$sql = "SELECT ec.rowid";
+			$sql.= " FROM ".MAIN_DB_PREFIX."element_contact ec";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_type_contact ctc ON (ctc.rowid = ec.fk_c_type_contact)";
+			$sql.= " WHERE ec.element_id = ".$idProject;
+			$sql.= " AND ec.fk_socpeople = ".$idUser;
+			$sql.= " AND ctc.element = 'project'";
+			$sql.= " AND ctc.source = 'internal'";
+
+			$res = $PDOdb->Execute($sql);
+
+			if(empty($res->rowCount())) {
+				$project = new Project($db);
+				$project->fetch($idProject);
+				$project->add_contact($idUser, 'PROJECTCONTRIBUTOR', 'internal');
+			}
+		}
 	}
 
 	private function fillWithJour($PDOdb, $TJours, $TTime, $mode = 'view') {
