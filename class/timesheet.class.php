@@ -327,7 +327,7 @@ class TTimesheet extends TObjetStd {
 			$sql.= " AND ctc.source = 'internal'";
 
 			$res = $PDOdb->Execute($sql);
-			$nbLines = $res->rowCount()
+			$nbLines = $res->rowCount();
 
 			if(empty($nbLines)) {
 				$project = new Project($db);
