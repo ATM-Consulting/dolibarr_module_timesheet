@@ -271,6 +271,7 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers($userid_selected, 'userid', 1)
 					,'userid_selected'=>$userid_selected
 					,'freemode'=>$freemode
+					,'linkback'=>$_SERVER['PHP_SELF'].'?date_deb='.$date_deb.'&date_fin='.$date_fin.(empty($userid_selected) || $userid_selected < 0  ? '' : '&userid='.$userid_selected)
 				)
 				,'langs'=>$langs
 			)

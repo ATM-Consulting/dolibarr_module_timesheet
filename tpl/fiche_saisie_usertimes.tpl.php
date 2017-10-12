@@ -48,11 +48,11 @@
 		<input type="submit" value="[langs.transnoentities(Modify)]" onclick="$('#action').val('edittime');" name="save" class="button">
 		[onshow;block=end]	
 	</div>
-	[onshow;block=end]	
+	[onshow;block=end]
+
 	[onshow;block=begin;when [view.mode]=='edittime']
-		<div class="tabsAction" style="text-align:center;">
-		<input type="submit" value="[langs.transnoentities(Save)]" name="save" class="button"> 
-		&nbsp; &nbsp; <input type="button" value="[langs.transnoentities(Cancel)]" name="cancel" class="button" onclick="document.location.href=''">
+	<div class="tabsAction" style="text-align:center;">
+		<input type="submit" value="[langs.transnoentities(Save)]" name="save" class="button">&nbsp;&nbsp;&nbsp;&nbsp;<a class="button" href="[view.linkback]">[langs.transnoentities(Cancel)]</a>
 	</div>
 	[onshow;block=end]
 	</div>
