@@ -91,43 +91,25 @@ class TTimesheet extends TObjetStd {
 		global $db,$conf,$user;
 		
 		$date_deb = date('Y-m-d 00:00:00',$this->date_deb);
-		$date_fin =  date('Y-m-d 23:59:59',$this->date_fin);
+		$date_fin = date('Y-m-d 23:59:59',$this->date_fin);
 
 		$this->TTask=$Tid=array();
 		
-		if($fk_user>0) {
-			$task=new Task($db);
-			$user_temp = new User($db);
-			$user_temp->fetch($fk_user);
+		$sql = 'SELECT t.rowid,  SUM(tt.task_duration) AS tps 
+				FROM '.MAIN_DB_PREFIX.'projet_task t
+				INNER JOIN '.MAIN_DB_PREFIX.'projet p ON (p.rowid = t.fk_projet)
+				INNER JOIN '.MAIN_DB_PREFIX.'projet_task_time tt ON (tt.fk_task = t.rowid)
+				WHERE p.fk_statut < 2
+				AND tt.task_date BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
 
-			$TTask = $task->getTasksArray($user_temp, $user_temp);
+		if(!empty($this->project->id)) $sql .= " AND t.fk_projet = ".$this->project->id;
+		else $sql.=" AND t.entity=".$conf->entity;
 
-			foreach($TTask as $t){
-				if(empty($t->date_end)) $t->date_end = time();
-				
-				if($t->date_start <= $this->date_fin && $t->date_end >= $this->date_deb){
-					$Tid[] = $t->id;
-				}
-			}
-		}
-		else{
-			
-			$sql = 'SELECT t.rowid,  SUM(tt.task_duration) AS tps 
-					FROM '.MAIN_DB_PREFIX.'projet_task t
-					INNER JOIN '.MAIN_DB_PREFIX.'projet p ON (p.rowid = t.fk_projet)
-					INNER JOIN '.MAIN_DB_PREFIX.'projet_task_time tt ON (tt.fk_task = t.rowid)
-					WHERE p.fk_statut < 2
-					AND tt.task_date BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
+		$sql.= ' GROUP BY t.rowid HAVING SUM(tt.task_duration) > 0
+				ORDER BY t.label ASC';
 
-			if(!empty($this->project->id)) $sql .= " AND t.fk_projet = ".$this->project->id;
-			else $sql.=" AND t.entity=".$conf->entity;
+		$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 
-			$sql.= ' GROUP BY t.rowid HAVING SUM(tt.task_duration) > 0
-					ORDER BY t.label ASC';
-
-			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
-		}
-	
 		foreach($Tid as $id){
 
 			$task = new Task($db);
@@ -138,7 +120,6 @@ class TTimesheet extends TObjetStd {
 			
 			$this->loadTimeSpentByTask($PDOdb,$task->id,$fk_user);
 		}
-		
 	}
 	
 	function sortByProject($a, $b) {
