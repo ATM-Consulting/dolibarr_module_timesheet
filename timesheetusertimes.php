@@ -7,13 +7,14 @@ if(!$user->rights->timesheet->user->read) accessforbidden();
 $hookmanager = new HookManager($db);
 $hookmanager->initHooks('timesheetusertimescard');
 
-_action();
 
 // Protection if external user
 if ($user->societe_id > 0)
 {
 	accessforbidden();
 }
+
+_action();
 
 function _action() {
 	global $user,$langs,$conf,$mysoc,$hookmanager;
@@ -24,14 +25,19 @@ function _action() {
 	$date_deb=GETPOST('date_deb');
 	$date_fin=GETPOST('date_fin');
 	$userid=(int)GETPOST('userid');
-	if(!$userid && !$user->rights->timesheet->all->read)$userid = $user->id;
+
+	if(empty($userid)) {
+		$userid = -1;
+	}
+
+	if(empty($user->rights->timesheet->all->read)) $userid = $user->id;
 
 
-	if($date_deb) $date_deb = date('Y-m-d 00:00:00',dol_stringtotime($date_deb));
-	if($date_fin) $date_fin = date('Y-m-d 00:00:00',dol_stringtotime($date_fin));
+	if(! empty($date_deb)) $date_deb = date('Y-m-d 00:00:00', dol_stringtotime($date_deb));
+	if(! empty($date_fin)) $date_fin = date('Y-m-d 00:00:00', dol_stringtotime($date_fin));
 	
-	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
-	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
+	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00', strtotime('Monday this week')) : $date_deb ;
+	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00', strtotime('Sunday this week')) : $date_fin ;
 	
 	$timesheet->set_date('date_deb', $date_deb);
 	$timesheet->set_date('date_fin', $date_fin);
@@ -103,27 +109,71 @@ function _action() {
 }
 
 
-function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_selected=0) {
+function _fiche(TTimesheet &$timesheet, $mode, $date_deb, $date_fin, $userid_selected = -1) {
 
 	global $langs,$db,$conf,$user,$hookmanager;
 	$PDOdb = new TPDOdb;
-	$date_deb = (empty($date_deb)) ? date('Y-m-d 00:00:00',strtotime('last Monday')) : $date_deb ;
-	$date_fin = (empty($date_fin)) ? date('Y-m-d 00:00:00',strtotime('next Sunday')) : $date_fin ;
+
+	$date = date_create(date($date_deb));
+	$date_deb = date_format($date, 'd/m/Y');
+
+	$date = date_create(date($date_fin));
+	$date_fin = date_format($date, 'd/m/Y');
+
 	
+	$user_selected = new User($db);
+	if(! empty($userid_selected) && $userid_selected > 0) {
+		$user_selected->fetch($userid_selected);
+	}
+
+
 	llxHeader('',$langs->trans('TimeshettUserTimes'),'','',0,0,array('/timesheet/js/timesheet.js.php'));
 
 	print dol_get_fiche_head(timesheetPrepareHead( $timesheet, 'timesheet') , 'fiche', $langs->trans('TimeshettUserTimes'));
 
-	$form=new TFormCore();
-	$doliform = new Form($db);
 
-	$form->hidden('mode', $mode);
-	
-	if($mode != "edittime"){
-		$form->Set_typeaff($mode);
+	// Filtres
+
+	$doliform = new Form($db);
+	$formCoreFilter = new TFormCore();
+
+	$linkback = $_SERVER['PHP_SELF'].'?date_deb='.$date_deb.'&date_fin='.$date_fin.(empty($userid_selected) || $userid_selected < 0  ? '' : '&userid='.$userid_selected);
+
+	if($mode == 'edittime') {
+		$formCoreFilter->Set_typeaff('view');
+	} else {
+		$formCoreFilter->Set_typeaff('edit');
+		echo $formCoreFilter->begin_form($linkback, 'usertimefilter', 'GET');
 	}
-	else{
-		$form->Set_typeaff("view");
+
+	echo $langs->trans('Period').' : '.$langs->trans('Of').' '.$formCoreFilter->calendrier('', "date_deb", $date_deb).' ';
+	echo $langs->trans('to').' '.$formCoreFilter->calendrier('', 'date_fin', $date_fin).' - '.$langs->trans('UserFilter'). ' : ';
+
+	if($mode == 'edittime') {
+		echo (empty($userid_selected) || $userid_selected == -1 ? $langs->trans('None') : $user_selected->getNomUrl(1));
+	} else {
+		echo (empty($user->rights->timesheet->all->read) ? $user->firstname.' '.$user->lastname : $doliform->select_dolusers($userid_selected, 'userid', 1));
+		echo ' '.$formCoreFilter->btsubmit($langs->trans('ToFilter'), 'save');
+		echo $formCoreFilter->end_form();
+	}
+
+	echo '<br><br>';
+
+	// Feuille de temps
+
+	$formTimes = new TFormCore;
+
+	if($mode == "edittime"){
+		$formTimes->Set_typeaff('edit');
+		echo $formTimes->begin_form($linkback, 'formtime', 'POST');
+
+		echo $formTimes->hidden('mode', $mode);
+		echo $formTimes->hidden('date_deb', $date_deb);
+		echo $formTimes->hidden('date_deb', $date_deb);
+		echo $formTimes->hidden('action', 'savetime');
+		echo $formTimes->hidden('entity', $conf->entity);
+	} else {
+		$formTimes->Set_typeaff('view');
 	}
 	
 	
@@ -138,64 +188,33 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 	
 	$TJours = $timesheet->loadTJours(); 
 
-	$form2=new TFormCore($_SERVER['PHP_SELF'],'formtime','POST');
 
 	//transformation de $TJours pour jolie affichage
 	foreach ($TJours as $key => $value) {
 		$TKey = explode('-', $key);
 		$TJoursVisu[$TKey[2].'/'.$TKey[1]] = $value;
 	}
+
 	
 	//Charger les lignes existante dans le timeSheet
+
+	list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$formTimes,$mode, true);
+
+	$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
+	$nb_second_per_day = $hour_per_day * 3600 * 3600;
 	
-	if($mode!='new' && $mode!='edit'){
-			
-		if($mode=='edittime')$form2->Set_typeaff('edit');
-		else $form2->Set_typeaff('view');
-		
-		if(GETPOST('userid')){
-			$lastuser = $user;
-			$user->fetch(GETPOST('userid'));
-		}
-		list($TligneTimesheet,$THidden) = $timesheet->loadLines($PDOdb,$TJours,$doliform,$form2,$mode, true);
-		
-		if(GETPOST('userid')) $user = $lastuser;
-		
-		$hour_per_day = !empty($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : 8;
-		$nb_second_per_day = $hour_per_day * 3600 * 3600;
-		
-		foreach($TligneTimesheet as $cle => $val){
-			//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
-			$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'allhourmin', $nb_second_per_day);
-		}
+	foreach($TligneTimesheet as $cle => $val){
+		//$TligneTimesheet[$cle]['total_jours'] = round(convertSecondToTime($val['total_jours'],'allhourmin',$nb_second_per_day)/24);
+		$TligneTimesheet[$cle]['total'] = convertSecondToTime($val['total'],'allhourmin', $nb_second_per_day);
 	}
+
 	$TBS=new TTemplateTBS();
-	
-	if($mode=='edittime'){
-		$form2->Set_typeaff('edit');
-	}
-	else{
-		$form->Set_typeaff("view");
-	}
-	
-	if ($mode=='edittime'){
-		echo $form2->hidden('action', 'savetime');
-	}
-	
-	echo $form2->hidden('entity', $conf->entity);
-	
+
 
 	foreach($TJours as $date=>$jour){
-		$TFormJours['temps'.$date] = $form2->timepicker('', 'temps[0]['.$date.']', '',5);
+		$TFormJours['temps'.$date] = $formTimes->timepicker('', 'temps[0]['.$date.']', '',5);
 	}
-	
-	$form->Set_typeaff("edit");
-	
-	$date = date_create(date($date_deb));
-	$date_deb = date_format($date, 'd/m/Y');
-	
-	$date = date_create(date($date_fin));
-	$date_fin = date_format($date, 'd/m/Y');
+
 
 	$freemode = empty($conf->global->TIMESHEET_USE_SERVICES);
 
@@ -240,46 +259,49 @@ function _fiche(&$timesheet, $mode='view', $date_deb="",$date_fin="",$userid_sel
 		</script>
 		<?php
 	}
-	
-	if($mode!='new' && $mode != "edit"){
-		$formProjets = new FormProjets($db);
-		/*
-		 * Affichage tableau de saisie des temps
-		 */
-		
-		print $TBS->render('tpl/fiche_saisie_usertimes.tpl.php'
-			,array(
-				'ligneTimesheet'=>$TligneTimesheet,
-				'lignejours'=>$TligneJours,
-				'jours'=>$TJours,
-				'joursVisu'=>$TJoursVisu,
-				'formjour'=>$TFormJours
-				,'THidden'=>$THidden
-			)
-			,array(
-				'timesheet'=>array(
-					'projets' => $formProjets->select_projects(-1, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
-					,'services'=>$freemode ? $form2->combo_sexy('', 'serviceid_0', array(str_repeat('&nbsp;', 42)), 0) : $doliform->select_produits_list('','serviceid_0','1')
-					,'consultants'=>(($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $form2->hidden('userid_0', $user->id).$user->getNomUrl(1))
-				)
-				,'view'=>array(
-					'mode'=>$mode
-					,'righttoedit'=>($user->rights->timesheet->user->add)
-					,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
-					,'date_deb'=>$form->calendrier('', "date_deb", $date_deb)
-					,'date_fin'=>$form->calendrier('', "date_fin", $date_fin)
-					,'liste_user'=>(!$user->rights->timesheet->all->read) ? '' : $doliform->select_dolusers($userid_selected, 'userid', 1)
-					,'userid_selected'=>$userid_selected
-					,'freemode'=>$freemode
-					,'linkback'=>$_SERVER['PHP_SELF'].'?date_deb='.$date_deb.'&date_fin='.$date_fin.(empty($userid_selected) || $userid_selected < 0  ? '' : '&userid='.$userid_selected)
-				)
-				,'langs'=>$langs
-			)
-			
-		);
+
+	$userList = (($user->rights->timesheet->all->read) ? $doliform->select_dolusers($user,'userid_0') : $formTimes->hidden('userid_0', $user).$user->getNomUrl(1));
+	if($mode == 'edittime' && ! empty($userid_selected) && $userid_selected > 0) {
+		$userList = $formTimes->hidden('userid_0', $userid_selected).$user_selected->getNomUrl(1);
 	}
-	 
-	echo $form2->end_form();
+
+	$formProjets = new FormProjets($db);
+	/*
+	 * Affichage tableau de saisie des temps
+	 */
+
+	print $TBS->render('tpl/fiche_saisie_usertimes.tpl.php'
+		,array(
+			'ligneTimesheet'=>$TligneTimesheet,
+			'lignejours'=>$TligneJours,
+			'jours'=>$TJours,
+			'joursVisu'=>$TJoursVisu,
+			'formjour'=>$TFormJours
+			,'THidden'=>$THidden
+		)
+		,array(
+			'timesheet'=>array(
+				'projets' => $formProjets->select_projects(-1, '', 'projectid_0', 16, 0, 1, 2, 0, 0, 0, '', 1)
+				,'services'=>$freemode ? $formTimes->combo_sexy('', 'serviceid_0', array(str_repeat('&nbsp;', 42)), 0) : $doliform->select_produits_list('','serviceid_0','1')
+				,'consultants' => $userList
+				,'nbLines' => count($TligneTimesheet)
+			)
+			,'view'=>array(
+				'mode'=>$mode
+				,'righttoedit'=>($user->rights->timesheet->user->add)
+				,'TimesheetYouCantIsEmpty'=>addslashes( $langs->transnoentitiesnoconv('TimesheetYouCantIsEmpty') )
+				,'freemode'=>$freemode
+				,'linkback'=>$linkback
+				,'colspan' => count($TJours) + 5
+				,'messageNothing' => $langs->trans('TimesheetNoTimeInThisTimesheet')
+			)
+			,'langs'=>$langs
+		)
+	);
+
+	if($mode == 'edittime') {
+		$formTimes->end();
+	}
 
 	if($mode == 'edittime' && ! empty($conf->absence->enabled) && empty($conf->global->TIMESHEET_RH_NO_CHECK)) {
 		?>

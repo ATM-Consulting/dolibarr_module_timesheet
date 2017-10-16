@@ -1,13 +1,5 @@
 	<span>[THidden.val;block=span;strconv=no]</span>
-	<table class="nobrder" style="width:100%;">
-		[onshow;block=begin;when [view.mode]='changedate']
-			<input type="hidden" name="action" id="action" value="[view.mode]">
-		[onshow;block=end]
-		<tr>
-			<td> [langs.transnoentities(Period)] [view.date_deb;strconv=no] [langs.transnoentities(to)] [view.date_fin;strconv=no] [langs.transnoentities(UserFilter)] : [view.liste_user;strconv=no] <input class="button" type="submit" name="save" class="butAction" value="[langs.transnoentities(Display)]"></td>
-		</tr>
-	</table>
-	<br><br>
+
 	<table class="border" style="width:100%;">
 		<!-- entête du tableau -->
 		<thead style="background-color:#CCCCCC;">
@@ -25,6 +17,11 @@
 		<!-- Contenu déjà existant -->
 		<tr id="[ligneTimesheet.$;strconv=no;block=tr;sub1]" >
 			<td>[ligneTimesheet_sub1.val;block=td;strconv=no]</td>
+		</tr>
+		<tr>
+			<td colspan="[view.colspan;strconv=no]" align="center">
+				[view.messageNothing;strconv=no] [onshow; block=tr; when [timesheet.nbLines]==0]
+			</td>
 		</tr>
 
 		[onshow;block=begin;when [view.mode]=='edittime']
@@ -45,7 +42,7 @@
 	[onshow;block=begin;when [view.mode]!='edittime']
 	<div class="tabsAction" style="text-align: center;">
 		[onshow;block=begin;when [view.righttoedit]==1]	
-		<input type="submit" value="[langs.transnoentities(Modify)]" onclick="$('#action').val('edittime');" name="save" class="button">
+		<a class="button" href="[view.linkback]&amp;action=edittime">[langs.transnoentities(Modify)]</a>
 		[onshow;block=end]	
 	</div>
 	[onshow;block=end]
@@ -72,9 +69,6 @@
 					if(is_empty){
 						alert('[view.TimesheetYouCantIsEmpty;strconv=no]');
 						return false;
-					}
-					else{
-						null; // ok
 					}
 				}
 			});
