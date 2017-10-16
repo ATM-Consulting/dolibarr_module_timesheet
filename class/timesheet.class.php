@@ -112,15 +112,18 @@ class TTimesheet extends TObjetStd {
 		}
 		else{
 			
-			$sql = 'SELECT rowid 
-					FROM '.MAIN_DB_PREFIX.'projet_task 
-					WHERE dateo <= "'.$date_fin.'"
-						AND (datee >= "'.$date_deb.'" OR datee IS NULL)';
-			
-			if(!empty($this->project->id)) $sql .= " AND fk_projet = ".$this->project->id;
-			else $sql.=" AND entity=".$conf->entity;
-			
-			$sql .= ' ORDER BY label ASC';
+			$sql = 'SELECT t.rowid,  SUM(tt.task_duration) AS tps 
+					FROM '.MAIN_DB_PREFIX.'projet_task t
+					INNER JOIN '.MAIN_DB_PREFIX.'projet p ON (p.rowid = t.fk_projet)
+					INNER JOIN '.MAIN_DB_PREFIX.'projet_task_time tt ON (tt.fk_task = t.rowid)
+					WHERE p.fk_statut < 2
+					AND tt.task_date BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
+
+			if(!empty($this->project->id)) $sql .= " AND t.fk_projet = ".$this->project->id;
+			else $sql.=" AND t.entity=".$conf->entity;
+
+			$sql.= ' GROUP BY t.rowid HAVING SUM(tt.task_duration) > 0
+					ORDER BY t.label ASC';
 
 			$Tid = TRequeteCore::_get_id_by_sql($PDOdb, $sql);
 		}
@@ -304,10 +307,34 @@ class TTimesheet extends TObjetStd {
 					$task->timespent_fk_user = $idUser;
 
 					$task->addTimeSpent($user);
+					$this->_addProjectContact($PDOdb, $task->fk_project, $idUser);
 				}
 			}
 		}
 
+	}
+
+	function _addProjectContact(&$PDOdb, $idProject, $idUser) {
+		global $db;
+
+		if(! empty($idProject) && ! empty($idUser)) {
+			$sql = "SELECT ec.rowid";
+			$sql.= " FROM ".MAIN_DB_PREFIX."element_contact ec";
+			$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_type_contact ctc ON (ctc.rowid = ec.fk_c_type_contact)";
+			$sql.= " WHERE ec.element_id = ".$idProject;
+			$sql.= " AND ec.fk_socpeople = ".$idUser;
+			$sql.= " AND ctc.element = 'project'";
+			$sql.= " AND ctc.source = 'internal'";
+
+			$res = $PDOdb->Execute($sql);
+			$nbLines = $res->rowCount();
+
+			if(empty($nbLines)) {
+				$project = new Project($db);
+				$project->fetch($idProject);
+				$project->add_contact($idUser, 'PROJECTCONTRIBUTOR', 'internal');
+			}
+		}
 	}
 
 	private function fillWithJour($PDOdb, $TJours, $TTime, $mode = 'view') {
