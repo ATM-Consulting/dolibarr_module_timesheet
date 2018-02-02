@@ -191,8 +191,10 @@ class TTimesheet extends TObjetStd {
 			if(is_array($TValue)){
 				
 				foreach($TValue as $idTask => $TTemps){
-					
-					if($Tid = explode('_',$idTask)){ // forcément... Je me demandais bien en regardant le code de créa de la ligne pourquoi ce n'était pas simplement une clef... Je me demande toujours
+
+					if(strpos($idTask, '_')) {
+						$Tid = explode('_',$idTask); // forcément... Je me demandais bien en regardant le code de créa de la ligne pourquoi ce n'était pas simplement une clef... Je me demande toujours
+
 						$idTask = $Tid[0];
 						$idUser = $Tid[1];
 					}
@@ -206,15 +208,15 @@ class TTimesheet extends TObjetStd {
 
 					}
 					else if(!empty($Tab['serviceid_0'])){
-						
-						$product = new Product($db);
-						$product->fetch($Tab['serviceid_0']);
+
 						//La tâche n'existe peux être pas encore mais une tache associé au service pour ce projet existe déjà peux être
 						$sql = "SELECT t.rowid 
 								FROM ".MAIN_DB_PREFIX."projet_task t INNER JOIN ".MAIN_DB_PREFIX."projet_task_extrafields ex ON (ex.fk_object=t.rowid)
-								WHERE t.fk_projet = ".$this->project->id." AND ex.fk_service=".$product->id;
+								WHERE ex.fk_service=".intval($Tab['serviceid_0'])."
+								AND t.fk_projet = ".intval($Tab['projectid_0']);
+
 						$PDOdb->Execute($sql);
-						
+
 						if($PDOdb->Get_line() && !$conf->global->TIMESHEET_CREATE_TASK_DOUBLE){
 						
 							//Une tache associé à ce service existe dans le projet, on ajoute alors le temps de l'utilisateur concerné
@@ -237,8 +239,7 @@ class TTimesheet extends TObjetStd {
 							$this->_updatetimespent($PDOdb,$Tab,$TTemps,$task,$rowid,$Tab['userid_'.$rowid]);
 						}
 						else{
-							
-							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,$Tab['userid_0']);
+							$this->_addTask($PDOdb,$Tab,$TTemps,$idTask,intval($Tab['userid_0']));
 						}
 					}
 					
@@ -308,9 +309,8 @@ class TTimesheet extends TObjetStd {
 			$sql.= " AND ctc.source = 'internal'";
 
 			$res = $PDOdb->Execute($sql);
-			$nbLines = $res->rowCount();
 
-			if(empty($nbLines)) {
+			if(! empty($res) && $res->rowCount() > 0) {
 				$project = new Project($db);
 				$project->fetch($idProject);
 				$project->add_contact($idUser, 'PROJECTCONTRIBUTOR', 'internal');
@@ -568,7 +568,7 @@ class TTimesheet extends TObjetStd {
 		return $TJours;
 	}
 	
-	function _addtask(&$PDOdb,&$Tab,&$TTemps,$idTask,$idUser){
+	function _addTask(&$PDOdb,&$Tab,&$TTemps,$idTask,$idUser){
 		global $db,$user,$conf;
 
 		$product = new Product($db);
@@ -588,16 +588,17 @@ class TTimesheet extends TObjetStd {
 			}
 			
 			$task->ref = $defaultref;
-			$task->fk_project = $this->project->id;
+			$task->fk_project = intval($Tab['projectid_0']);
 			$task->description = '';
-			$task->date_start = $this->date_deb;
-			$task->date_end = $this->date_fin;
+			$task->date_start = $Tab['date_deb'];
+			$task->date_end = $Tab['date_fin'];
+			$task->date_c = dol_now();
 			$task->fk_task_parent = 0;
 
 			$task->array_options['options_fk_service'] = $product->id;
 
 			$idTask = $task->create($user);
-			
+
 			$this->TTask[$task->id] = $task;
 			
 			$this->TLineLabel[$task->id][$idUser] = GETPOST('lineLabel_0'); 			
