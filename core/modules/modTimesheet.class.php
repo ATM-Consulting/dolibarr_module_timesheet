@@ -220,42 +220,42 @@ class modTimesheet extends DolibarrModules
 		$r++;
 		$this->rights[$r][0] = 104241;
 		$this->rights[$r][1] = 'ReadTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104242;
 		$this->rights[$r][1] = 'ReadAllTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'all';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104243;
 		$this->rights[$r][1] = 'EditTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'edit';
 		
 		$r++;
 		$this->rights[$r][0] = 104244;
 		$this->rights[$r][1] = 'AddTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'add';
 		
 		$r++;
 		$this->rights[$r][0] = 104245;
 		$this->rights[$r][1] = 'DelTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'delete';
 		
 		$r++;
 		$this->rights[$r][0] = 104246;
 		$this->rights[$r][1] = 'ApproveTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'approve';
 		
@@ -263,7 +263,7 @@ class modTimesheet extends DolibarrModules
 		$r++;
 		$this->rights[$r][0] = 104250;
 		$this->rights[$r][1] = 'BillingTimesheet';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'user';
 		$this->rights[$r][5] = 'bill';
 		
@@ -272,21 +272,21 @@ class modTimesheet extends DolibarrModules
 		$r++;
 		$this->rights[$r][0] = 104247;
 		$this->rights[$r][1] = 'ReadTimesheetNDF';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104248;
 		$this->rights[$r][1] = 'ReadAllTimesheetNDF';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'allndf';
 		$this->rights[$r][5] = 'read';
 		
 		$r++;
 		$this->rights[$r][0] = 104249;
 		$this->rights[$r][1] = 'EditTimesheetNDF';
-		$this->rights[$r][3] = 1;
+		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'ndf';
 		$this->rights[$r][5] = 'edit';
 		
