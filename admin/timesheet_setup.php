@@ -31,7 +31,7 @@ include '../config.php';
 dol_include_once('/core/lib/admin.lib.php');
 
 // Protection if external user
-if ($user->societe_id > 0)
+if ($user->socid > 0)
 {
 	accessforbidden();
 }

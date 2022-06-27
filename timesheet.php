@@ -10,7 +10,7 @@ $hookmanager->initHooks('timesheetcard');
 _action();
 
 // Protection if external user
-if ($user->societe_id > 0)
+if ($user->socid > 0)
 {
 	accessforbidden();
 }
