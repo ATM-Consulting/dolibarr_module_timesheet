@@ -51,7 +51,7 @@ class modTimesheet extends DolibarrModules
 
         // Family can be 'crm','financial','hr','projects','products','ecm','technic','other'
         // It is used to group modules in module setup page
-        $this->family = "projects";
+        $this->family = 'ATM Consulting';
         // Module label (no space allowed)
         // used if translation string 'ModuleXXXName' not found
         // (where XXX is value of numeric property 'numero' of module)
@@ -61,7 +61,7 @@ class modTimesheet extends DolibarrModules
         // (where XXX is value of numeric property 'numero' of module)
         $this->description = "Description of module MyModule";
         // Possible values for version are: 'development', 'experimental' or version
-        $this->version = '1.3.2';
+        $this->version = '1.3.3';
         // Key used in llx_const table to save module status enabled/disabled
         // (where MYMODULE is value of property name of module in uppercase)
         $this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);

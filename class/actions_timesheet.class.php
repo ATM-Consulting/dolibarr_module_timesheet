@@ -54,7 +54,9 @@ class ActionsTimesheet
 						$line->fetch($idline);
 						
 						dol_include_once('/multidevise/class/multidevise.class.php');
-						TMultidevise::updateLine($db, $line,$user, 'LINEBILL_UPDATE',$idline,0, $devise_taux);
+                        $update = '_MODIFY';
+                        if (intval(DOL_VERSION) < 16) $update = '_UPDATE';
+                        TMultidevise::updateLine($db, $line,$user, 'LINEBILL'.$update,$idline,0, $devise_taux);
 					}
 					
 					

@@ -86,8 +86,9 @@
 		global $db, $conf, $user, $langs;
 		
 		dol_include_once('/ndfp/class/ndfp.class.php');
-		
-		$ndfp = new Ndfp($db);
+        $newToken = function_exists('newToken') ? newToken() : $_SESSION['newtoken'];
+
+        $ndfp = new Ndfp($db);
 		$ndfp->fetch($fk_ndfp);
 		
 		$numLines = sizeof($ndfp->lines);
@@ -116,7 +117,7 @@
 				
 				$chaine .='
 			    <form action="'.$_SERVER["PHP_SELF"].'?id='.$ndfp->id.'" method="POST">
-			    <input type="hidden" name="token" value="'.$_SESSION['newtoken'].'" />
+			    <input type="hidden" name="token" value="'.$newToken.'" />
 			    <input type="hidden" name="action" value="updateline" />
 			    <input type="hidden" name="id" value="'.$ndfp->id.'" />
 			    <input type="hidden" name="lineid" value="'.$line->rowid.'" />';
