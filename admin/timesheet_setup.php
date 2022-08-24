@@ -37,7 +37,7 @@ if ($user->socid > 0)
 }
 
 
-$action=__get('action','');
+$action = GETPOST('action', 'aZ09');
 
 if($action=='save') {
 	
@@ -71,31 +71,36 @@ function showParameters(&$form) {
 	global $db,$conf,$langs;
 	
 	$html=new Form($db);
+	$newToken = function_exists('newToken') ? newToken() : $_SESSION['newtoken'];
+
 	$TConst=array(
 		'RH_JOURS_NON_TRAVAILLE'
 	);
+
+	$typeDoc = '';
 	
 	?><form action="<?php echo $_SERVER['PHP_SELF'] ?>" name="load-<?php echo $typeDoc ?>" method="POST" enctype="multipart/form-data">
 		<input type="hidden" name="action" value="save" />
+        <input type="hidden" name="token" value="<?php echo $newToken ?>" />
 	<table width="100%" class="noborder" style="background-color: #fff;">
 		<tr class="liste_titre">
 			<td colspan="2"><?php echo $langs->trans('Parameters') ?></td>
 		</tr>
 		
 		<tr>
-			<td><?php echo $langs->trans('timesheetTIMESHEET_WORKING_HOUR_PER_DAY') ?></td><td><?php echo $form->texte('', 'TParam[TIMESHEET_WORKING_HOUR_PER_DAY]', $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY,3,3).$langs->trans('days')  ?></td>				
+			<td><?php echo $langs->trans('timesheetTIMESHEET_WORKING_HOUR_PER_DAY') ?></td><td><?php echo $form->texte('', 'TParam[TIMESHEET_WORKING_HOUR_PER_DAY]', isset($conf->global->TIMESHEET_WORKING_HOUR_PER_DAY) ? $conf->global->TIMESHEET_WORKING_HOUR_PER_DAY : '',3,3).$langs->trans('days')  ?></td>
 		</tr>
 		<tr>
-			<td><?php echo $langs->trans('timesheetTIMESHEET_RH_NO_CHECK') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RH_NO_CHECK]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RH_NO_CHECK)  ?></td>				
+			<td><?php echo $langs->trans('timesheetTIMESHEET_RH_NO_CHECK') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RH_NO_CHECK]',array(0=>'Non',1=>'Oui'), !empty($conf->global->TIMESHEET_RH_NO_CHECK) ? $conf->global->TIMESHEET_RH_NO_CHECK : 0)  ?></td>
 		</tr>
 		<tr>
-			<td><?php echo $langs->trans('timesheetTIMESHEET_CREATE_TASK_DOUBLE') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_CREATE_TASK_DOUBLE]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_CREATE_TASK_DOUBLE)  ?></td>				
+			<td><?php echo $langs->trans('timesheetTIMESHEET_CREATE_TASK_DOUBLE') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_CREATE_TASK_DOUBLE]',array(0=>'Non',1=>'Oui'), !empty($conf->global->TIMESHEET_CREATE_TASK_DOUBLE) ? $conf->global->TIMESHEET_CREATE_TASK_DOUBLE : 0)  ?></td>
 		</tr>
 		<tr>
-			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_USE_SERVICES)  ?></td>				
+			<td><?php echo $langs->trans('timesheetTIMESHEET_USE_SERVICES') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_USE_SERVICES]',array(0=>'Non',1=>'Oui'), !empty($conf->global->TIMESHEET_USE_SERVICES) ? $conf->global->TIMESHEET_USE_SERVICES : 0)  ?></td>
 		</tr>
 		<tr>
-			<td><?php echo $langs->trans('timesheetTIMESHEET_RESTRICT_TS_TIERS') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RESTRICT_TS_TIERS]',array(0=>'Non',1=>'Oui'), $conf->global->TIMESHEET_RESTRICT_TS_TIERS)  ?></td>				
+			<td><?php echo $langs->trans('timesheetTIMESHEET_RESTRICT_TS_TIERS') ?></td><td><?php echo $form->combo('', 'TParam[TIMESHEET_RESTRICT_TS_TIERS]',array(0=>'Non',1=>'Oui'), !empty($conf->global->TIMESHEET_RESTRICT_TS_TIERS) ? $conf->global->TIMESHEET_RESTRICT_TS_TIERS : 0)  ?></td>
 		</tr>
 		
 		<?php foreach($TConst as $key) { ?>
